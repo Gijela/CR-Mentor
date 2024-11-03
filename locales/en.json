@@ -1,0 +1,56 @@
+{
+  "Hero": {
+    "h1": "AI CodeReview Mentor",
+    "h2": "Empower your entire team with AI-driven contextual feedback, supporting all languages, and cut code review time and errors in half."
+  },
+  "Feature": {
+    "h2": "Key Features",
+    "h3": "Core Capabilities of CR-Mentor",
+    "description1": "Based on best practices accumulated in the knowledge base, support customized repository-level code review standards and intelligent Code Review for all mainstream programming languages.",
+    "description2": "Combining knowledge base experience with LLM analysis, provide professional scoring and improvement suggestions for single file code changes, seamlessly integrate with GitHub workflow for automated Code Review.",
+    "description3": "Based on all file code changes, provide comprehensive review reports including code walkthrough, change description and sequence diagrams through LLM, and support customized language for Code Review feedback."
+  },
+  "Pricing": {
+    "h2": "Pricing Plans",
+    "h3": "Choose the plan that suits you best",
+    "description": "AI CodeReview Mentor offers both a free version and a professional version to meet different usage needs.",
+    "doYouLike": "What do you think of this tool?",
+    "follow": "Follow our social accounts to learn more."
+  },
+  "Testimonial": {
+    "h2": "User Testimonials",
+    "h3": "What They're Saying",
+    "description1": "If you have used AI CodeReview Mentor and shared your experience on social media,",
+    "description2": "please let us know your feedback,",
+    "description3": "and we will display your valuable comments here."
+  },
+  "Faq": {
+    "h2": "FAQs",
+    "h3": "Questions & Answers",
+    "description": "Here are some common questions and answers about AI CodeReview Mentor."
+  },
+  "CTA": {
+    "h2": "Start Your Code Review Journey",
+    "h3": "Experience AI CodeReview Mentor now and improve your code quality!"
+  },
+  "CTAButton": {
+    "btn1": "Sign Up for Free",
+    "btn2": "Learn More"
+  },
+  "HowItWork": {
+    "h2": "How It Works",
+    "h3": "Learn the simple steps to conduct code reviews with CR-Mentor",
+    "step1": {
+      "title": "Step 1: Register and Login",
+      "description": "Create an account and login to get started"
+    },
+    "step2": {
+      "title": "Step 2: Install CR-Mentor", 
+      "description": "Add CR-Mentor to your GitHub repository"
+    },
+    "step3": {
+      "title": "Step 3: Create Pull Request",
+      "description": "Submit a PR in your public repository for code review"
+    }
+  }
+}

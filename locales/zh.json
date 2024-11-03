@@ -1,0 +1,56 @@
+{
+  "Hero": {
+    "h1": "AI CodeReview Mentor",
+    "h2": "通过 AI 驱动的上下文反馈赋能您的团队，支持所有编程语言，将代码审查时间和错误减半。"
+  },
+  "Feature": {
+    "h2": "核心功能",
+    "h3": "CR-Mentor的核心能力",
+    "description1": "基于知识库沉淀的最佳实践，支持自定义仓库级别的代码审查规范，并支持所有主流编程语言的智能 Code Review。",
+    "description2": "结合知识库经验与 LLM 分析，对单文件代码变更提供专业评分和改进建议，无缝对接 GitHub 工作流实现自动化 Code Review。",
+    "description3": "基于所有文件代码变更，通过 LLM 提供包含代码演练、变更说明和时序图的综合审查报告，支持自定义 Code Review 反馈的语言。"
+  },
+  "Pricing": {
+    "h2": "定价方案",
+    "h3": "选择最适合您的方案",
+    "description": "CR-Mentor提供免费版和专业版，满足不同的使用需求。",
+    "doYouLike": "您觉得这个工具怎么样？",
+    "follow": "关注我们的社交账号了解更多。"
+  },
+  "Testimonial": {
+    "h2": "用户评价",
+    "h3": "他们怎么说",
+    "description1": "如果您使用过 CR-Mentor并在社交媒体上分享了您的体验，",
+    "description2": "请告诉我们您的反馈，",
+    "description3": "我们将在这里展示您的宝贵意见。"
+  },
+  "Faq": {
+    "h2": "常见问题",
+    "h3": "问题与解答",
+    "description": "这里是关于 CR-Mentor的一些常见问题和答案。"
+  },
+  "CTA": {
+    "h2": "开启您的代码审查之旅",
+    "h3": "立即体验 CR-Mentor，提升您的代码质量！"
+  },
+  "CTAButton": {
+    "btn1": "免费注册",
+    "btn2": "了解更多"
+  },
+  "HowItWork": {
+    "h2": "工作原理",
+    "h3": "了解使用 CR-Mentor 进行 Code Review 的简单步骤",
+    "step1": {
+      "title": "第一步：注册和登录",
+      "description": "创建账号并登录以开始使用"
+    },
+    "step2": {
+      "title": "第二步：安装 CR-Mentor",
+      "description": "将 CR-Mentor 添加到您的 GitHub"
+    },
+    "step3": {
+      "title": "第三步：创建 Pull Request",
+      "description": "在您的公共仓库中提交 PR 进行 CR"
+    }
+  }
+}
