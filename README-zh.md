@@ -17,7 +17,7 @@
 
 <div align="center" style="margin-top: 12px;">
   <a href="https://cr-mentor.top/"><strong>在线体验</strong></a> ·
-  <a href="https://github.com/Gijela/CR-Mentor/pull/35"><strong>Code Review 演示</strong></a> ·
+  <a href="https://github.com/Gijela/CR-Mentor/pull/1"><strong>Code Review 演示</strong></a> ·
   <a href="https://ovlxxbdwimhigoejxkqn.supabase.co/storage/v1/object/public/test-bucket-api/Dify_DSL/CR-Mentor.yml"><strong>工作流文件下载</strong></a>
 </div>
 
