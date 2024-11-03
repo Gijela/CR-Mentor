@@ -1,44 +1,63 @@
-"use client";
+'use client'
 
-import { useUser } from "@clerk/nextjs";
-import { Button, message } from "antd";
-import React, { useEffect, useState } from "react";
+import { useState } from 'react'
+import { Button, Table, Tabs } from 'antd'
+import type { TabsProps } from 'antd'
 
-const TestPage: React.FC = () => {
-  const { user } = useUser();
-  const [token, setToken] = useState<string | null>(null);
+// Mock data
+const MOCK_USERS = [
+  { id: 1, name: 'John', age: 25, role: 'Developer' },
+  { id: 2, name: 'Lisa', age: 30, role: 'Designer' },
+  { id: 3, name: 'Mike', age: 28, role: 'Product Manager' },
+]
 
-  const fetchToken = async () => {
-    console.log('user:', user);
+const MOCK_PRODUCTS = [
+  { id: 1, name: 'Laptop', price: 6999, stock: 100 },
+  { id: 2, name: 'Phone', price: 3999, stock: 200 },
+  { id: 3, name: 'Tablet', price: 2999, stock: 150 },
+]
 
-    if (!user?.publicMetadata?.github_id) {
-      message.error("请先在设置中绑定 github 账号");
-      return;
-    }
+export default function TestPage() {
+  const [selectedTab, setSelectedTab] = useState<string>('users')
 
-    const response = await fetch('/api/github/generateJWT', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ githubId: user?.publicMetadata?.github_id }),
-    });
+  const userColumns = [
+    { title: 'ID', dataIndex: 'id', key: 'id' },
+    { title: 'Name', dataIndex: 'name', key: 'name' },
+    { title: 'Age', dataIndex: 'age', key: 'age' },
+    { title: 'Role', dataIndex: 'role', key: 'role' },
+  ]
 
-    if (response.ok) {
-      const data = await response.json();
-      setToken(data.token);
-    } else {
-      console.error('获取 token 失败');
-    }
-  };
+  const productColumns = [
+    { title: 'ID', dataIndex: 'id', key: 'id' },
+    { title: 'Name', dataIndex: 'name', key: 'name' },
+    { title: 'Price', dataIndex: 'price', key: 'price', render: (price: number) => `$${price}` },
+    { title: 'Stock', dataIndex: 'stock', key: 'stock' },
+  ]
+
+  const items: TabsProps['items'] = [
+    {
+      key: 'users',
+      label: 'User List',
+      children: <Table columns={userColumns} dataSource={MOCK_USERS} pagination={false} />,
+    },
+    {
+      key: 'products',
+      label: 'Product List',
+      children: <Table columns={productColumns} dataSource={MOCK_PRODUCTS} pagination={false} />,
+    },
+  ]
 
   return (
-    <div>
-      <h1>生成的 JWT Token</h1>
-      <Button onClick={fetchToken}>生成 token</Button>
-      {token ? <pre>{token}</pre> : <p>正在生成 token...</p>}
-    </div>
-  );
-};
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-4">Test Data Display</h1>
 
-export default TestPage;
+      <div className="space-y-4">
+        <Tabs
+          activeKey={selectedTab}
+          items={items}
+          onChange={(key) => setSelectedTab(key)}
+        />
+      </div>
+    </div>
+  )
+}

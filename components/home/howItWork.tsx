@@ -28,7 +28,7 @@ export default function HowItWork({ locale }) {
               <div className="absolute left-[30%] w-4 h-4 bg-base-content rounded-full transform -translate-x-1/2"></div>
               <div className="w-[70%] pl-8">
                 <img
-                  src="/landingPage/step1.png"
+                  src="/step1.png"
                   alt="Registration and login illustration"
                   className="w-full rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
                 />
@@ -47,7 +47,7 @@ export default function HowItWork({ locale }) {
               <div className="absolute left-[30%] w-4 h-4 bg-base-content rounded-full transform -translate-x-1/2"></div>
               <div className="w-[70%] pl-8">
                 <img
-                  src="/landingPage/step2.png"
+                  src="/step2.png"
                   alt="Installation illustration"
                   className="w-full rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
                 />
@@ -66,7 +66,7 @@ export default function HowItWork({ locale }) {
               <div className="absolute left-[30%] w-4 h-4 bg-base-content rounded-full transform -translate-x-1/2"></div>
               <div className="w-[70%] pl-8">
                 <img
-                  src="/landingPage/step3.png"
+                  src="/step3.png"
                   alt="Creating PR illustration"
                   className="w-full rounded-lg shadow-md hover:scale-105 transition-transform duration-300"
                 />

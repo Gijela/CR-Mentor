@@ -75,7 +75,7 @@ export default function Hero({ lang, locale, CTALocale }) {
               <a
                 title="get source code"
                 className="btn btn-sm md:btn-md btn-base rounded-full bg-gradient-to-r from-blue-400 to-blue-600 hover:from-blue-500 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                href={`https://github.com/Gijela/CR-Mentor/pull/35`}
+                href={`https://github.com/Gijela/CR-Mentor/pull/1`}
                 target="_blank"
               >
                 <IoDocumentText className="text-white animate-pulse" /> Live Demo
@@ -95,7 +95,7 @@ export default function Hero({ lang, locale, CTALocale }) {
           <Image
             width={1024}
             height={600}
-            src={"/landingPage/code1.png"}
+            src={"/"}
             className="hidden md:flex w-full -mt-10"
             alt="app demo"
           />
