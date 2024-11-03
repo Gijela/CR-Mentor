@@ -35,7 +35,7 @@ export default function Footer() {
             <Image
               width={200}
               height={200}
-              src={"/CR-Mentor-logo.gif"}
+              src={"/logo.gif"}
               className="transition-all hover:scale-110 w-6 md:w-10 h-6 md:h-10"
               alt="logo"
             ></Image>

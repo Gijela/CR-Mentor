@@ -17,7 +17,7 @@
 
 <div align="center" style="margin-top: 12px;">
   <a href="https://cr-mentor.top/"><strong>Live Demo</strong></a> ·
-  <a href="https://github.com/Gijela/CR-Mentor/pull/35"><strong>Code Review Demo</strong></a> ·
+  <a href="https://github.com/Gijela/CR-Mentor/pull/6"><strong>Code Review Demo</strong></a> ·
   <a href="https://ovlxxbdwimhigoejxkqn.supabase.co/storage/v1/object/public/test-bucket-api/Dify_DSL/CR-Mentor.yml"><strong>Workflow File Download</strong></a>
 </div>
 
@@ -42,12 +42,12 @@
 
 ## Tech Stack
 
-- 🔥 Build modern web applications using Next.js [App Router](https://nextjs.org/docs/app)
-- 🎨 Implement elegant responsive design with [Tailwind CSS](https://tailwindcss.com/)
-- 🔐 Provide secure and reliable user authentication with [Clerk](https://clerk.dev/)
-- 📦 Implement high-performance data storage with [Supabase](https://supabase.com/)
-- 🔗 Achieve GitHub deep integration using [Github App](https://github.com/apps/cr-mentor)
-- 🧠 Build intelligent LLM workflows with [Dify](https://dify.ai/)
+- 🧠 [Dify](https://dify.ai/) - Used for building intelligent LLM workflows
+- 🔥 [Next.js App Router](https://nextjs.org/docs/app) - Used for building modern web applications
+- 🎨 [Tailwind CSS](https://tailwindcss.com/) - Used for implementing elegant responsive design
+- 🔐 [Clerk](https://clerk.dev/) - Used for providing secure and reliable user authentication
+- 📦 [Supabase](https://supabase.com/) - Used for implementing high-performance data storage
+- 🔗 [Github App](https://github.com/apps/cr-mentor) - Used for achieving GitHub deep integration
 
 ## Deployment Guide
 You can deploy this template by setting up the following services and adding their corresponding environment variables:

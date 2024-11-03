@@ -1,9 +1,9 @@
 "use client";
 import Image from "next/image";
-import { MdMenu } from "react-icons/md";
 import { useEffect, useState } from "react";
 import ThemeToggle from "./themeToggle";
 import LangSwitch from "./langSwitch";
+import { GithubOutlined } from "@ant-design/icons";
 
 import { usePathname } from "next/navigation";
 import { defaultLocale } from "@/lib/i18n";
@@ -38,7 +38,7 @@ export default function Navbar() {
         <Image
           width={200}
           height={200}
-          src={"/CR-Mentor-logo.gif"}
+          src={"/logo.gif"}
           className="transition-all hover:scale-110 w-6 md:w-10 h-6 md:h-10"
           alt="logo"
         ></Image>
@@ -64,15 +64,16 @@ export default function Navbar() {
       </ul>
 
       <div className="md:w-1/5 flex items-center justify-end gap-2">
-        {/* <label className='flex items-center justify-center md:bg-base-100 md:rounded-full w-5 md:w-8 h-5 md:h-8 md:shadow-sm md:hover:shadow-md transition-all'>
+        <label className='flex items-center justify-center md:bg-base-100 md:rounded-full w-5 md:w-8 h-5 md:h-8 md:shadow-sm md:hover:shadow-md transition-all'>
 					<a
-						aria-label='get template source code'
-						title='get template source code'
-						href='https://github.com/huglemon/inwind-landing-page'
+						aria-label='get source code'
+						title='get source code'
+						href='https://github.com/Gijela/CR-Mentor'
+            target="_blank"
 					>
-						<SiComicfury size={14} />
+            <GithubOutlined  />
 					</a>
-				</label> */}
+        </label>
         <ThemeToggle />
         <LangSwitch />
         {/* <details className="flex md:hidden dropdown dropdown-end">
