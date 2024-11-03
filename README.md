@@ -17,7 +17,7 @@
 
 <div align="center" style="margin-top: 12px;">
   <a href="https://cr-mentor.top/"><strong>Live Demo</strong></a> ·
-  <a href="https://github.com/Gijela/CR-Mentor/pull/1"><strong>Code Review Demo</strong></a> ·
+  <a href="https://github.com/Gijela/CR-Mentor/pull/6"><strong>Code Review Demo</strong></a> ·
   <a href="https://ovlxxbdwimhigoejxkqn.supabase.co/storage/v1/object/public/test-bucket-api/Dify_DSL/CR-Mentor.yml"><strong>Workflow File Download</strong></a>
 </div>
 
