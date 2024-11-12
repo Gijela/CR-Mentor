@@ -1,4 +1,4 @@
-import { getFileList, getRepoFile, postRepoFile } from "@/lib/utils/supabase";
+import { getFileList, getRepoFile, postRepoFile } from "../../lib/utils/supabase";
 import { useUser } from "@clerk/nextjs";
 import { Button, Descriptions, Drawer, Form, message, Row, Select } from "antd";
 import { useEffect, useState } from "react";

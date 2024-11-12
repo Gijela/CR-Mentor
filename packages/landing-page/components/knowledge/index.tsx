@@ -14,7 +14,7 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useUser } from "@clerk/nextjs";
-import { downloadFile, getFileList, uploadFile } from "@/lib/utils/supabase";
+import { downloadFile, getFileList, uploadFile } from "../../lib/utils/supabase";
 
 import ReactMarkdown from "react-markdown";
 const { Title } = Typography;

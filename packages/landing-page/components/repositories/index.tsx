@@ -17,7 +17,7 @@ import {
   PlusOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import { getLangFromUrl, getRepos, handleInstall } from "@/lib/utils";
+import { getLangFromUrl, getRepos, handleInstall } from "../../lib/utils";
 import { useUser } from "@clerk/nextjs";
 import RepoDrawer from "./RepoDrawer";
 const { Title } = Typography;
