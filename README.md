@@ -17,7 +17,7 @@
 
 <div align="center" style="margin-top: 12px;">
   <a href="https://cr-mentor.top/"><strong>Live Demo</strong></a> ·
-  <a href="https://github.com/Gijela/CR-Mentor/pull/35"><strong>Code Review Demo</strong></a> ·
+  <a href="https://github.com/Gijela/CR-Mentor/pull/6"><strong>Code Review Demo</strong></a> ·
   <a href="https://ovlxxbdwimhigoejxkqn.supabase.co/storage/v1/object/public/test-bucket-api/Dify_DSL/CR-Mentor.yml"><strong>Workflow File Download</strong></a>
 </div>
 
@@ -42,12 +42,64 @@
 
 ## Tech Stack
 
-- 🔥 Build modern web applications using Next.js [App Router](https://nextjs.org/docs/app)
-- 🎨 Implement elegant responsive design with [Tailwind CSS](https://tailwindcss.com/)
-- 🔐 Provide secure and reliable user authentication with [Clerk](https://clerk.dev/)
-- 📦 Implement high-performance data storage with [Supabase](https://supabase.com/)
-- 🔗 Achieve GitHub deep integration using [Github App](https://github.com/apps/cr-mentor)
-- 🧠 Build intelligent LLM workflows with [Dify](https://dify.ai/)
+- 🧠 [Dify](https://dify.ai/) - Used for building intelligent LLM workflows
+- 🔥 [Next.js App Router](https://nextjs.org/docs/app) - Used for building modern web applications
+- 🎨 [Tailwind CSS](https://tailwindcss.com/) - Used for implementing elegant responsive design
+- 🔐 [Clerk](https://clerk.dev/) - Used for providing secure and reliable user authentication
+- 📦 [Supabase](https://supabase.com/) - Used for implementing high-performance data storage
+- 🔗 [Github App](https://github.com/apps/cr-mentor) - Used for achieving GitHub deep integration
+
+## Work Principle
+
+```mermaid
+sequenceDiagram
+    actor Developer
+    participant GitHub
+    participant CR-Mentor
+    participant Custom API
+    participant Code Analyzer
+    participant LLM
+    participant Knowledge Base
+    participant GitHub API
+
+    Developer->>GitHub: 1. Create Pull Request
+    GitHub->>CR-Mentor: 2. Trigger Webhook
+    CR-Mentor->>Custom API: 3. Call Configured Custom API
+    
+    %% Get Code Changes Phase
+    Custom API->>GitHub API: 4. Get PR Information
+    GitHub API-->>Custom API: 5. Return PR Basic Info
+    Custom API->>GitHub API: 6. Get All Code Changes(diff)
+    GitHub API-->>Custom API: 7. Return Code Changes List
+    
+    %% Code Analysis and Review Phase
+    Custom API->>Code Analyzer: 8. Parse Code Changes
+    Code Analyzer-->>Custom API: 9. Return Structured Code Changes
+    
+    loop For Each Code File Change
+        Custom API->>LLM: 10. Identify Code Language
+        LLM-->>Custom API: 11. Return Language Type
+        
+        Custom API->>Knowledge Base: 12. Get Language-Specific Code Standards
+        Knowledge Base-->>Custom API: 13. Return Code Standards
+        
+        Custom API->>LLM: 14. Send Code Changes and Standards for Review
+        Note over Custom API,LLM: Context Provided:<br/>1. Code Changes<br/>2. Language Standards<br/>3. Review Requirements
+        LLM-->>Custom API: 15. Return Standards-Based Review Results
+        
+        Custom API->>GitHub API: 16. Create Line-Level Comments
+        GitHub API-->>GitHub: 17. Display Code Comments
+    end
+    
+    %% Generate Summary Report
+    Custom API->>LLM: 18. Send All Review Results
+    LLM-->>Custom API: 19. Generate Summary Report
+        Note over LLM,Custom API: Including:<br/>1. Walkthrough<br/>2. Changes<br/>3. Sequence Diagram
+    
+    Custom API->>GitHub API: 20. Submit Summary Comment to PR
+    GitHub API-->>GitHub: 21. Display Summary Comment
+    GitHub-->>Developer: 22. Developer Views Complete Review Results
+```
 
 ## Deployment Guide
 You can deploy this template by setting up the following services and adding their corresponding environment variables:
