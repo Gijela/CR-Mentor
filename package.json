@@ -12,7 +12,9 @@
     "dashboard": "pnpm --filter dashboard run dev",
     "start": "pnpm -r --parallel start",
     "clean": "pnpm -r --parallel clean",
-    "build:all": "pnpm clean && pnpm build"
+    "build:all": "pnpm clean && pnpm build",
+    "install:NodeServer": "cd packages/NodeServer && pnpm install",
+    "start:NodeServer": "cd packages/NodeServer && pnpm start"
   },
   "repository": {
     "type": "git",

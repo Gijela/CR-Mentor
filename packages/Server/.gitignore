@@ -1,0 +1,11 @@
+
+# dependencies
+/node_modules
+.env
+
+# logs
+error.log
+combined.log
+
+# uploads
+uploads/
