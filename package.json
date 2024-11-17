@@ -13,8 +13,8 @@
     "start": "pnpm -r --parallel start",
     "clean": "pnpm -r --parallel clean",
     "build:all": "pnpm clean && pnpm build",
-    "install:NodeServer": "cd packages/NodeServer && pnpm install",
-    "start:NodeServer": "cd packages/NodeServer && pnpm start"
+    "install:server": "cd packages/server && pnpm add koa-body",
+    "start:server": "cd packages/server && pnpm dev"
   },
   "repository": {
     "type": "git",
