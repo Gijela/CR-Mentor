@@ -6,15 +6,16 @@
   "scripts": {
     "dev": "pnpm -r --parallel dev",
     "dev:landing": "pnpm --filter landingPage dev",
-    "dev:dashboard": "pnpm --filter dashboard dev",
     "build": "pnpm -r --parallel build",
     "landingPage": "pnpm --filter landingPage run dev",
     "dashboard": "pnpm --filter dashboard run dev",
     "start": "pnpm -r --parallel start",
     "clean": "pnpm -r --parallel clean",
     "build:all": "pnpm clean && pnpm build",
-    "install:server": "cd packages/server && pnpm add koa-body",
-    "start:server": "cd packages/server && pnpm dev"
+    "install:dashboard": "pnpm --filter dashboard install",
+    "start:dashboard": "pnpm --filter dashboard dev",
+    "install:server": "pnpm --filter server install",
+    "start:server": "pnpm --filter server dev"
   },
   "repository": {
     "type": "git",
