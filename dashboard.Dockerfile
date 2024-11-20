@@ -1,25 +1,31 @@
-FROM node:18-alpine AS builder
+FROM node:21.7-alpine AS builder
 WORKDIR /app
 
-# 清理已存在的 node_modules（如果有的话）
-RUN rm -rf node_modules
+# 安装 pnpm
+RUN npm install -g pnpm
 
-# 复制 package.json 文件
-COPY package*.json ./
-COPY packages/dashboard/package*.json ./packages/dashboard/
+# 复制 package.json 并安装依赖
+COPY packages/dashboard/package.json ./
+RUN pnpm install
 
-# 切换到 dashboard 目录并安装依赖
-WORKDIR /app/packages/dashboard
-RUN rm -rf node_modules && npm install
-
-# 复制源代码（确保 .dockerignore 正确配置）
+# 复制其他源文件
 COPY packages/dashboard ./
 
-# 构建应用
-RUN npm run build
+RUN pnpm run build
 
-# 生产环境
-FROM nginx:alpine
-COPY --from=builder /app/packages/dashboard/dist /usr/share/nginx/html
+FROM nginx:1.24-alpine
+
+RUN echo 'server { \
+    listen 80; \
+    location / { \
+        root /usr/share/nginx/html; \
+        index index.html index.htm; \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"] 
+
+CMD ["nginx", "-g", "daemon off;"]

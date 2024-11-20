@@ -1,18 +1,18 @@
-services:
-  landing-page:
-    ports:
-      - "3000:3000"
-    build:
-      context: .
-      dockerfile: landingPage.Dockerfile
-    environment:
-      - NODE_ENV=development
+# services:
+#   landing-page:
+#     ports:
+#       - "3000:3000"
+#     build:
+#       context: .
+#       dockerfile: landingPage.Dockerfile
+#     environment:
+#       - NODE_ENV=development
 
-  dashboard:
-    build:
-      context: .
-      dockerfile: dashboard.Dockerfile
-    ports:
-      - "5173:80"
-    environment:
-      - NODE_ENV=development
+#   dashboard:
+#     build:
+#       context: .
+#       dockerfile: dashboard.Dockerfile
+#     ports:
+#       - "5173:80"
+#     environment:
+#       - NODE_ENV=development
