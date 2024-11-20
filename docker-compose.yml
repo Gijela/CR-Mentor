@@ -4,14 +4,14 @@ services:
       - "3000:3000"
     build:
       context: .
-      dockerfile: packages/landing-page/Dockerfile
+      dockerfile: landingPage.Dockerfile
     environment:
       - NODE_ENV=development
 
   dashboard:
     build:
       context: .
-      dockerfile: packages/dashboard/Dockerfile
+      dockerfile: dashboard.Dockerfile
     ports:
       - "5173:80"
     environment:
