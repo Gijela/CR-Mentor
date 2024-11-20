@@ -1,21 +1,18 @@
 import { ChatOpenAI } from "langchain/chat_models/openai";
+import { initializeAgentExecutorWithOptions } from "langchain/agents";
 import { PULL_REQUEST_ROLE } from "../prompts/pull_request";
-import { SystemMessage, HumanMessage, MessageContent } from "langchain/schema";
 import dotenv from "dotenv";
-
+import { CreatePRSummaryTool, CreateReviewCommentTool } from "../tools/pr";
+import { MessageContent } from "langchain/schema";
 dotenv.config();
 
-const llm = new ChatOpenAI({
-  configuration: {
-    apiKey: process.env.OPENAI_API_KEY,
-    baseURL: process.env.OPENAI_API_BASE,
-  },
-  modelName: "deepseek-ai/DeepSeek-V2.5",
-  temperature: 0.7,
-});
+const tools = [
+  new CreatePRSummaryTool(),
+  // new CreateReviewCommentTool(process.env.GITHUB_TOKEN as string)
+];
 
 /**
- * 分析代码变更并生成审查评论。
+//  * 分析代码变更并生成审查评论。
  * @param {string} repo_name - 仓库名称
  * @param {string} pull_number - PR编号
  * @param {string} title - PR标题
@@ -30,24 +27,39 @@ export async function analyzeCodeChange(
   description: string,
   combinedDiff: string
 ): Promise<MessageContent> {
-  const promptTemplate = PULL_REQUEST_ROLE(repo_name, pull_number, title, description)
+  const llm = new ChatOpenAI({
+    configuration: {
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.OPENAI_API_BASE,
+    },
+    modelName: "deepseek-ai/DeepSeek-V2.5",
+    temperature: 0.7,
+  });
 
-  try {
-    const response = await llm.call([
-      new SystemMessage(promptTemplate),
-      new HumanMessage(`
-        ### Pr Title
-        ${title}
-        ### Pr Description
-        ${description}
-        ### File Diff
-        ${combinedDiff}
-      `)
-    ]);
+  const executor = await initializeAgentExecutorWithOptions(
+    tools,
+    llm,
+    {
+      agentType: "structured-chat-zero-shot-react-description",
+      verbose: true,
+      handleParsingErrors: true,
+      returnIntermediateSteps: true
+    }
+  );
 
-    return response.content
-  } catch (error) {
-    console.error("代码审查分析失败:", error);
-    return "代码审查过程中发生错误，请稍后重试。";
-  }
+  const promptTemplate = PULL_REQUEST_ROLE(repo_name, pull_number, title, description);
+
+  const result = await executor.call({
+    input: `
+      ### PR Title
+      ${title}
+      ### PR Description 
+      ${description}
+      ### File Diff
+      ${combinedDiff}
+    `,
+    chat_history: []
+  });
+
+  return result.output;
 }

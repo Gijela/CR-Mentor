@@ -54,16 +54,11 @@ interface GithubHeaders {
 }
 
 // 工具函数：创建 GitHub API 请求头
-const createGithubHeaders = (token: string): GithubHeaders => ({
+export const createGithubHeaders = (token: string): GithubHeaders => ({
   Authorization: `Bearer ${token}`,
   "X-GitHub-Api-Version": "2022-11-28",
   Accept: "application/vnd.github+json",
 });
-
-// 添加获取文件sha的辅助函数
-const getFileRef = (file: any): string => {
-  return file.sha || "unknown";
-};
 
 router.post("/github/code-review", async (ctx) => {
   try {
@@ -80,7 +75,7 @@ router.post("/github/code-review", async (ctx) => {
 
     try {
       // 对整体进行代码审查
-      const reviewRes: MessageContent = await analyzeCodeChange(
+      const reviewRes = await analyzeCodeChange(
         inputDify.repo_name,
         inputDify.pr_idx,
         inputDify.title,
@@ -88,19 +83,25 @@ router.post("/github/code-review", async (ctx) => {
         combinedDiff
       );
 
+      console.log("🚀 ~ 处理完成")
+
+      // 解析返回结果
+      // const { summary, comments } = JSON.parse(reviewRes);
+
       const token = await createToken(inputDify.user_name);
-      const headers = createGithubHeaders(token) as unknown as AxiosHeaders;
+      // console.log("🚀 ~ router.post ~ token:", token)
+      // const headers = createGithubHeaders(token) as unknown as AxiosHeaders;
 
-      // 创建 PR 整体评论
-      await post(
-        `https://api.github.com/repos/${inputDify.repo_fullName}/issues/${inputDify.pr_idx}/comments`,
-        { body: reviewRes },
-        { headers }
-      );
+      // // 创建 PR 整体评论
+      // await post(
+      //   `https://api.github.com/repos/${inputDify.repo_fullName}/issues/${inputDify.pr_idx}/comments`,
+      //   { body: summary },
+      //   { headers }
+      // );
 
-      // 创建具体文件评论
-      // if (reviewRes.fileComments) {
-      //   for (const comment of reviewRes.fileComments) {
+      // // 创建具体文件评论
+      // if (comments && comments.length > 0) {
+      //   for (const comment of comments) {
       //     const comment_params = {
       //       body: comment.content,
       //       commit_id: commits[commits.length - 1].sha,

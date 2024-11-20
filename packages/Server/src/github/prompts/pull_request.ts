@@ -27,10 +27,16 @@ title: ${title}
 description: ${description}
 
 ## Task 1: Summarize the Pull Request
-Using create_pr_summary tool to create PR summary.
-Provider your response with the following content. follow the user's language.
-  - **Walkthrough**:  A high-level summary of the overall change instead of specific files within 80 words.
-  - **Changes**: A markdown table of files and their summaries. Group files with similar changes together into a single row to save space.
+You must use the create_pr_summary tool to create a PR summary with the following format:
+{
+  "user_name": "Gijela",
+  "repo_name": "${repo_name}",
+  "pull_number": "${pull_number}",
+  "summary": {
+    "walkthrough": "A high-level summary of the overall change within 80 words",
+    "changes": "A list of key changes in bullet points"
+  }
+}
 
 ## Task 2: Code Review
 
