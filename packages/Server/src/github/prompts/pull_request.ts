@@ -27,29 +27,13 @@ title: ${title}
 description: ${description}
 
 ## Task 1: Summarize the Pull Request
-You must use the create_pr_summary tool to create a PR summary with the following format:
-{
+You must use the create_pr_summary tool to create a PR summary with the following format Object:
   "user_name": "Gijela",
   "repo_name": "${repo_name}",
   "pull_number": "${pull_number}",
-  "summary": {
+  "summary": Object included walkthrough and changes
     "walkthrough": "A high-level summary of the overall change within 80 words",
     "changes": "A list of key changes in bullet points"
-  }
-}
-
-## Task 2: Code Review
-
-Review the diff for significant errors in the updated files. Focus exclusively on logical, functional issues, or security vulnerabilities. Avoid comments on stylistic changes, minor refactors, or insignificant issues.
-
-### Specific instructions:
-
-- Take into account that you don't have access to the full code but only the code diff.
-- Only comment on code that introduces potential functional or security errors.
-- If no critical issues are found in the changes, do not provide any comments.
-- Provide code examples if necessary for critical fixes.
-- Follow the coding conventions of the language in the PR.
-- After completing the tasks, only output "All task finished".
 
 ### Input format
 

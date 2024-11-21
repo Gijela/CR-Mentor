@@ -16,43 +16,57 @@ interface PRSummaryInput {
 class CreatePRSummaryTool extends Tool {
   name = "create_pr_summary";
   description = `当需要在 GitHub PR 上创建总结评论时使用此工具。
-    输入格式必须是包含以下字段的 JSON 字符串：
-    - user_name: GitHub 用户名
-    - repo_name: 仓库名称
-    - pull_number: PR 编号
-    - summary: 包含 walkthrough 和 changes 的对象`;
+    输入格式必须是包含以下字段的对象：
+      "action": "create_pr_summary",
+      "action_input": {
+        "user_name": "用户名",
+        "repo_name": "仓库名",
+        "pull_number": "PR编号",
+        "summary": {
+          "walkthrough": "概述",
+          "changes": "变更列表"
+        }
+      }
+    `;
 
   constructor() {
     super();
   }
 
-  async _call(input: string): Promise<string> {
-    console.log("tool input ========>", input);
+  async _call(input: any): Promise<string> {
+    console.log("工具输入类型:", typeof input);
+    console.log("工具输入内容:", input);
+    
     if (!input) {
       return "创建 PR 总结失败: 输入不能为空";
     }
 
     try {
-      const { user_name, repo_name, pull_number, summary } = JSON.parse(input) as PRSummaryInput;
+      const parsedInput = typeof input === 'string' ? JSON.parse(input) : input;
+      const data = parsedInput.action_input || parsedInput;
+      
+      if (!data.user_name || !data.repo_name || !data.pull_number || !data.summary) {
+        throw new Error('缺少必要的输入字段');
+      }
 
       // 格式化评论内容
       const commentBody = `
         ## PR 总结
 
-        ${summary.walkthrough}
+        ${data.summary.walkthrough}
         
 
         ## 变更详情
 
-        ${summary.changes}
+        ${data.summary.changes}
       `;
 
-      const token = await createToken(user_name);
+      const token = await createToken(data.user_name);
       console.log("🚀 ~ CreatePRSummaryTool ~ _call ~ token:", token)
 
       // 创建 PR 评论
       await axios.post(
-        `https://api.github.com/repos/${repo_name}/issues/${pull_number}/comments`,
+        `https://api.github.com/repos/${data.repo_name}/issues/${data.pull_number}/comments`,
         {
           body: commentBody
         },
