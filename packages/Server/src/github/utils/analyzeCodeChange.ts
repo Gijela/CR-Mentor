@@ -1,126 +1,151 @@
-import { ChatOpenAI } from "langchain/chat_models/openai";
-import { LLMSingleActionAgent } from "langchain/agents";
-import { LLMChain } from "langchain/chains";
-import { AgentExecutor } from "langchain/agents";
-import { PULL_REQUEST_ROLE } from "../prompts/pull_request";
-import dotenv from "dotenv";
-import { CreatePRSummaryTool, CreateReviewCommentTool } from "../tools/pr";
-import { MessageContent } from "langchain/schema";
-import { ChatPromptTemplate, SystemMessagePromptTemplate } from "langchain/prompts";
-import { BaseOutputParser } from "langchain/schema/output_parser";
-import { AgentAction, AgentFinish } from "langchain/schema";
-dotenv.config();
+import { ChatOpenAI } from "@langchain/openai";
+import { tool } from "@langchain/core/tools";
+import { z } from "zod";
+import axios, { AxiosHeaders } from "axios";
+import { createToken } from "../utils/createToken";
+import { createGithubHeaders } from "../codeReview";
+import {
+  ChatPromptTemplate,
+  MessagesPlaceholder,
+} from "@langchain/core/prompts";
 
-const tools = [
-  new CreatePRSummaryTool(),
-  // new CreateReviewCommentTool(process.env.GITHUB_TOKEN as string)
-];
-
-// 添加自定义输出解析器
-class CustomJsonOutputParser extends BaseOutputParser<AgentAction | AgentFinish> {
-  lc_namespace = ["custom", "json"];
-  
-  getFormatInstructions(): string {
-    return `
-      输入格式必须是包含以下字段的对象：
-      - user_name: GitHub 用户名
-      - repo_name: 仓库名称
-      - pull_number: PR 编号
-      - summary: 包含 walkthrough 和 changes 的对象
-    `;
-  }
-
-  async parse(text: string): Promise<AgentAction | AgentFinish> {
-    console.log("🚀 ~ CustomJsonOutputParser ~ parse ~ text:", text);
+const createPRSummary = tool(
+  async (input) => {
+    console.log("🚀 ~ input:", input)
     try {
-      const cleanedText = text.replace(/```json\n|\n```/g, '').trim();
-      console.log("🚀 ~ CustomJsonOutputParser ~ parse ~ cleanedText:", typeof cleanedText, cleanedText)
-      const parsed = JSON.parse(cleanedText);
-      console.log("🚀 ~ CustomJsonOutputParser ~ parse ~ parsed:", typeof parsed, parsed)
-      
-      if (parsed.summary) {
-        return {
-          tool: "create_pr_summary",
-          toolInput: parsed.summary,
-          log: text
-        } as AgentAction;
-      }
-      
-      // if (parsed.comments) {
-      //   return {
-      //     tool: "create_review_comment",
-      //     toolInput: parsed.comments,
-      //     log: text
-      //   } as AgentAction;
-      // }
+      const { user_name = 'Gijela', repo_name, pull_number, summary } = input;
 
-      throw new Error("输出格式不符合要求");
-    } catch (e) {
-      console.error("解析失败:", e);
-      throw e;
+      const commentBody = `
+        ## PR 总结
+
+        ${summary.walkthrough}
+        
+        ## 变更详情
+
+        ${summary.changes}
+      `;
+
+      const token = await createToken(user_name);
+      console.log("🚀 ~ token:", token)
+
+      await axios.post(
+        `https://api.github.com/repos/${repo_name}/issues/${pull_number}/comments`,
+        { body: commentBody },
+        { headers: createGithubHeaders(token) as unknown as AxiosHeaders }
+      );
+
+      return "PR 总结已创建";
+    } catch (error: any) {
+      return `创建 PR 总结失败: ${error.message}`;
     }
+  },
+  {
+    name: "create_pr_summary",
+    description: "当需要在 GitHub PR 上创建总结评论时使用此工具。",
+    schema: z.object({
+      user_name: z.string().describe("GitHub 用户名"),
+      repo_name: z.string().describe("仓库名称"),
+      pull_number: z.string().describe("PR 编号"),
+      summary: z.object({
+        walkthrough: z.string().describe("PR 的整体介绍"),
+        changes: z.string().describe("具体变更详情")
+      })
+    })
   }
-}
+);
 
-/**
-//  * 分析代码变更并生成审查评论。
- * @param {string} repo_name - 仓库名称
- * @param {string} pull_number - PR编号
- * @param {string} title - PR标题
- * @param {string} description - PR描述
- * @param {string} combinedDiff - GitHub的combinedDiff字符串，描述了代码的变更。
- * @returns {Promise<MessageContent>} - 返回生成的审查评论。
- */
+const tools = [createPRSummary];
+
+const prompt = ChatPromptTemplate.fromMessages([
+  [
+    "system",
+    `你是一个代码审查助手，负责分析 GitHub Pull Request 的变更并生成总结。
+    
+    当前 PR 信息：
+    - 仓库：{repo_name}
+    - PR 编号：{pull_number}
+    - 标题：{title}
+    - 描述：{description}
+    - 用户名：{user_name}
+    
+    请分析提供的代码变更，并生成一个清晰的总结。`
+  ],
+  new MessagesPlaceholder("chat_history"),
+  ["human", "{input}"],
+  new MessagesPlaceholder("agent_scratchpad"),
+]);
+
 export async function analyzeCodeChange(
   repo_name: string,
   pull_number: string,
   title: string,
   description: string,
-  combinedDiff: string
-): Promise<MessageContent> {
-  const llm = new ChatOpenAI({
-    configuration: {
-      apiKey: process.env.OPENAI_API_KEY,
-      baseURL: process.env.OPENAI_API_BASE,
-    },
-    modelName: "deepseek-ai/DeepSeek-V2.5",
-    temperature: 0.7,
-  });
+  combinedDiff: string,
+  user_name: string = 'Gijela'
+) {
+  console.log("🚀 ~ analyzeCodeChange ~ repo_name:", repo_name)
 
-  // 创建 LLM Chain
-  const llmChain = new LLMChain({
-    llm,
-    prompt: ChatPromptTemplate.fromMessages([
-      SystemMessagePromptTemplate.fromTemplate(
-        PULL_REQUEST_ROLE(repo_name, pull_number, title, description)
-      )
-    ])
-  });
+  try {
+    const llm = new ChatOpenAI({
+      configuration: {
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.OPENAI_API_BASE,
+      },
+      modelName: "deepseek-ai/DeepSeek-V2.5",
+      temperature: 0.7,
+      maxTokens: -1,
+    });
 
-  // 使用自定义 Agent
-  const agent = new LLMSingleActionAgent({
-    llmChain,
-    outputParser: new CustomJsonOutputParser(),
-    stop: ["\nObservation:"]
-  });
-
-  const executor = new AgentExecutor({
-    agent,
-    tools,
-    verbose: true
-  });
-
-  const result = await executor.call({
-    input: `
-      ### PR Title
-      ${title}
-      ### PR Description 
-      ${description}
-      ### File Diff
+    // 首先使用 LLM 生成总结
+    const summaryResponse = await llm.invoke(`
+      分析以下 PR 变更并生成总结：
+      
+      标题: ${title}
+      描述: ${description}
+      代码变更:
       ${combinedDiff}
-    `,
-    chat_history: []
-  });
+      
+      请生成两部分内容：
+      1. 整体介绍（walkthrough）
+      2. 具体变更详情（changes）
+      
+      以 JSON 格式返回，包含 walkthrough 和 changes 两个字段。
+    `);
+    console.log("🚀 ~ summaryResponse:", summaryResponse)
 
-  return result.output;
+    // 解析 LLM 返回的总结
+    // 尝试从 LLM 返回的字符串中提取 JSON 对象
+    let parsedResponse;
+    try {
+      // 移除可能的前缀和后缀空白字符
+      const cleanedResponse = (summaryResponse.content as string).trim();
+
+      // 如果响应以 ```json 开头，移除它
+      const jsonContent = cleanedResponse.replace(/^```json\n/, '').replace(/\n```$/, '');
+
+      parsedResponse = JSON.parse(jsonContent);
+    } catch (error) {
+      console.error('解析 LLM 响应失败:', error);
+      throw new Error('无法解析 LLM 返回的 JSON 响应');
+    }
+    const summary = parsedResponse;
+    console.log("🚀 ~ summary:", typeof summary, summary)
+
+    // 直接调用 createPRSummary 工具
+    // const result = await createPRSummary.call({
+    //   user_name,
+    //   repo_name,
+    //   pull_number,
+    //   summary: {
+    //     walkthrough: summary.walkthrough,
+    //     changes: summary.changes
+    //   }
+    // });
+    // console.log("🚀 ~ result:", result)
+
+    return summary;
+  } catch (error) {
+    console.error("分析代码变更失败:", error);
+    return "分析代码变更失败";
+  }
 }

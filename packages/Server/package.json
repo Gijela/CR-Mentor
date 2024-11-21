@@ -11,6 +11,7 @@
     "@koa/multer": "^3.0.2",
     "@koa/router": "^12.0.1",
     "@langchain/core": "^0.3.18",
+    "@langchain/openai": "^0.3.14",
     "@supabase/supabase-js": "^2.46.1",
     "axios": "^1.7.7",
     "dotenv": "^16.3.1",
@@ -19,8 +20,9 @@
     "koa-body": "^6.0.1",
     "koa-bodyparser": "^4.4.1",
     "koa-router": "^13.0.1",
-    "langchain": "^0.0.200",
-    "winston": "^3.11.0"
+    "langchain": "0.3.5",
+    "winston": "^3.11.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.7",

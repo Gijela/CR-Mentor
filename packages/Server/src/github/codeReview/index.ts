@@ -4,7 +4,7 @@ import { createToken } from "../utils/createToken";
 import dotenv from "dotenv";
 import { AxiosHeaders } from "axios";
 import { analyzeCodeChange } from "../utils/analyzeCodeChange";
-import { MessageContent } from "langchain/schema";
+// import { MessageContent } from "langchain/schema";
 
 dotenv.config();
 
@@ -116,7 +116,7 @@ router.post("/github/code-review", async (ctx) => {
       //   }
       // }
 
-      ctx.body = { success: true };
+      ctx.body = { success: true, reviewRes };
       ctx.status = 200;
     } catch (error) {
       console.error("代码审查过程出错:", error);
