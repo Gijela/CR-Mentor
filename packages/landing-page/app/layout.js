@@ -37,7 +37,7 @@ export default async function RootLayout({ children }) {
         <ClerkProvider>
           <ThemeProvider>
             <div className="w-full min-h-screen text-base-content bg-base-100">
-              <Navbar />
+              {/* <Navbar /> */}
               <div>{children}</div>
               {/* <Footer /> */}
             </div>
