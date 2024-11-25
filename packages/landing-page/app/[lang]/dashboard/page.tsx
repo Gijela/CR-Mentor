@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 
-import Sidebar from "@/components/dashboard/SideBar";
-import Header from "@/components/dashboard/Header";
+import Sidebar from "@/components/SideBar";
+// import Header from "@/components/dashboard/Header";
 import Banner from "@/components/dashboard/Banner";
-import Home from "@/components/dashboard/Home";
-import { sidebarItems } from "@/components/dashboard/SideBar/config";
+// import Home from "@/components/dashboard/Home";
+import { sidebarItems } from "@/components/SideBar/config";
 
 function Dashboard() {
   // 当前选中项

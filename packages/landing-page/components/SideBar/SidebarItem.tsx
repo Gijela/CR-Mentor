@@ -1,5 +1,5 @@
 import React from "react";
-import SidebarLinkGroup from "../SidebarLinkGroup";
+import SidebarLinkGroup from "./SidebarLinkGroup";
 
 interface SidebarItemProps {
   menuData: {
