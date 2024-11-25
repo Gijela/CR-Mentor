@@ -19,17 +19,18 @@
     "@types/jsonwebtoken": "^9.0.7",
     "antd": "^5.20.3",
     "framer-motion": "^11.2.12",
+    "hox": "^2.1.1",
     "jsonwebtoken": "^9.0.2",
     "negotiator": "^0.6.3",
     "next": "14.2.4",
     "next-sitemap": "^4.2.3",
-		"react": "^18",
-		"react-dom": "^18",
-		"react-icons": "^5.2.1",
-		"react-markdown": "^9.0.1"
-	},
-	"devDependencies": {
-		"@types/node": "20.14.10",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-icons": "^5.2.1",
+    "react-markdown": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
     "@types/react": "18.3.3",
     "daisyui": "^4.11.1",
     "eslint": "^8",

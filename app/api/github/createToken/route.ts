@@ -9,7 +9,7 @@ ${process.env.GITHUB_PRIVATE_KEY}
 `
 
 export async function POST(req: Request) {
-  const { githubId } = await req.json();
+  const { githubName } = await req.json();
 
   const payload = {
     iat: Math.floor(Date.now() / 1000), // 签发时间
@@ -21,32 +21,32 @@ export async function POST(req: Request) {
     // 1. 通过私钥文件生成 JWT
     const jwtToken = jwt.sign(payload, privateKey, { algorithm: "RS256" });
 
-    // 2. 获取所有已安装用户的信息
-    const installationsResponse = await fetch("https://api.github.com/app/installations", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-        Accept: "application/vnd.github.v3+json",
+    // 2. 获取 githubName 对应用户的 installationId
+    const installationsResponse = await fetch(
+      `https://api.github.com/users/${githubName}/installation`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          Accept: 'application/vnd.github.v3+json',
+        },
       }
-    });
-    const installations = await installationsResponse.json();
-    const { access_tokens_url, account } = installations.find(
-      (item) => item.account.node_id === githubId
     );
-    console.log("access_tokens_url:", access_tokens_url);
+    const { id: installationId } = await installationsResponse.json();
 
-    // 3. 获取 githubId 对应用户的 token
-    const response = await fetch(access_tokens_url, {
-      method: 'POST',
+    // 3. 获取 githubName 对应用户的 token
+    const access_tokens_url = `https://api.github.com/app/installations/${installationId}/access_tokens`
+    const accessTokenResponse = await fetch(access_tokens_url, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${jwtToken}`,
-        Accept: "application/vnd.github.v3+json",
+        Accept: 'application/vnd.github.v3+json',
       },
     });
-    const { token } = await response.json();
+    const { token }: { token: string } = await accessTokenResponse.json();
 
-    return NextResponse.json({ success: true, token, account }, { status: 200 });
+    return NextResponse.json({ success: true, token, msg: 'create token success' }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ success: false, message: '生成 token 失败' }, { status: 500 });
+    return NextResponse.json({ success: false, msg: 'create token failed' }, { status: 500 });
   }
 }
