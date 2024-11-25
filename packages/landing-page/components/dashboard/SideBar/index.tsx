@@ -24,46 +24,6 @@ function Sidebar() {
     }
   }, [sidebarExpanded]);
 
-  // 当前选中项
-  const [selectedItemKey, setSelectedItemKey] = useState(sidebarItems[0].key);
-
-  // 刷新时使用 hash 来初始化选中项
-  useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    if (
-      hash &&
-      (sidebarItems.some((item) => item.key === hash) ||
-        sidebarItems.some((item) =>
-          item.children?.some((child) => child.key === hash)
-        ))
-    ) {
-      setSelectedItemKey(hash);
-    } else {
-      window.location.hash = sidebarItems[0].key;
-    }
-  }, []);
-
-  // 监听 hash 变化
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.slice(1);
-      if (
-        hash &&
-        (sidebarItems.some((item) => item.key === hash) ||
-          sidebarItems.some((item) =>
-            item.children?.some((child) => child.key === hash)
-          ))
-      ) {
-        setSelectedItemKey(hash);
-      }
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-    };
-  }, []);
-
   return (
     <div className="min-w-fit">
       {/* 侧边栏 */}
@@ -87,8 +47,8 @@ function Sidebar() {
         {/* [内容]菜单 */}
         <div className="space-y-8">
           <ul className="mt-3">
-            {sidebarItems.map((item) => (
-              <SidebarItem menuData={item} />
+            {sidebarItems.map((item, index) => (
+              <SidebarItem menuData={item} key={index} />
             ))}
           </ul>
         </div>

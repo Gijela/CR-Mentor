@@ -8,6 +8,7 @@ interface SidebarItemProps {
     icon: React.ReactNode;
     badge?: number;
     children?: { key: string; label: string }[];
+    defaultOpen?: boolean;
   };
 }
 
@@ -38,7 +39,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ menuData }) => {
           !isActive && "hover:text-gray-900 dark:hover:text-white"
         }`}
         onClick={() => {
-          updateHash(menuData.key);
+          if (!menuData.children) {
+            updateHash(menuData.key);
+          }
+
           converseArrow?.();
         }}
       >
@@ -87,7 +91,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ menuData }) => {
     <>
       {menuData.children && menuData.children?.length > 0 ? (
         // 含有子菜单
-        <SidebarLinkGroup activecondition={isActive}>
+        <SidebarLinkGroup
+          activecondition={isActive}
+          defaultOpen={menuData.defaultOpen}
+        >
           {(handleClick, open) => {
             return (
               <React.Fragment>
@@ -97,7 +104,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ menuData }) => {
                 <div className="lg:hidden lg:sidebar-expanded:block">
                   <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
                     {(menuData.children || []).map((child) => (
-                      <li className="mb-1 last:mb-0">
+                      <li className="mb-1 last:mb-0" key={child.key}>
                         <div
                           className={`block transition duration-150 truncate ${
                             hash === child.key
