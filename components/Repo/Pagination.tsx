@@ -1,10 +1,35 @@
-import React, { useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { useRepoStore } from "@/store/useRepo";
 
-const Pagination: React.FC<{
-  currentPage: number;
-  totalPages: number;
-  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
-}> = ({ currentPage, totalPages, setCurrentPage }) => {
+const Pagination: React.FC<{ searchTerm: string }> = ({ searchTerm }) => {
+  const { repositories, addFilteredRepository } = useRepoStore();
+
+  // 设置分页
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20; // 每页显示20条数据
+
+  // 计算分页数据
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  // 根据搜索词过滤仓库
+  const filteredRepositories = useMemo(() => {
+    return repositories.filter((repo) =>
+      repo.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [repositories, searchTerm]);
+
+  // 更新分页计算，使用过滤后的数据
+  const totalPages = Math.ceil(filteredRepositories.length / itemsPerPage);
+  const currentItems = filteredRepositories.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  useEffect(() => {
+    addFilteredRepository(currentItems);
+  }, [currentItems]);
+
   return (
     <div className="flex justify-center items-center space-x-2 mt-8 pb-8">
       <button

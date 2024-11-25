@@ -4,7 +4,8 @@ import { Repository } from "./interface";
 import { message } from "antd";
 
 const RepositoryList: React.FC = () => {
-  const { repositories, addRepository } = useRepoStore();
+  const { addRepository, filteredRepositories, addFilteredRepository } =
+    useRepoStore();
 
   const fetchAllRepos = async (githubName: string = "Gijela") => {
     const reposResponse = await fetch(`/api/github/getRepos`, {
@@ -27,20 +28,17 @@ const RepositoryList: React.FC = () => {
     }
 
     addRepository(data);
+    addFilteredRepository(data);
   };
 
   useEffect(() => {
     fetchAllRepos();
   }, []);
 
-  useEffect(() => {
-    console.log("🚀 39gh14hg~ repositories:", repositories);
-  }, [repositories]);
-
   return (
     <div className="space-y-6">
-      {repositories.length > 0 ? (
-        repositories.map((repo) => (
+      {filteredRepositories.length > 0 ? (
+        filteredRepositories.map((repo) => (
           <div key={repo.name} className="border-b pb-6">
             <div className="flex items-start justify-between">
               <div>

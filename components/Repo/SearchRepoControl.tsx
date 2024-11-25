@@ -1,13 +1,14 @@
+import { useRepoStore } from "@/store/useRepo";
 import { useEffect, useRef, useState } from "react";
 
 const SearchRepoControl: React.FC<{
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-  filteredRepositories: any[];
   setShowPRModal: React.Dispatch<React.SetStateAction<boolean>>;
-}> = ({ searchTerm, setSearchTerm, filteredRepositories, setShowPRModal }) => {
+}> = ({ searchTerm, setSearchTerm, setShowPRModal }) => {
   const searchInputRef = useRef(null);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const { filteredRepositories } = useRepoStore();
 
   // 添加点击外部关闭下拉框的处理
   useEffect(() => {
@@ -51,12 +52,12 @@ const SearchRepoControl: React.FC<{
                   <span className="font-medium">{repo.name}</span>
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${
-                      repo.isPublic
-                        ? "bg-gray-100 text-gray-600"
-                        : "bg-yellow-50 text-yellow-800"
+                      repo.private
+                        ? "bg-yellow-50 text-yellow-800"
+                        : "bg-gray-100 text-gray-600"
                     }`}
                   >
-                    {repo.isPublic ? "Public" : "Private"}
+                    {repo.private ? "Private" : "Public"}
                   </span>
                 </div>
                 {repo.description && (
