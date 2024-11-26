@@ -4,8 +4,12 @@ import { Repository } from "./interface";
 import { message } from "antd";
 
 const RepositoryList: React.FC = () => {
-  const { addRepository, filteredRepositories, addFilteredRepository } =
-    useRepoStore();
+  const {
+    repositories,
+    addRepository,
+    filteredRepositories,
+    addFilteredRepository,
+  } = useRepoStore();
 
   const fetchAllRepos = async (githubName: string = "Gijela") => {
     const reposResponse = await fetch(`/api/github/getRepos`, {
@@ -32,7 +36,9 @@ const RepositoryList: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchAllRepos();
+    if (!repositories.length) {
+      fetchAllRepos();
+    }
   }, []);
 
   return (

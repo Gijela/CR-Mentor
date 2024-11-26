@@ -8,7 +8,7 @@ const SearchRepoControl: React.FC<{
 }> = ({ searchTerm, setSearchTerm, setShowPRModal }) => {
   const searchInputRef = useRef(null);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const { filteredRepositories } = useRepoStore();
+  const { repositories } = useRepoStore();
 
   // 添加点击外部关闭下拉框的处理
   useEffect(() => {
@@ -25,6 +25,11 @@ const SearchRepoControl: React.FC<{
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const filteredRepos = repositories.filter((repo) => {
+    const searchLower = searchTerm.toLowerCase();
+    return repo.name.toLowerCase().includes(searchLower);
+  });
+
   return (
     <div className="flex items-center gap-4 pb-3 border-b mb-4">
       <div className="relative w-[480px]" ref={searchInputRef}>
@@ -37,9 +42,9 @@ const SearchRepoControl: React.FC<{
           className="w-full p-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
         />
         {/* 添加搜索下拉框 */}
-        {showSearchDropdown && filteredRepositories.length > 0 && (
+        {showSearchDropdown && repositories.length > 0 && (
           <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-auto">
-            {filteredRepositories.map((repo) => (
+            {filteredRepos.map((repo) => (
               <div
                 key={repo.name}
                 className="px-4 py-2 hover:bg-gray-100 cursor-pointer"

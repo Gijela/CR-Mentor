@@ -8,27 +8,34 @@ const Pagination: React.FC<{ searchTerm: string }> = ({ searchTerm }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20; // 每页显示20条数据
 
-  // 计算分页数据
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
-  // 根据搜索词过滤仓库
+  // 先根据搜索词过滤仓库
   const filteredRepositories = useMemo(() => {
+    const searchLower = searchTerm.toLowerCase();
     return repositories.filter((repo) =>
-      repo.name.toLowerCase().includes(searchTerm.toLowerCase())
+      repo.name.toLowerCase().includes(searchLower)
     );
   }, [repositories, searchTerm]);
 
-  // 更新分页计算，使用过滤后的数据
+  // 当搜索词改变时，重置页码到第一页
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // 计算分页数据
   const totalPages = Math.ceil(filteredRepositories.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  // 获取当前页的数据
   const currentItems = filteredRepositories.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
 
+  // 更新过滤后的仓库列表
   useEffect(() => {
     addFilteredRepository(currentItems);
-  }, [currentItems]);
+  }, [currentItems, searchTerm]);
 
   return (
     <div className="flex justify-center items-center space-x-2 mt-8 pb-8">

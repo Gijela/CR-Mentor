@@ -20,9 +20,13 @@ const SearchableSelect = ({
     }
   }, [value]);
 
-  const filteredOptions = options.filter((option) =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOptions = options.filter((option) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      option.label.toLowerCase().includes(searchLower) ||
+      option.value.toLowerCase().includes(searchLower)
+    );
+  });
 
   const handleOptionClick = (option) => {
     setSearchTerm(option.label);
