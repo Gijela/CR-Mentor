@@ -20,7 +20,7 @@ const Repositories = () => {
   }, []);
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto h-screen">
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto h-screen shadow-sm border-l border-gray-300">
       <RepoStoreProvider>
         <div className="bg-white max-w-7xl mx-auto px-4 flex flex-col h-full">
           <Header />

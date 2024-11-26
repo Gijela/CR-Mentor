@@ -28,7 +28,7 @@ function Sidebar() {
     <div className="min-w-fit">
       {/* 侧边栏 */}
       <div
-        className={`flex flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 shrink-0 bg-white dark:bg-gray-800 p-4 transition-all duration-200 ease-in-out shadow-sm border-r border-gray-300`}
+        className={`flex flex-col absolute z-40 left-0 top-0 lg:static lg:left-auto lg:top-auto lg:translate-x-0 h-[100dvh] overflow-y-scroll lg:overflow-y-auto no-scrollbar w-64 lg:w-20 lg:sidebar-expanded:!w-64 shrink-0 bg-white dark:bg-gray-800 p-4 transition-all duration-200 ease-in-out rounded-tr-xl rounded-br-xl shadow-sm`}
       >
         {/* [头部]Logo */}
         <div className="flex justify-between mb-10 pr-3 sm:px-2">
