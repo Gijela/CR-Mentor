@@ -66,30 +66,28 @@ function Dashboard() {
         {/* 主内容区域 */}
         {/*  bg-gray-100 */}
         <main className="grow">
-          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto h-screen">
-            {(() => {
-              // 先查找顶层项
-              const topLevelItem = sidebarItems.find(
-                (item) => item.key === selectedItemKey
-              );
+          {(() => {
+            // 先查找顶层项
+            const topLevelItem = sidebarItems.find(
+              (item) => item.key === selectedItemKey
+            );
 
-              // 如果是父菜单且有子项，显示第一个子项的组件
-              if (topLevelItem?.children?.length) {
-                return topLevelItem.children[0].component;
-              }
+            // 如果是父菜单且有子项，显示第一个子项的组件
+            if (topLevelItem?.children?.length) {
+              return topLevelItem.children[0].component;
+            }
 
-              // 如果是普通顶层项且有组件，直接显示
-              if (topLevelItem?.component) {
-                return topLevelItem.component;
-              }
+            // 如果是普通顶层项且有组件，直接显示
+            if (topLevelItem?.component) {
+              return topLevelItem.component;
+            }
 
-              // 查找子项
-              const childItem = sidebarItems
-                .flatMap((item) => item.children || [])
-                .find((child) => child.key === selectedItemKey);
-              return childItem?.component || null;
-            })()}
-          </div>
+            // 查找子项
+            const childItem = sidebarItems
+              .flatMap((item) => item.children || [])
+              .find((child) => child.key === selectedItemKey);
+            return childItem?.component || null;
+          })()}
         </main>
 
         {/* <Banner /> */}

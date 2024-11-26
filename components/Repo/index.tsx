@@ -20,27 +20,29 @@ const Repositories = () => {
   }, []);
 
   return (
-    <RepoStoreProvider>
-      <div className="bg-white max-w-7xl mx-auto px-4 flex flex-col h-full">
-        <Header />
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto h-screen">
+      <RepoStoreProvider>
+        <div className="bg-white max-w-7xl mx-auto px-4 flex flex-col h-full">
+          <Header />
 
-        <SearchRepoControl
-          setShowPRModal={setShowPRModal}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
-
-        <RepositoryList searchTerm={searchTerm} githubName={githubName} />
-
-        {showPRModal && (
-          <CreatePRModal
-            closeModal={() => setShowPRModal(false)}
-            githubName={githubName}
-            repoName={searchTerm}
+          <SearchRepoControl
+            setShowPRModal={setShowPRModal}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
           />
-        )}
-      </div>
-    </RepoStoreProvider>
+
+          <RepositoryList searchTerm={searchTerm} githubName={githubName} />
+
+          {showPRModal && (
+            <CreatePRModal
+              closeModal={() => setShowPRModal(false)}
+              githubName={githubName}
+              repoName={searchTerm}
+            />
+          )}
+        </div>
+      </RepoStoreProvider>
+    </div>
   );
 };
 

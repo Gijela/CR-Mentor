@@ -147,88 +147,89 @@ function PullRequest() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold text-gray-900">Pull Requests</h1>
-          <span className="text-gray-500 text-lg">
-            {selectedRepo ? (
-              <>
-                from <span className="text-blue-600">{selectedRepo}</span>
-              </>
-            ) : (
-              "from all Repositories"
-            )}
-          </span>
-        </div>
-        <button
-          onClick={() => {
-            const url = new URL(window.location.href);
-            if (selectedRepo) {
-              url.searchParams.set("repository", selectedRepo);
-              url.hash = "repositories";
-              window.location.href = url.toString();
-            } else {
-              url.hash = "repositories";
-              window.location.href = url.toString();
-            }
-          }}
-          className="px-4 py-2 bg-[rgba(99,0,255,0.87)] text-white rounded-lg hover:bg-[rgba(99,0,255,0.95)]"
-        >
-          New PR
-        </button>
-      </div>
-
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-col gap-4">
-          <div className="flex gap-4">
-            <Select
-              className="w-[280px]"
-              placeholder="Select a repository"
-              allowClear
-              showSearch
-              size="large"
-              options={repositories}
-              value={selectedRepo}
-              onChange={setSelectedRepo}
-              filterOption={(input, option) =>
-                (option?.label as string)
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-            />
-
-            <Search
-              className="flex-1"
-              placeholder="Search PR title..."
-              allowClear
-              size="large"
-              onChange={(e) => setTitleSearch(e.target.value)}
-            />
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold text-gray-900">Pull Requests</h1>
+            <span className="text-gray-500 text-lg">
+              {selectedRepo ? (
+                <>
+                  from <span className="text-blue-600">{selectedRepo}</span>
+                </>
+              ) : (
+                "from all Repositories"
+              )}
+            </span>
           </div>
+          <button
+            onClick={() => {
+              const url = new URL(window.location.href);
+              if (selectedRepo) {
+                url.searchParams.set("repository", selectedRepo);
+                url.hash = "repositories";
+                window.location.href = url.toString();
+              } else {
+                url.hash = "repositories";
+                window.location.href = url.toString();
+              }
+            }}
+            className="px-4 py-2 bg-[rgba(99,0,255,0.87)] text-white rounded-lg hover:bg-[rgba(99,0,255,0.95)]"
+          >
+            New PR
+          </button>
+        </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() => toggleState("open")}
-              className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
-                selectedStates.has("open")
-                  ? "bg-green-50 text-green-700 border-green-200"
-                  : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              open {prs.filter((pr) => pr.state === "open").length}
-            </button>
-            <button
-              onClick={() => toggleState("closed")}
-              className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
-                selectedStates.has("closed")
-                  ? "bg-red-50 text-red-700 border-red-200"
-                  : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              closed {prs.filter((pr) => pr.state === "closed").length}
-            </button>
-            {/* <button
+        <div className="mb-6 space-y-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+              <Select
+                className="w-[280px]"
+                placeholder="Select a repository"
+                allowClear
+                showSearch
+                size="large"
+                options={repositories}
+                value={selectedRepo}
+                onChange={setSelectedRepo}
+                filterOption={(input, option) =>
+                  (option?.label as string)
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              />
+
+              <Search
+                className="flex-1"
+                placeholder="Search PR title..."
+                allowClear
+                size="large"
+                onChange={(e) => setTitleSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => toggleState("open")}
+                className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+                  selectedStates.has("open")
+                    ? "bg-green-50 text-green-700 border-green-200"
+                    : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                open {prs.filter((pr) => pr.state === "open").length}
+              </button>
+              <button
+                onClick={() => toggleState("closed")}
+                className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
+                  selectedStates.has("closed")
+                    ? "bg-red-50 text-red-700 border-red-200"
+                    : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                closed {prs.filter((pr) => pr.state === "closed").length}
+              </button>
+              {/* <button
               onClick={() => toggleState("merged")}
               className={`px-3 py-1 rounded-full text-sm font-medium border transition-colors ${
                 selectedStates.has("merged")
@@ -238,109 +239,110 @@ function PullRequest() {
             >
               已合并 ({prs.filter((pr) => pr.state === "merged").length})
             </button> */}
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="space-y-4">
-        {filteredPrs.map((pr) => (
-          <div
-            key={pr.id}
-            className="bg-white rounded-lg border p-4 hover:shadow-sm transition-shadow"
-          >
-            <div className="flex items-start gap-4">
-              <div className="text-gray-400 pt-1">
-                <PullRequestOutlined
-                  style={{
-                    fontSize: "20px",
-                    color: pr.state === "open" ? "#238636" : "#8250df",
-                  }}
-                />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  {!selectedRepo && (
-                    <span className="text-sm text-gray-500">
-                      {pr.repositoryName} /
+        <div className="space-y-4">
+          {filteredPrs.map((pr) => (
+            <div
+              key={pr.id}
+              className="bg-white rounded-lg border p-4 hover:shadow-sm transition-shadow"
+            >
+              <div className="flex items-start gap-4">
+                <div className="text-gray-400 pt-1">
+                  <PullRequestOutlined
+                    style={{
+                      fontSize: "20px",
+                      color: pr.state === "open" ? "#238636" : "#8250df",
+                    }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    {!selectedRepo && (
+                      <span className="text-sm text-gray-500">
+                        {pr.repositoryName} /
+                      </span>
+                    )}
+                    <Link
+                      href={pr.html_url}
+                      target="_blank"
+                      className="text-lg font-medium text-gray-900 hover:text-blue-600"
+                    >
+                      {pr.title}
+                    </Link>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-xs ${
+                        pr.state === "open"
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-red-50 text-red-700 border border-red-200"
+                      }`}
+                    >
+                      {pr.state}
                     </span>
-                  )}
-                  <Link
-                    href={pr.html_url}
-                    target="_blank"
-                    className="text-lg font-medium text-gray-900 hover:text-blue-600"
-                  >
-                    {pr.title}
-                  </Link>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-xs ${
-                      pr.state === "open"
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-red-50 text-red-700 border border-red-200"
-                    }`}
-                  >
-                    {pr.state}
-                  </span>
+                  </div>
+
+                  <div className="text-sm text-gray-500">
+                    #{pr.number} opened {formatTimeAgo(pr.created_at)} by{" "}
+                    <span className="text-gray-700 hover:text-blue-600 cursor-pointer">
+                      {pr.user.login}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="text-sm text-gray-500">
-                  #{pr.number} opened {formatTimeAgo(pr.created_at)} by{" "}
-                  <span className="text-gray-700 hover:text-blue-600 cursor-pointer">
-                    {pr.user.login}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6 text-gray-400">
-                {/* <button className="flex items-center gap-1 hover:text-gray-900">
+                <div className="flex items-center gap-6 text-gray-400">
+                  {/* <button className="flex items-center gap-1 hover:text-gray-900">
                   <HeartOutlined />
                   <span>{pr.reactions.heart}</span>
                 </button> */}
-                {/* 指派者 */}
-                {pr.assignees?.length > 0 && (
-                  <div className="flex items-center -space-x-2">
-                    {(pr.assignees || []).map((assignee) => (
-                      <Avatar
-                        key={assignee.id}
-                        src={assignee.avatar_url}
-                        alt={assignee.login}
-                        size={24}
-                        className="border-2 border-white rounded-full"
-                      />
-                    ))}
-                  </div>
-                )}
+                  {/* 指派者 */}
+                  {pr.assignees?.length > 0 && (
+                    <div className="flex items-center -space-x-2">
+                      {(pr.assignees || []).map((assignee) => (
+                        <Avatar
+                          key={assignee.id}
+                          src={assignee.avatar_url}
+                          alt={assignee.login}
+                          size={24}
+                          className="border-2 border-white rounded-full"
+                        />
+                      ))}
+                    </div>
+                  )}
 
-                <button
-                  onClick={() => {
-                    window.open(pr.html_url, "_blank");
-                  }}
-                  className="flex items-center gap-1 hover:text-gray-900"
-                >
-                  <MessageOutlined />
-                  <span>{pr.comments}</span>
-                </button>
-                <button className="hover:text-gray-900">
-                  <LinkOutlined
+                  <button
                     onClick={() => {
                       window.open(pr.html_url, "_blank");
                     }}
-                  />
-                </button>
+                    className="flex items-center gap-1 hover:text-gray-900"
+                  >
+                    <MessageOutlined />
+                    <span>{pr.comments}</span>
+                  </button>
+                  <button className="hover:text-gray-900">
+                    <LinkOutlined
+                      onClick={() => {
+                        window.open(pr.html_url, "_blank");
+                      }}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {!loading && prs.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-lg border">
-            <h3 className="text-lg font-medium text-gray-900">
-              暂无 Pull Requests
-            </h3>
-            <p className="mt-2 text-sm text-gray-500">
-              当前还没有任何 PR，点击右上角按钮创建新的 PR。
-            </p>
-          </div>
-        )}
+          {!loading && prs.length === 0 && (
+            <div className="text-center py-12 bg-white rounded-lg border">
+              <h3 className="text-lg font-medium text-gray-900">
+                暂无 Pull Requests
+              </h3>
+              <p className="mt-2 text-sm text-gray-500">
+                当前还没有任何 PR，点击右上角按钮创建新的 PR。
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
