@@ -1,18 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import SearchableSelect from "./SearchableSelect";
+import { message } from "antd";
+import { CreatePRParams } from "@/app/api/github/createPullRequest/route";
 
 interface CreatePRModalProps {
   closeModal: () => void;
   repoName: string;
+  githubName: string;
 }
-
-// Add option data
-const branchOptions = [
-  { value: "feature/new-feature", label: "feature/new-feature" },
-  { value: "develop", label: "develop" },
-  { value: "main", label: "main" },
-  // ... more branch options
-];
 
 const guidelineOptions = [
   { value: "angular", label: "Angular Commit Convention" },
@@ -20,9 +15,19 @@ const guidelineOptions = [
   // ... more guideline options
 ];
 
+export interface Branch {
+  name: string;
+  commit: {
+    sha: string;
+    url: string;
+  };
+  protected: boolean;
+}
+
 const CreatePRModal: React.FC<CreatePRModalProps> = ({
   closeModal,
   repoName,
+  githubName,
 }) => {
   const [sourceBranch, setSourceBranch] = useState(null);
   const [targetBranch, setTargetBranch] = useState(null);
@@ -32,7 +37,11 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({
 
   const [currentOpenSelect, setCurrentOpenSelect] = useState(null); // Track currently open search box
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [branches, setBranches] = useState<{ value: string; label: string }[]>(
+    []
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!sourceBranch || !targetBranch) {
@@ -47,12 +56,67 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({
       prTitle,
       prDescription,
     };
-
-    // TODO: send formData to backend
-    console.log("repoName", repoName);
-
     console.log("PR Form Data:", formData);
+
+    const response = await fetch(`/api/github/createPullRequest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        githubName,
+        repoName,
+        data: {
+          title: formData.prTitle,
+          body: formData.prDescription,
+          head: formData.sourceBranch,
+          base: formData.targetBranch,
+        } as CreatePRParams,
+      }),
+    });
+
+    const { success, data, msg }: { success: boolean; data: any; msg: string } =
+      await response.json();
+    console.log("🚀 ~ handleSubmit ~ RESPONSE:", { success, data, msg });
+
+    if (!success) {
+      message.error(msg);
+      return;
+    } else {
+      message.success("create pull request success");
+      closeModal();
+    }
   };
+
+  const getBranches = async (githubName: string, repoName: string) => {
+    const response = await fetch(`/api/github/fetchRepoBranches`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ githubName, repoName }),
+    });
+
+    const {
+      success,
+      data,
+      msg,
+    }: { success: boolean; data: Branch[]; msg: string } =
+      await response.json();
+
+    if (!success) {
+      message.error(msg);
+      return;
+    }
+
+    setBranches(
+      data.map((branch) => ({ value: branch.name, label: branch.name }))
+    );
+  };
+
+  useEffect(() => {
+    getBranches(githubName, repoName);
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -85,7 +149,7 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({
               Source Branch<span className="text-red-500 ml-0.5">*</span>
             </label>
             <SearchableSelect
-              options={branchOptions}
+              options={branches}
               value={sourceBranch}
               onChange={setSourceBranch}
               placeholder="Search source branch..."
@@ -100,7 +164,7 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({
               Target Branch<span className="text-red-500 ml-0.5">*</span>
             </label>
             <SearchableSelect
-              options={branchOptions}
+              options={branches}
               value={targetBranch}
               onChange={setTargetBranch}
               placeholder="Search target branch..."

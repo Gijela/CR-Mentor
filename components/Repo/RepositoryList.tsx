@@ -219,7 +219,10 @@ const RepositoryItem = memo(({ repo }: { repo: Repository }) => {
   );
 });
 
-const RepositoryList: React.FC<{ searchTerm: string }> = ({ searchTerm }) => {
+const RepositoryList: React.FC<{ searchTerm: string; githubName: string }> = ({
+  searchTerm,
+  githubName,
+}) => {
   const { repositories, addRepository } = useRepoStore();
 
   const filteredRepositories = useMemo(() => {
@@ -229,7 +232,7 @@ const RepositoryList: React.FC<{ searchTerm: string }> = ({ searchTerm }) => {
     );
   }, [repositories, searchTerm]);
 
-  const fetchAllRepos = async (githubName: string = "Gijela") => {
+  const fetchAllRepos = async (githubName: string) => {
     try {
       const reposResponse = await fetch(`/api/github/getRepos`, {
         method: "POST",
@@ -253,7 +256,7 @@ const RepositoryList: React.FC<{ searchTerm: string }> = ({ searchTerm }) => {
 
   useEffect(() => {
     if (!repositories.length) {
-      fetchAllRepos();
+      fetchAllRepos(githubName);
     }
   }, []);
 
@@ -277,7 +280,7 @@ const RepositoryList: React.FC<{ searchTerm: string }> = ({ searchTerm }) => {
           </p>
           <div className="mt-6">
             <button
-              onClick={() => fetchAllRepos()}
+              onClick={() => fetchAllRepos(githubName)}
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[rgba(99,0,255,0.87)] hover:bg-[rgba(99,0,255,0.95)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[rgba(99,0,255,0.87)]"
             >
               <svg

@@ -5,6 +5,8 @@ import CreatePRModal from "./CreatePRModal";
 import SearchRepoControl from "./SearchRepoControl";
 import { RepoStoreProvider } from "@/store/useRepo";
 
+const githubName = "Gijela";
+
 const Repositories = () => {
   const [showPRModal, setShowPRModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,11 +22,12 @@ const Repositories = () => {
           setSearchTerm={setSearchTerm}
         />
 
-        <RepositoryList searchTerm={searchTerm} />
+        <RepositoryList searchTerm={searchTerm} githubName={githubName} />
 
         {showPRModal && (
           <CreatePRModal
             closeModal={() => setShowPRModal(false)}
+            githubName={githubName}
             repoName={searchTerm}
           />
         )}
