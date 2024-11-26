@@ -147,7 +147,7 @@ function PullRequest() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-4">
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold text-gray-900">Pull Requests</h1>
