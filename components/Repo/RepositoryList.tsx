@@ -204,15 +204,20 @@ const RepositoryItem = memo(({ repo }: { repo: Repository }) => {
             </svg>
             <span>Setting</span>
           </button>
-          <a
-            href={`/${repo.name}/pulls`}
-            className="border rounded-lg px-4 py-1.5 flex items-center gap-2 text-sm bg-white hover:bg-[rgba(99,0,255,0.87)] hover:text-white hover:border-[rgba(99,0,255,0.87)]"
+          <div
+            onClick={() => {
+              const searchParams = new URLSearchParams(window.location.search);
+              searchParams.set("repository", repo.name);
+              window.location.search = searchParams.toString();
+              window.location.hash = "pull-request";
+            }}
+            className="cursor-pointer border rounded-lg px-4 py-1.5 flex items-center gap-2 text-sm bg-white hover:bg-[rgba(99,0,255,0.87)] hover:text-white hover:border-[rgba(99,0,255,0.87)]"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
               <path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354Z" />
             </svg>
             <span>PRs</span>
-          </a>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./Header";
 import RepositoryList from "./RepositoryList";
 import CreatePRModal from "./CreatePRModal";
@@ -10,6 +10,14 @@ const githubName = "Gijela";
 const Repositories = () => {
   const [showPRModal, setShowPRModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const repoParam = urlParams.get("repository");
+    if (repoParam) {
+      setSearchTerm(repoParam);
+    }
+  }, []);
 
   return (
     <RepoStoreProvider>
