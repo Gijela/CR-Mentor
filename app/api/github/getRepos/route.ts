@@ -13,9 +13,9 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({ githubName }),
     });
-    const { success, token, msg }: { success: boolean, token: string, msg: string } = await tokenResponse.json();
+    const { success, token, msg, error }: { success: boolean, token: string, msg: string, error: any } = await tokenResponse.json();
     if (!success) {
-      return NextResponse.json({ success: false, message: msg }, { status: 500 });
+      return NextResponse.json({ success: false, message: msg, error }, { status: 500 });
     }
 
     // 2. 获取所有仓库列表
@@ -50,9 +50,8 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("get repositories failed:", error);
     return NextResponse.json(
-      { success: false, data: [], msg: "get repositories failed" },
+      { success: false, data: [], msg: "get repositories failed", error },
       { status: 500 }
     );
   }

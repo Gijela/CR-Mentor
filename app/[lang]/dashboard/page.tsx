@@ -66,7 +66,7 @@ function Dashboard() {
         {/* 主内容区域 */}
         {/*  bg-gray-100 */}
         <main className="grow">
-          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+          <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto h-screen">
             {(() => {
               // 先查找顶层项
               const topLevelItem = sidebarItems.find(
@@ -92,7 +92,7 @@ function Dashboard() {
           </div>
         </main>
 
-        <Banner />
+        {/* <Banner /> */}
       </div>
     </div>
   );

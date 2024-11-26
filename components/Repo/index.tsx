@@ -2,41 +2,34 @@ import React, { useState } from "react";
 import Header from "./Header";
 import RepositoryList from "./RepositoryList";
 import CreatePRModal from "./CreatePRModal";
-import Pagination from "./Pagination";
 import SearchRepoControl from "./SearchRepoControl";
 import { RepoStoreProvider } from "@/store/useRepo";
 
 const Repositories = () => {
-  const [searchTerm, setSearchTerm] = useState(""); // 搜索词
-  const [showPRModal, setShowPRModal] = useState(false); // PR创建弹窗
+  const [showPRModal, setShowPRModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
-    <div className="bg-white">
-      <RepoStoreProvider>
-        <div className="max-w-7xl mx-auto px-4">
-          {/* 标题 & 按钮 */}
-          <Header />
+    <RepoStoreProvider>
+      <div className="bg-white max-w-7xl mx-auto px-4 flex flex-col h-full">
+        <Header />
 
-          {/* 搜索框控件 */}
-          <SearchRepoControl
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            setShowPRModal={setShowPRModal}
+        <SearchRepoControl
+          setShowPRModal={setShowPRModal}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+        />
+
+        <RepositoryList searchTerm={searchTerm} />
+
+        {showPRModal && (
+          <CreatePRModal
+            closeModal={() => setShowPRModal(false)}
+            repoName={searchTerm}
           />
-
-          {/* 仓库列表 */}
-          <RepositoryList />
-
-          {/* 分页器控件 */}
-          <Pagination searchTerm={searchTerm} />
-
-          {/* PR创建弹窗 */}
-          {showPRModal && (
-            <CreatePRModal closeModal={() => setShowPRModal(false)} />
-          )}
-        </div>
-      </RepoStoreProvider>
-    </div>
+        )}
+      </div>
+    </RepoStoreProvider>
   );
 };
 

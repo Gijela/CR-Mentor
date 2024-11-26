@@ -47,6 +47,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, token, msg: 'create token success' }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ success: false, msg: 'create token failed' }, { status: 500 });
+    return NextResponse.json({ success: false, msg: 'create token failed', error }, { status: 500 });
   }
 }

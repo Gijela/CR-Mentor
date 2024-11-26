@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import SearchableSelect from "./SearchableSelect";
 
 interface CreatePRModalProps {
-  // show: boolean;
   closeModal: () => void;
+  repoName: string;
 }
 
 // Add option data
@@ -20,18 +20,40 @@ const guidelineOptions = [
   // ... more guideline options
 ];
 
-const CreatePRModal: React.FC<CreatePRModalProps> = ({ closeModal }) => {
+const CreatePRModal: React.FC<CreatePRModalProps> = ({
+  closeModal,
+  repoName,
+}) => {
   const [sourceBranch, setSourceBranch] = useState(null);
   const [targetBranch, setTargetBranch] = useState(null);
   const [guideline, setGuideline] = useState(null);
+  const [prTitle, setPrTitle] = useState("");
+  const [prDescription, setPrDescription] = useState("");
 
   const [currentOpenSelect, setCurrentOpenSelect] = useState(null); // Track currently open search box
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const formData = {
+      sourceBranch: sourceBranch?.value,
+      targetBranch: targetBranch?.value,
+      guideline: guideline?.value,
+      prTitle,
+      prDescription,
+    };
+
+    // TODO: send formData to backend
+    console.log("repoName", repoName);
+
+    console.log("PR Form Data:", formData);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-[600px] p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Create Pull Request</h2>
+          <h2 className="text-xl font-semibold">[PR] {repoName}</h2>
           <button
             onClick={closeModal}
             className="text-gray-500 hover:text-gray-700"
@@ -52,7 +74,7 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({ closeModal }) => {
           </button>
         </div>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Source Branch
@@ -106,6 +128,8 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({ closeModal }) => {
               type="text"
               className="w-full border rounded-lg p-2"
               placeholder="Enter PR title"
+              value={prTitle}
+              onChange={(e) => setPrTitle(e.target.value)}
             />
           </div>
 
@@ -116,6 +140,8 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({ closeModal }) => {
             <textarea
               className="w-full border rounded-lg p-2 h-24"
               placeholder="Enter PR description"
+              value={prDescription}
+              onChange={(e) => setPrDescription(e.target.value)}
             />
           </div>
 
