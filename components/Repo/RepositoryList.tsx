@@ -4,17 +4,107 @@ import React, { useEffect, memo, useMemo } from "react";
 import { Repository } from "./interface";
 import { message } from "antd";
 
+// 格式化更新时间
+const formatUpdateTime = (dateString: string) => {
+  const now = new Date();
+  const updateDate = new Date(dateString);
+  const diffTime = now.getTime() - updateDate.getTime();
+  const diffSeconds = Math.floor(diffTime / 1000);
+
+  if (diffSeconds < 60) {
+    return `Updated ${diffSeconds} seconds ago`;
+  }
+
+  const diffMinutes = Math.floor(diffTime / (1000 * 60));
+  if (diffMinutes < 60) {
+    return `Updated ${diffMinutes} ${
+      diffMinutes === 1 ? "minute" : "minutes"
+    } ago`;
+  }
+
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+  if (diffHours < 24) {
+    return `Updated ${diffHours} ${diffHours === 1 ? "hour" : "hours"} ago`;
+  }
+
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  if (diffDays < 7) {
+    return `Updated ${diffDays} ${diffDays === 1 ? "day" : "days"} ago`;
+  }
+
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const month = months[updateDate.getMonth()];
+  const day = updateDate.getDate();
+
+  if (updateDate.getFullYear() === now.getFullYear()) {
+    return `Updated on ${month} ${day}`;
+  }
+
+  return `Updated on ${month} ${day}, ${updateDate.getFullYear()}`;
+};
+
+// 添加语言颜色映射
+const languageColors: { [key: string]: string } = {
+  TypeScript: "#3178c6",
+  JavaScript: "#f1e05a",
+  Python: "#3572A5",
+  Java: "#b07219",
+  Go: "#00ADD8",
+  Rust: "#dea584",
+  PHP: "#4F5D95",
+  Ruby: "#701516",
+  HTML: "#e34c26",
+  CSS: "#563d7c",
+  Swift: "#ffac45",
+  C: "#555555",
+  "C++": "#f34b7d",
+  "C#": "#178600",
+  Shell: "#89e051",
+  Kotlin: "#A97BFF",
+  Dart: "#00B4AB",
+  Vue: "#41b883",
+  Scala: "#c22d40",
+  Lua: "#000080",
+  Perl: "#0298c3",
+  Haskell: "#5e5086",
+  R: "#198CE7",
+  Elixir: "#6e4a7e",
+  Clojure: "#db5855",
+  Erlang: "#B83998",
+  Julia: "#a270ba",
+  Groovy: "#e69f56",
+  MATLAB: "#e16737",
+  Assembly: "#6E4C13",
+};
+
 // 使用 memo 优化列表项渲染
 const RepositoryItem = memo(({ repo }: { repo: Repository }) => {
   if (!repo) return null;
 
   return (
-    <div className="border-b py-3">
+    <div className="border-b py-6 hover:bg-gray-50">
       <div className="flex items-start justify-between">
-        <div>
+        <div className="w-[78%]">
           <div className="flex items-center gap-3">
             <h3 className="text-xl font-semibold">
-              <a href="#" className="text-blue-600">
+              <a
+                href={repo.html_url}
+                className="text-blue-600 hover:underline"
+                target="_blank"
+              >
                 {repo.name}
               </a>
             </h3>
@@ -28,10 +118,75 @@ const RepositoryItem = memo(({ repo }: { repo: Repository }) => {
               {repo.private ? "Private" : "Public"}
             </span>
           </div>
-          <p className="text-gray-600 mt-2 text-sm leading-relaxed">
-            {repo.description}
-          </p>
+          {repo.description && (
+            <p className="text-gray-600 mt-2 text-sm leading-relaxed line-clamp-2">
+              {repo.description}
+            </p>
+          )}
+
+          <div className="flex items-center gap-4 mt-3 text-xs text-gray-600">
+            {repo.language && (
+              <div className="flex items-center gap-1">
+                <span className="relative flex w-3 h-3">
+                  <span
+                    className="w-3 h-3 rounded-full"
+                    style={{
+                      backgroundColor:
+                        languageColors[repo.language] || "#8e8e8e",
+                    }}
+                  ></span>
+                </span>
+                {repo.language}
+              </div>
+            )}
+            <a href="#" className="flex items-center gap-1 hover:text-blue-600">
+              <svg
+                className="w-4 h-4"
+                aria-label="star"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  strokeWidth="1"
+                  d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"
+                />
+              </svg>
+              {repo.stargazers_count}
+            </a>
+            <a href="#" className="flex items-center gap-1 hover:text-blue-600">
+              <svg
+                className="w-4 h-4"
+                aria-label="fork"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0ZM5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z" />
+              </svg>
+              {repo.forks}
+            </a>
+            {repo.license && (
+              <span className="flex items-center gap-1">
+                <svg
+                  className="w-4 h-4"
+                  aria-label="license"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.75.75a.75.75 0 00-1.5 0V2h-.984c-.305 0-.604.08-.869.23l-1.288.737A.25.25 0 013.984 3H1.75a.75.75 0 000 1.5h.428L.066 9.192a.75.75 0 00.154.838l.53-.53-.53.53v.001l.002.002.002.002.006.006.016.015.045.04a3.514 3.514 0 00.686.45A4.492 4.492 0 003 11c.88 0 1.556-.22 2.023-.454a3.515 3.515 0 00.686-.45l.045-.04.016-.015.006-.006.002-.002.001-.002L5.25 9.5l.53.53a.75.75 0 00.154-.838L3.822 4.5h.162c.305 0 .604-.08.869-.23l1.289-.737a.25.25 0 01.124-.033h.984V13h-2.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-2.5V3.5h.984a.25.25 0 01.124.033l1.29.736c.264.152.563.231.868.231h.162l-2.112 4.692a.75.75 0 00.154.838l.53-.53-.53.53v.001l.002.002.002.002.006.006.016.015.045.04a3.517 3.517 0 00.686.45A4.492 4.492 0 0013 11c.88 0 1.556-.22 2.023-.454a3.512 3.512 0 00.686-.45l.045-.04.01-.01.006-.005.006-.006.002-.002.001-.002-.529-.531.53.53a.75.75 0 00.154-.838L13.823 4.5h.427a.75.75 0 000-1.5h-2.234a.25.25 0 01-.124-.033l-1.29-.736A1.75 1.75 0 009.735 2H8.75V.75zM1.695 9.227c.285.135.718.273 1.305.273s1.02-.138 1.305-.273L3 6.327l-1.305 2.9zm10 0c.285.135.718.273 1.305.273s1.02-.138 1.305-.273L13 6.327l-1.305 2.9z"
+                  />
+                </svg>
+                {repo.license.name}
+              </span>
+            )}
+            <span className="text-gray-500">
+              {formatUpdateTime(repo.updated_at)}
+            </span>
+          </div>
         </div>
+
         <div className="flex flex-col gap-2">
           <button className="border rounded-lg px-4 py-1.5 flex items-center gap-2 text-sm bg-white hover:bg-[rgba(99,0,255,0.87)] hover:text-white hover:border-[rgba(99,0,255,0.87)]">
             <svg

@@ -35,6 +35,11 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!sourceBranch || !targetBranch) {
+      alert("Source branch and target branch are required");
+      return;
+    }
+
     const formData = {
       sourceBranch: sourceBranch?.value,
       targetBranch: targetBranch?.value,
@@ -77,7 +82,7 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Source Branch
+              Source Branch<span className="text-red-500 ml-0.5">*</span>
             </label>
             <SearchableSelect
               options={branchOptions}
@@ -92,7 +97,7 @@ const CreatePRModal: React.FC<CreatePRModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Target Branch
+              Target Branch<span className="text-red-500 ml-0.5">*</span>
             </label>
             <SearchableSelect
               options={branchOptions}
