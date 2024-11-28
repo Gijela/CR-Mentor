@@ -15,6 +15,11 @@ import {
 // 设置为Edge运行时
 export const runtime = "edge";
 
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_KEY!,
+);
+
 // 合并文档内容的辅助函数
 const combineDocumentsFn = (docs: Document[]) => {
   const serializedDocs = docs.map((doc) => doc.pageContent);
@@ -100,13 +105,8 @@ export async function POST(req: NextRequest) {
       modelName: 'Pro/BAAI/bge-m3',
     });
 
-    // 初始化Supabase客户端和向量存储
-    const client = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_KEY!,
-    );
     const vectorstore = new SupabaseVectorStore(embeddings, {
-      client,
+      client: supabase,
       tableName: "kb_chunks",
       queryName: "match_kb_chunks",
       filter: {

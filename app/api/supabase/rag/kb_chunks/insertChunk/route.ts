@@ -29,27 +29,27 @@ export async function POST(req: NextRequest) {
         apiKey: process.env.OPENAI_API_KEY,    // OpenAI API密钥
         baseURL: process.env.OPENAI_API_BASE,  // API基础URL
       },
-      // 使用的嵌入模型名称, 这个模型是 1024 维, 当前表也是 1024 维，如果模型不一样，需要修改 kb_chunks 表 embedding 字段维度
-      modelName: "Pro/BAAI/bge-m3",
+      modelName: "Pro/BAAI/bge-m3",  // 使用1024维嵌入模型
     });
 
-    // 准备要插入的文档数据
-    const documents = splitDocuments.map(doc => ({
-      pageContent: doc.pageContent,  // 文档内容
-      metadata: doc.metadata,        // 文档元数据
-      kb_id: parseInt(kb_id)              // 知识库ID
-    }));
-
-    // 手动插入每个文档块到数据库
-    for (const doc of documents) {
-      await supabase
-        .from('kb_chunks')           // 指定表名
-        .insert({
+    // 准备文档数据并生成嵌入向量
+    const documents = await Promise.all(
+      splitDocuments.map(async (doc) => {
+        const embedding = await embeddings.embedQuery(doc.pageContent);
+        return {
           content: doc.pageContent,  // 文档内容
           metadata: doc.metadata,    // 元数据
-          kb_id: doc.kb_id,         // 知识库ID
-          embedding: await embeddings.embedQuery(doc.pageContent) // 生成文本向量
-        });
+          kb_id: parseInt(kb_id),    // 知识库ID
+          embedding                  // 文本向量
+        };
+      })
+    );
+
+    // 批量插入文档到数据库
+    const { error } = await supabase.from('kb_chunks').insert(documents);
+    if (error) {
+      console.log('error', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     // 返回成功响应
