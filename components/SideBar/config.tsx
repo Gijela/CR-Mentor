@@ -9,6 +9,8 @@ import Repositories from "@/components/Repo";
 import KnowledgeBase from "@/components/KnowledgeBase";
 import Home from "@/components/dashboard/Home";
 import Analytics from "@/components/dashboard/Analytics";
+import ChatGPT from "../ChatGPT";
+import ChatGPTIcon from "./icons/ChatgptIcon";
 
 export const sidebarItems = [
   {
@@ -58,5 +60,11 @@ export const sidebarItems = [
     label: "Knowledge Base",
     icon: <KnowledgeBaseIcon />,
     component: <KnowledgeBase />,
+  },
+  {
+    key: "chatgpt",
+    label: "ChatGPT",
+    icon: <ChatGPTIcon />,
+    component: <ChatGPT />,
   },
 ];

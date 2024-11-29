@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.4.0",
+    "@ant-design/pro-chat": "^2.1.14",
     "@clerk/nextjs": "^5.5.4",
     "@formatjs/intl-localematcher": "^0.5.4",
     "@langchain/community": "0.3.11",
@@ -24,6 +25,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "ai": "3.1.12",
     "antd": "^5.20.3",
+    "antd-style": "^3.7.1",
     "framer-motion": "^11.2.12",
     "hox": "^2.1.1",
     "jsonwebtoken": "^9.0.2",
