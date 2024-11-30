@@ -59,7 +59,7 @@ const ChatGPT = () => {
       prev.map((session) => {
         if (session.id === currentSessionId) {
           const newSelectedKbs = session.selectedKbs.includes(kbTitle)
-            ? session.selectedKbs.filter((kb) => kb !== kbTitle)
+            ? (session.selectedKbs || []).filter((kb) => kb !== kbTitle)
             : [...session.selectedKbs, kbTitle];
           return {
             ...session,
@@ -110,7 +110,9 @@ const ChatGPT = () => {
   const currentSelectedKbDetails = useMemo(() => {
     const selectedKbs =
       chatSessions.find((s) => s.id === currentSessionId)?.selectedKbs || [];
-    return knowledgeBases.filter((kb) => selectedKbs.includes(kb.title));
+    return (knowledgeBases || []).filter((kb) =>
+      selectedKbs.includes(kb.title)
+    );
   }, [chatSessions, currentSessionId]);
 
   // 添加删除会话的处理函数
@@ -119,7 +121,9 @@ const ChatGPT = () => {
 
     // 如果删除的是当前选中的会话，需要选择新的当前会话
     if (sessionId === currentSessionId) {
-      const remainingSessions = chatSessions.filter((s) => s.id !== sessionId);
+      const remainingSessions = (chatSessions || []).filter(
+        (s) => s.id !== sessionId
+      );
       if (remainingSessions.length > 0) {
         setCurrentSessionId(remainingSessions[0].id);
       } else {

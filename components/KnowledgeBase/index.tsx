@@ -47,7 +47,7 @@ const KnowledgeBase: FC = () => {
     useState<KnowledgeBase | null>(null);
 
   // 过滤知识库列表
-  const filteredKnowledgeBases = knowledgeBases.filter((kb) =>
+  const filteredKnowledgeBases = (knowledgeBases || []).filter((kb) =>
     kb.title.toLowerCase().includes(searchText.toLowerCase())
   );
 
