@@ -179,7 +179,10 @@ const EditChunks: FC<{
         open={isChunkModalOpen}
         onCancel={() => setIsChunkModalOpen(false)}
         footer={[
-          <div className="flex items-center justify-end gap-4">
+          <div
+            key="footer-content"
+            className="flex items-center justify-end gap-4"
+          >
             <div className="text-gray-500">
               Characters: {editingContent.length}
             </div>

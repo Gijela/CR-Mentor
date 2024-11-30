@@ -181,7 +181,6 @@ const ChatGPT = () => {
   // 获取知识库列表
   const handleGetKnowledgeBases = async () => {
     const data = await getKnowledgeBases(clientUserId);
-    console.log("🚀 ~ handleGetKnowledgeBases ~ data:", data);
     setKnowledgeBases(data);
   };
 
@@ -472,39 +471,87 @@ const ChatGPT = () => {
         </div>
 
         {/* ProChat 聊天记录部分 */}
-        <div className="flex-1 mt-16 min-w-0">
+        <div className="flex-1 mt-16 min-w-0 overflow-hidden">
           <ProChat
-            key={currentSessionId}
-            helloMessage={
-              "欢迎用 ProChat，我是你的专属机器人，这是我们的 Github：[ProChat](https://github.com/ant-design/pro-chat)"
-            }
-            request={async (messages) => {
-              // 获取当前会话的消息和选中的知识库
-              const currentSession = chatSessions.find(
-                (s) => s.id === currentSessionId
+            sendMessageRequest={async (messages) => {
+              // 发送消息请求
+              const response = await fetch(
+                "/api/supabase/rag/kb_chunks/retrieval_agents",
+                {
+                  method: "POST",
+                  body: JSON.stringify({
+                    messages: messages.map((msg) => ({
+                      role: msg.role,
+                      content: msg.content,
+                    })),
+                    kb_id: currentSelectedKbDetails[0].id, // 默认选中第一个知识库
+                    show_intermediate_steps: false,
+                  }),
+                }
               );
-              const selectedKbs = currentSession?.selectedKbs || [];
+              // 确保服务器响应是成功的
+              if (!response.ok || !response.body) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
 
-              // 这里可以根据选中的知识库来处理请求
-              const mockedData: string = `这是会话 ${currentSessionId} 的对数据。
-                已选择的知识库: ${selectedKbs.join(", ")}
-                本次会话传入了 ${messages.length} 条消息`;
+              // 获取 reader
+              const reader = response.body.getReader();
+              const decoder = new TextDecoder("utf-8");
+              const encoder = new TextEncoder();
 
-              // 保存新消息
-              const newMessage: Message = {
-                id: Date.now().toString(),
-                content: mockedData,
-                sender: "assistant",
-                timestamp: new Date(),
-              };
-              handleNewMessage(newMessage);
+              const readableStream = new ReadableStream({
+                async start(controller) {
+                  function push() {
+                    reader
+                      .read()
+                      .then(({ done, value }) => {
+                        if (done) {
+                          controller.close();
+                          return;
+                        }
 
-              return new Response(mockedData);
+                        const chunk = decoder.decode(value, { stream: true });
+                        // 处理多行数据
+                        const lines = chunk
+                          .split("\n")
+                          .filter((line) => line.trim() !== "");
+
+                        for (const line of lines) {
+                          try {
+                            if (line.startsWith("data: ")) {
+                              const jsonStr = line.replace("data: ", "");
+                              const parsed = JSON.parse(jsonStr);
+                              controller.enqueue(
+                                encoder.encode(parsed.choices[0].delta.content)
+                              );
+                            }
+                          } catch (err) {
+                            console.warn("解析消息时出错:", line);
+                            // 继续处理下一行，而不是直接中断
+                            continue;
+                          }
+                        }
+
+                        push();
+                      })
+                      .catch((err) => {
+                        console.error("读取流中的数据时发生错误", err);
+                        controller.error(err);
+                      });
+                  }
+                  push();
+                },
+              });
+              return new Response(readableStream);
             }}
             styles={{
+              chatListItemContent: {
+                width: "fit-content", // 或者使用固定宽度
+                backgroundColor: "rgb(243, 244, 246)",
+              },
               chatSendButton: {
-                backgroundColor: "rgb(139, 92, 246)",
-                color: "#fff",
+                color: "#ffffff",
+                backgroundColor: "rgba(99, 0, 255, 0.87)",
               },
             }}
           />

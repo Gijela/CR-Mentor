@@ -143,30 +143,69 @@ export async function POST(req: NextRequest) {
 
     // 根据设置决定返回方式
     if (!returnIntermediateSteps) {
-      // 流式返回响应
+      // 调用 agent 并处理流式响应
       const eventStream = await agent.streamEvents(
         { messages },
-        { version: "v2" },
+        { version: "v2" }
       );
 
-      // 创建文本编码器
-      const textEncoder = new TextEncoder();
-      // 创建转换流
-      const transformStream = new ReadableStream({
-        async start(controller) {
-          for await (const { event, data } of eventStream) {
-            if (event === "on_chat_model_stream") {
-              // 只处理有内容的消息块
-              if (!!data.chunk.content) {
-                controller.enqueue(textEncoder.encode(data.chunk.content));
+      // 设置响应头
+      const headers = {
+        'Content-Type': 'text/event-stream',
+        'Content-Encoding': 'none'
+      };
+
+      // 创建编码器
+      const encoder = new TextEncoder();
+
+      // 返回流式响应
+      return new Response(
+        new ReadableStream({
+          async start(controller) {
+            try {
+              for await (const { event, data } of eventStream) {
+                if (event === "on_chat_model_stream") {
+                  if (data.chunk.content) {
+                    // 构建标准的 SSE 消息格式
+                    const chunk = {
+                      id: crypto.randomUUID(),
+                      object: "chat.completion.chunk",
+                      created: Date.now(),
+                      model: "deepseek-ai/DeepSeek-V2.5",
+                      choices: [
+                        {
+                          delta: { content: data.chunk.content },
+                          index: 0,
+                          finish_reason: null
+                        }
+                      ]
+                    };
+
+                    // 使用 SSE 格式编码消息
+                    const sseMessage = `data: ${JSON.stringify(chunk)}\n\n`;
+                    controller.enqueue(encoder.encode(sseMessage));
+                  }
+                }
               }
+              // 发送结束消息
+              const finalChunk = {
+                id: crypto.randomUUID(),
+                object: "chat.completion.chunk",
+                created: Date.now(),
+                model: "deepseek-ai/DeepSeek-V2.5",
+                choices: [{ delta: {}, index: 0, finish_reason: "stop" }]
+              };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalChunk)}\n\n`));
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+              controller.close();
+            } catch (e) {
+              console.error("Stream error:", e);
+              controller.error(e);
             }
           }
-          controller.close();
-        },
-      });
-
-      return new StreamingTextResponse(transformStream);
+        }),
+        { headers }
+      );
     } else {
       // 返回完整响应（包含中间步骤）
       const result = await agent.invoke({ messages });
