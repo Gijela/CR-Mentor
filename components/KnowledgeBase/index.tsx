@@ -7,7 +7,7 @@ import EditChunks from "./EditChunks";
 import NewKBModal from "./NewKBModal";
 
 // const githubName = "Gijela"; // 当前登录用户
-const clientUserId = "Gijela-123456";
+export const clientUserId = "Gijela-123456";
 
 export interface KnowledgeBase {
   id: number;
@@ -17,6 +17,26 @@ export interface KnowledgeBase {
   created_at: string;
   updated_at: string;
 }
+
+// 获取知识库列表
+export const getKnowledgeBases = async (user_id: string) => {
+  const result = await fetch("/api/supabase/rag/knowledge_bases/getTotalKB", {
+    method: "POST",
+    body: JSON.stringify({ user_id }),
+  });
+  if (!result.ok) {
+    message.error("Failed to fetch knowledge bases");
+    return;
+  }
+
+  const { success, data } = await result.json();
+  if (success) {
+    return data;
+  } else {
+    message.error("Failed to fetch knowledge bases");
+    return [];
+  }
+};
 
 const KnowledgeBase: FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,16 +65,7 @@ const KnowledgeBase: FC = () => {
 
   // 获取知识库列表
   const fetchKnowledgeBases = async () => {
-    const result = await fetch("/api/supabase/rag/knowledge_bases/getTotalKB", {
-      method: "POST",
-      body: JSON.stringify({ user_id: clientUserId }),
-    });
-    if (!result.ok) {
-      message.error("Failed to fetch knowledge bases");
-      return;
-    }
-
-    const { data } = await result.json();
+    const data = await getKnowledgeBases(clientUserId);
     setKnowledgeBases(data);
   };
 

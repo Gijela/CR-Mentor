@@ -1,22 +1,18 @@
-import React, { useState, useMemo } from "react";
-import { knowledgeBase } from "./config";
+import React, { useState, useMemo, useEffect } from "react";
 import { ProChat } from "@ant-design/pro-chat";
 import HideRightArea from "./icons/HideRightArea";
 import HideLeftArea from "./icons/HideLeftArea";
+import {
+  clientUserId,
+  getKnowledgeBases,
+  KnowledgeBase,
+} from "../KnowledgeBase";
 
 // 添加消息类型定义
 interface Message {
   id: string;
   content: string;
   sender: string;
-  timestamp: Date;
-}
-
-// 添加会话类型定义
-interface ChatSession {
-  id: string;
-  title: string;
-  lastMessage?: string;
   timestamp: Date;
 }
 
@@ -32,6 +28,7 @@ interface ChatSessionDetail {
 }
 
 const ChatGPT = () => {
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -62,10 +59,10 @@ const ChatGPT = () => {
 
   // 基于搜索词过滤知识库列表
   const filteredList = useMemo(() => {
-    return knowledgeBase.filter((item) =>
+    return knowledgeBases.filter((item) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery]);
+  }, [searchQuery, knowledgeBases]);
 
   // 过滤会话列表
   const filteredChatSessions = useMemo(() => {
@@ -157,7 +154,7 @@ const ChatGPT = () => {
   const currentSelectedKbDetails = useMemo(() => {
     const selectedKbs =
       chatSessions.find((s) => s.id === currentSessionId)?.selectedKbs || [];
-    return knowledgeBase.filter((kb) => selectedKbs.includes(kb.title));
+    return knowledgeBases.filter((kb) => selectedKbs.includes(kb.title));
   }, [chatSessions, currentSessionId]);
 
   // 添加删除会话的处理函数
@@ -180,6 +177,45 @@ const ChatGPT = () => {
       prev.filter((session) => session.id !== sessionId)
     );
   };
+
+  // 获取知识库列表
+  const handleGetKnowledgeBases = async () => {
+    const data = await getKnowledgeBases(clientUserId);
+    console.log("🚀 ~ handleGetKnowledgeBases ~ data:", data);
+    setKnowledgeBases(data);
+  };
+
+  useEffect(() => {
+    handleGetKnowledgeBases();
+  }, []);
+
+  // 添加 URL 参数处理的 useEffect
+  useEffect(() => {
+    // 获取 URL 参数中的 kb_id
+    const urlParams = new URLSearchParams(window.location.search);
+    const kbId = urlParams.get("kb_id");
+
+    if (kbId) {
+      // 在知识库列表中查找对应的知识库
+      const targetKb = knowledgeBases.find((kb) => kb.id === Number(kbId));
+
+      if (targetKb) {
+        // 创建新会话并选中该知识库
+        const newSession: ChatSessionDetail = {
+          id: Date.now().toString(),
+          title: `${targetKb.title} 会话`,
+          timestamp: new Date(),
+          selectedKbs: [targetKb.title], // 默认选中该知识库
+          messages: [],
+          avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${Date.now()}`,
+        };
+
+        // 更新会话列表和当前会话
+        setChatSessions((prev) => [newSession, ...prev]);
+        setCurrentSessionId(newSession.id);
+      }
+    }
+  }, [knowledgeBases]);
 
   return (
     <div className="flex min-h-screen h-[100dvh]">
