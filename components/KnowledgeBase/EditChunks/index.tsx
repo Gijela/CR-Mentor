@@ -1,20 +1,24 @@
 import { FC, useEffect, useState } from "react";
 import { KnowledgeBase } from "../index";
-import { Button, Card, Input, message, Modal } from "antd";
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { Input, message, Modal } from "antd";
 import UploadArea from "./UploadArea";
-import BackIcon from "./icons/backIcon";
+import BackIcon from "./icons/BackIcon";
 import ChunkCard from "./ChunkCard";
 
 // 文档区块接口定义
-export interface DocumentChunk {
+export type DocumentChunk = {
   id: number;
-  title: string;
+  kb_id: number;
   content: string;
-  source: string;
-  updated_at: string;
-  char_count: number;
-}
+  embedding: string;
+  created_at: string;
+  metadata: {
+    // 文件完全名(带后缀)
+    source: string;
+    // 文件名(不带后缀)
+    title: string;
+  };
+};
 
 const EditChunks: FC<{
   currentEditingKB: KnowledgeBase;
@@ -33,46 +37,47 @@ const EditChunks: FC<{
   // 更新文档区块内容
   const handleSaveContent = async () => {
     if (!selectedChunk) return;
+    message.warning("Under development, please wait...");
 
-    setIsSaving(true);
-    try {
-      // TODO: 替换为实际的 API 调用
-      // const result = await fetch('/api/updateChunk', {
-      //   method: 'POST',
-      //   body: JSON.stringify({
-      //     id: selectedChunk.id,
-      //     content: editingContent
-      //   })
-      // });
+    // setIsSaving(true);
+    // try {
+    //   // TODO: 替换为实际的 API 调用
+    //   // const result = await fetch('/api/updateChunk', {
+    //   //   method: 'POST',
+    //   //   body: JSON.stringify({
+    //   //     id: selectedChunk.id,
+    //   //     content: editingContent
+    //   //   })
+    //   // });
 
-      // if (result.ok) {
-      //   message.success('内容已更新');
-      //   // 更新本地数据
-      //   setDocumentChunks(prevChunks =>
-      //     prevChunks.map(chunk =>
-      //       chunk.id === selectedChunk.id
-      //         ? { ...chunk, content: editingContent }
-      //         : chunk
-      //     )
-      //   );
-      // }
+    //   // if (result.ok) {
+    //   //   message.success('内容已更新');
+    //   //   // 更新本地数据
+    //   //   setDocumentChunks(prevChunks =>
+    //   //     prevChunks.map(chunk =>
+    //   //       chunk.id === selectedChunk.id
+    //   //         ? { ...chunk, content: editingContent }
+    //   //         : chunk
+    //   //     )
+    //   //   );
+    //   // }
 
-      // 模拟 API 调用
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      message.success("内容已更新");
-      setDocumentChunks((prevChunks) =>
-        prevChunks.map((chunk) =>
-          chunk.id === selectedChunk.id
-            ? { ...chunk, content: editingContent }
-            : chunk
-        )
-      );
-      setIsChunkModalOpen(false);
-    } catch (error) {
-      message.error("更新失败");
-    } finally {
-      setIsSaving(false);
-    }
+    //   // 模拟 API 调用
+    //   await new Promise((resolve) => setTimeout(resolve, 500));
+    //   message.success("内容已更新");
+    //   setDocumentChunks((prevChunks) =>
+    //     prevChunks.map((chunk) =>
+    //       chunk.id === selectedChunk.id
+    //         ? { ...chunk, content: editingContent }
+    //         : chunk
+    //     )
+    //   );
+    //   setIsChunkModalOpen(false);
+    // } catch (error) {
+    //   message.error("更新失败");
+    // } finally {
+    //   setIsSaving(false);
+    // }
   };
 
   // 处理文档区块点击
@@ -82,55 +87,32 @@ const EditChunks: FC<{
     setIsChunkModalOpen(true);
   };
 
+  // 查询某个知识库的所有向量文档区块
+  const fetchDocumentChunks = async () => {
+    const res = await fetch(`/api/supabase/rag/kb_chunks/getOneKBTotalChunks`, {
+      method: "POST",
+      body: JSON.stringify({
+        kb_id: currentEditingKB.id,
+      }),
+    });
+    const { success, data }: { success: boolean; data: DocumentChunk[] } =
+      await res.json();
+    if (success) {
+      setDocumentChunks(data);
+    } else {
+      message.error("Failed to fetch document chunks");
+    }
+  };
+
+  // 刷新文档区块列表
+  const refreshDocumentChunks = () => {
+    fetchDocumentChunks();
+  };
+
   // 示例数据，实际应该通过 API 获取
   useEffect(() => {
-    if (currentEditingKB) {
-      // TODO: 替换为实际的 API 调用
-      const mockChunks = [
-        {
-          id: 1,
-          title: "介绍部分",
-          content: "这是文档的介绍部分...",
-          source: "intro.md",
-          updated_at: "2024-01-15T10:30:00Z",
-          char_count: 1250,
-        },
-        {
-          id: 2,
-          title: "产品功能",
-          content: "详细介绍产品的主要功能特性...",
-          source: "features.md",
-          updated_at: "2024-01-14T15:20:00Z",
-          char_count: 2300,
-        },
-        {
-          id: 3,
-          title: "技术架构",
-          content: "系统的技术架构设计说明...",
-          source: "architecture.md",
-          updated_at: "2024-01-13T09:45:00Z",
-          char_count: 3100,
-        },
-        {
-          id: 4,
-          title: "使用教程",
-          content: "详细的产品使用说明和教程...",
-          source: "tutorial.md",
-          updated_at: "2024-01-12T16:30:00Z",
-          char_count: 4200,
-        },
-        {
-          id: 5,
-          title: "常见问题",
-          content: "用户常见问题解答和故障排除指南...",
-          source: "faq.md",
-          updated_at: "2024-01-11T11:15:00Z",
-          char_count: 1800,
-        },
-      ];
-      setDocumentChunks(mockChunks);
-    }
-  }, [currentEditingKB]);
+    fetchDocumentChunks();
+  }, []);
 
   return (
     <>
@@ -151,38 +133,63 @@ const EditChunks: FC<{
         </div>
 
         <UploadArea
-          documentChunks={documentChunks}
-          setDocumentChunks={setDocumentChunks}
+          kb_id={currentEditingKB.id}
+          refreshDocumentChunks={refreshDocumentChunks}
         />
       </div>
 
       <div className="overflow-y-auto pr-2">
         <div className="grid grid-cols-1 gap-4">
-          {documentChunks.map((chunk) => (
-            <ChunkCard
-              chunk={chunk}
-              documentChunks={documentChunks}
-              setDocumentChunks={setDocumentChunks}
-              handleChunkClick={handleChunkClick}
-            />
-          ))}
+          {documentChunks.length > 0 ? (
+            documentChunks.map((chunk) => (
+              <ChunkCard
+                key={chunk.id}
+                chunk={chunk}
+                documentChunks={documentChunks}
+                setDocumentChunks={setDocumentChunks}
+                handleChunkClick={handleChunkClick}
+              />
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+              <svg
+                className="w-16 h-16 mb-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <p className="text-lg mb-2">No document chunks</p>
+              <p className="text-sm">
+                Please upload Markdown files to add document chunks
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
       <Modal
-        title="编辑内容"
+        title="Edit content"
         open={isChunkModalOpen}
         onCancel={() => setIsChunkModalOpen(false)}
         footer={[
           <div className="flex items-center justify-end gap-4">
-            <div className="text-gray-500">字符数: {editingContent.length}</div>
+            <div className="text-gray-500">
+              Characters: {editingContent.length}
+            </div>
             <button
               key="save"
               onClick={handleSaveContent}
               disabled={isSaving}
               className="bg-[rgba(99,0,255,0.87)] hover:bg-[rgba(99,0,255,0.7)] text-white px-8 py-1.5 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSaving ? "更新中..." : "更新"}
+              {isSaving ? "Updating..." : "Update"}
             </button>
           </div>,
         ]}

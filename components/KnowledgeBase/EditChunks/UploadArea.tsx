@@ -1,11 +1,10 @@
 import { message } from "antd";
 import { FC, useState } from "react";
-import { DocumentChunk } from "./index";
 
 const UploadArea: FC<{
-  documentChunks: DocumentChunk[];
-  setDocumentChunks: (chunks: DocumentChunk[]) => void;
-}> = ({ documentChunks, setDocumentChunks }) => {
+  kb_id: number;
+  refreshDocumentChunks: () => void;
+}> = ({ kb_id, refreshDocumentChunks }) => {
   const [isUploading, setIsUploading] = useState(false);
 
   // 处理文件上传
@@ -15,7 +14,7 @@ const UploadArea: FC<{
 
     // 检查文件类型
     if (!file.name.toLowerCase().endsWith(".md")) {
-      message.error("只支持上传 Markdown (.md) 格式的文件");
+      message.error("Only support markdown files");
       return;
     }
 
@@ -24,23 +23,24 @@ const UploadArea: FC<{
       // 读取文件内容
       const content = await file.text();
 
-      // TODO: 替换为实际的 API 调用
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // 添加新的文档区块到列表最前面
-      const newChunk: DocumentChunk = {
-        id: Date.now(),
-        title: file.name.replace(".md", ""),
-        content: content,
-        source: file.name,
-        updated_at: new Date().toISOString(),
-        char_count: content.length,
-      };
-
-      const newChunks = [newChunk, ...documentChunks];
-
-      setDocumentChunks(newChunks);
-      message.success("文件上传成功");
+      const res = await fetch("/api/supabase/rag/kb_chunks/insertChunk", {
+        method: "POST",
+        body: JSON.stringify({
+          kb_id,
+          content,
+          metadata: {
+            source: file.name,
+            title: file.name.replace(".md", ""),
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        message.success("File uploaded successfully");
+        refreshDocumentChunks();
+      } else {
+        message.error("File uploaded failed");
+      }
 
       // 清空 input 的值，允许重复上传相同文件
       e.target.value = "";
@@ -88,7 +88,7 @@ const UploadArea: FC<{
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span>正在上传...</span>
+          <span>Uploading...</span>
         </div>
       ) : (
         <>
@@ -103,7 +103,7 @@ const UploadArea: FC<{
             <path d="M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z"></path>
             <path d="M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z"></path>
           </svg>
-          <span>上传文件（仅支持 Markdown）</span>
+          <span>Upload file (only support Markdown)</span>
         </>
       )}
     </label>

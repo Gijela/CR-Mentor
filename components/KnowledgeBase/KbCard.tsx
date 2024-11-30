@@ -95,7 +95,12 @@ const KbCard: FC<{
             <div className="h-[55px] grid grid-cols-2 divide-x divide-gray-200 border-t border-gray-200">
               <button
                 onClick={(e) => {
-                  alert("chat kb");
+                  const searchParams = new URLSearchParams(
+                    window.location.search
+                  );
+                  window.location.hash = "chatgpt";
+                  searchParams.set("kb_id", kb.id.toString());
+                  window.location.search = searchParams.toString();
                   e.stopPropagation();
                 }}
                 className="text-[rgb(132,112,255)] hover:text-[#8470FF] py-3 transition-colors duration-200 flex items-center justify-center font-medium"

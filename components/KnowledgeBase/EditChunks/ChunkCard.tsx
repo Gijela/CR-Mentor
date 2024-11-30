@@ -13,26 +13,28 @@ const ChunkCard: FC<{
   const handleDeleteChunk = async (e: React.MouseEvent, chunkId: number) => {
     e.stopPropagation(); // 阻止事件冒泡到卡片点击事件
 
-    try {
-      // TODO: 替换为实际的 API 调用
-      // const result = await fetch('/api/deleteChunk', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ id: chunkId })
-      // });
+    message.warning("Under development, please wait...");
 
-      // 模拟 API 调用
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    // try {
+    //   // TODO: 替换为实际的 API 调用
+    //   // const result = await fetch('/api/deleteChunk', {
+    //   //   method: 'POST',
+    //   //   body: JSON.stringify({ id: chunkId })
+    //   // });
 
-      const newDocumentChunks = documentChunks.filter(
-        (chunk) => chunk.id !== chunkId
-      );
+    //   // 模拟 API 调用
+    //   await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // 更新本地状态
-      setDocumentChunks(newDocumentChunks);
-      message.success("区块已删除");
-    } catch (error) {
-      message.error("删除失败");
-    }
+    //   const newDocumentChunks = documentChunks.filter(
+    //     (chunk) => chunk.id !== chunkId
+    //   );
+
+    //   // 更新本地状态
+    //   setDocumentChunks(newDocumentChunks);
+    //   message.success("Chunk deleted");
+    // } catch (error) {
+    //   message.error("Delete failed");
+    // }
   };
 
   return (
@@ -43,7 +45,7 @@ const ChunkCard: FC<{
     >
       <div className="flex flex-col">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="text-lg font-medium">{chunk.title}</h3>
+          <h3 className="text-lg font-medium">{chunk.metadata.title}</h3>
           <div className="flex gap-2">
             <Button
               type="text"
@@ -77,7 +79,7 @@ const ChunkCard: FC<{
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <span className="truncate">{chunk.source}</span>
+              <span className="truncate">{chunk.metadata.source}</span>
             </div>
             <div className="flex items-center">
               <svg
@@ -93,7 +95,7 @@ const ChunkCard: FC<{
                   d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
                 />
               </svg>
-              <span>{chunk.char_count} 字符</span>
+              <span>{chunk.content.length} Characters</span>
             </div>
           </div>
           <div className="flex items-center">
@@ -110,7 +112,7 @@ const ChunkCard: FC<{
                 d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>{new Date(chunk.updated_at).toLocaleDateString()}</span>
+            <span>{new Date(chunk.created_at).toLocaleString()}</span>
           </div>
         </div>
       </div>
