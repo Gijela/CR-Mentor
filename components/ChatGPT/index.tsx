@@ -134,7 +134,7 @@ const ChatGPT = () => {
 
     // 删除会话
     setChatSessions((prev) =>
-      prev.filter((session) => session.id !== sessionId)
+      (prev || []).filter((session) => session.id !== sessionId)
     );
   };
 
