@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
         fetchK: 20, // 初始检索文档数
       },
       filter: {
-        kb_id: parseInt(kb_id)
+        kb_id: !!kb_id ? parseInt(kb_id) : undefined,
       }
     }) as BaseRetrieverInterface;
 
