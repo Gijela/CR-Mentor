@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import { ChatOpenAI } from "@langchain/openai";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { PullRequestPayload } from '@/interface/github/pullRequest';
-import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { DynamicTool } from "@langchain/core/tools";
+import { AgentExecutor, initializeAgentExecutorWithOptions } from "langchain/agents";
+import { DynamicStructuredTool } from "@langchain/core/tools";
+import { z } from "zod";
 
 // Code Review 角色提示
 const CODE_REVIEWER_PROMPT = `
@@ -37,12 +38,46 @@ const model = new ChatOpenAI({
   verbose: true,
 });
 
-// 创建代码评审工具
+// 创建发布评论工具
+const createCommentTool = (token: string, owner: string, repo: string, prNumber: number) => {
+  return new DynamicStructuredTool({
+    name: "create_pr_comment",
+    description: "使用这个工具来在 PR 上发布评论",
+    schema: z.object({
+      comment: z.string().describe("要发布的评论内容"),
+    }),
+    func: async ({ comment }) => {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ body: comment })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to create PR comment');
+      }
+
+      return "评论发布成功";
+    }
+  });
+};
+
+// 改进代码评审工具
 const createCodeReviewTool = (prContent: string) => {
-  console.log("🚀 ~ createCodeReviewTool ~ prContent:", prContent)
-  return new DynamicTool({
+  return new DynamicStructuredTool({
     name: "code_review",
-    description: "使用这个工具来执行代码评审。将分析代码中的逻辑错误、安全漏洞、性能问题等关键问题。",
+    description: "使用这个工具来执行代码评审",
+    schema: z.object({
+      content: z.string().describe("要评审的PR内容"),
+    }),
     func: async () => {
       const response = await model.call([
         new SystemMessage(CODE_REVIEWER_PROMPT),
@@ -53,12 +88,42 @@ const createCodeReviewTool = (prContent: string) => {
   });
 };
 
-// 定义 Agent 系统提示
+// 更新 Agent 系统提示
 const AGENT_SYSTEM_TEMPLATE = `你是一个专业的代码评审助手。你的任务是：
 1. 使用 code_review 工具来分析提交的代码
-2. 基于分析结果提供专业的评审意见
-3. 重点关注代码中的逻辑错误、安全漏洞和性能问题
-4. 以清晰的格式输出评审结果`;
+2. 基于分析结果，使用 create_pr_comment 工具发布评审意见
+3. 重点关注代码中的逻辑错误、安全漏洞和性能问题`;
+
+// 优化 Agent 配置
+let agentExecutor: AgentExecutor | null = null;
+
+async function getOrCreateAgent(tools: any[]) {
+  if (!agentExecutor) {
+    const model = new ChatOpenAI({
+      configuration: {
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.OPENAI_API_BASE,
+      },
+      modelName: 'deepseek-ai/DeepSeek-V2.5',
+      temperature: 0.2,
+      verbose: true,
+    });
+
+    agentExecutor = await initializeAgentExecutorWithOptions(
+      tools,
+      model,
+      {
+        agentType: "structured-chat-zero-shot-react-description",
+        verbose: true,
+        maxIterations: 3,
+        agentArgs: {
+          prefix: AGENT_SYSTEM_TEMPLATE
+        }
+      }
+    );
+  }
+  return agentExecutor;
+}
 
 export async function POST(req: Request) {
   try {
@@ -110,41 +175,37 @@ export async function POST(req: Request) {
     ${diff}
     `;
 
-    // 创建代码评审工具
+    // 创建工具
     const reviewTool = createCodeReviewTool(prContent);
-
-    // 创建 ReAct Agent
-    const agent = await createReactAgent({
-      llm: model,
-      tools: [reviewTool],
-      messageModifier: new SystemMessage(AGENT_SYSTEM_TEMPLATE),
-    });
-
-    // 执行代码评审
-    const result = await agent.invoke({
-      messages: [new HumanMessage(`请对这个 PR 进行代码评审, 代码变更信息为：${diff}`)]
-    });
-
-    // 获取评审结果
-    const reviewContent = result.messages[result.messages.length - 1].content;
-    console.log("🚀 ~ POST ~ reviewContent:", reviewContent)
-
-    // 创建 PR 评论
-    await fetch(
-      `https://api.github.com/repos/${repository.owner.login}/${repository.name}/issues/${pull_request.number}/comments`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ body: reviewContent })
-      }
+    const commentTool = createCommentTool(
+      token,
+      repository.owner.login,
+      repository.name,
+      pull_request.number
     );
 
-    return NextResponse.json({ success: true });
+    // 使用新的 Agent 初始化方式
+    const executor = await getOrCreateAgent([reviewTool, commentTool]);
+    const result = await executor.invoke({
+      input: `请对这个 PR 进行代码评审并发布评论`
+    });
+
+    // 处理结果
+    if (result.output === 'Agent stopped due to max iterations.') {
+      console.error("Agent执行超时:", {
+        steps: result.intermediateSteps
+      });
+      return NextResponse.json(
+        { error: "代码评审执行超时，请重试" },
+        { status: 408 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      answer: result.output,
+      raw: process.env.NODE_ENV === 'development' ? result : undefined
+    });
 
   } catch (error) {
     console.error('Code review error:', error);
