@@ -38,17 +38,17 @@ const model = new ChatOpenAI({
   verbose: true,
 });
 
-// 创建发布评论工具
-const createCommentTool = (token: string, owner: string, repo: string, prNumber: number) => {
+// 创建发布 PR 总结工具
+const createPrSummaryTool = (token: string, commentUrl: string) => {
   return new DynamicStructuredTool({
-    name: "create_pr_comment",
-    description: "使用这个工具来在 PR 上发布评论",
+    name: "create_pr_summary",
+    description: "使用这个工具来在 PR 上发布总结",
     schema: z.object({
-      comment: z.string().describe("要发布的评论内容"),
+      summary: z.string().describe("要发布的总结内容"),
     }),
-    func: async ({ comment }) => {
+    func: async ({ summary }) => {
       const response = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/issues/${prNumber}/comments`,
+        commentUrl,
         {
           method: 'POST',
           headers: {
@@ -57,7 +57,7 @@ const createCommentTool = (token: string, owner: string, repo: string, prNumber:
             'X-GitHub-Api-Version': '2022-11-28',
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ body: comment })
+          body: JSON.stringify({ body: summary })
         }
       );
 
@@ -91,7 +91,7 @@ const createCodeReviewTool = (prContent: string) => {
 // 更新 Agent 系统提示
 const AGENT_SYSTEM_TEMPLATE = `你是一个专业的代码评审助手。你的任务是：
 1. 使用 code_review 工具来分析提交的代码
-2. 基于分析结果，使用 create_pr_comment 工具发布评审意见
+2. 基于分析结果，使用 create_pr_summary 工具发布评审意见
 3. 重点关注代码中的逻辑错误、安全漏洞和性能问题`;
 
 // 优化 Agent 配置
@@ -128,8 +128,8 @@ async function getOrCreateAgent(tools: any[]) {
 export async function POST(req: Request) {
   try {
     const { payload } = await req.json();
-    const { action, pull_request, repository, sender }: PullRequestPayload = JSON.parse(payload);
-    console.log("🚀 ~ POST ~ action:", action)
+    const { action, pull_request }: PullRequestPayload = JSON.parse(payload);
+    const { _links, title, body, user } = pull_request;
 
     if (action !== 'opened') {
       return NextResponse.json({ success: false, message: `only support pr opened, ${action} is not opened` }, { status: 200 });
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ githubName: sender.login }),
+      body: JSON.stringify({ githubName: user.login }),
     });
     const { success, token, msg, error } = await tokenResponse.json();
     console.log("🚀 ~ POST ~ token:", token)
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
 
     // 2. 获取 PR 差异
     const diffResponse = await fetch(
-      `https://api.github.com/repos/${repository.owner.login}/${repository.name}/pulls/${pull_request.number}`,
+      _links.self.href,
       {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -166,26 +166,21 @@ export async function POST(req: Request) {
     // 3. 准备 PR 内容
     const prContent = `
     ### PR Title
-    ${pull_request.title}
-    
+    ${title}
+
     ### PR Description
-    ${pull_request.body}
-    
+    ${body}
+
     ### File Changes
     ${diff}
     `;
 
     // 创建工具
     const reviewTool = createCodeReviewTool(prContent);
-    const commentTool = createCommentTool(
-      token,
-      repository.owner.login,
-      repository.name,
-      pull_request.number
-    );
+    const summaryTool = createPrSummaryTool(token, _links.comments.href);
 
     // 使用新的 Agent 初始化方式
-    const executor = await getOrCreateAgent([reviewTool, commentTool]);
+    const executor = await getOrCreateAgent([reviewTool, summaryTool]);
     const result = await executor.invoke({
       input: `请对这个 PR 进行代码评审并发布评论`
     });
