@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "smee": "smee -u https://smee.io/NCWNhl2nXLy4tKLN --path /api/test --port 7344",
+    "smeeM2": "smee -u https://smee.io/npbCNl5TxjOho9 --path /api/github/reviewCode --port 3000",
     "clean": "rm -rf .next out"
   },
   "dependencies": {

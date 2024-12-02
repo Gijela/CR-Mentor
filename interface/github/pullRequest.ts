@@ -120,7 +120,7 @@ interface Repository extends RepoBase {
   issue_comment_url: string;
   /* 内容 URL */
   contents_url: string;
-  /* 比较 URL */
+  /* 比较 URL demo: https://api.github.com/repos/Gijela/Auth-Github-App/compare/{base}...{head}*/
   compare_url: string;
   /* 合并 URL */
   merges_url: string;
@@ -234,7 +234,7 @@ interface Repository extends RepoBase {
 
 /* PR 分支信息 */
 interface PullRequestBranch {
-  /* 分支标签 */
+  /* 分支标签 demo: Gijela:feat/cr */
   label: string;
   /* 分支名称 */
   ref: string;
