@@ -104,11 +104,11 @@ export async function POST(req: Request) {
     console.log("开始执行代码评审...");
 
     const result = await executor.invoke({
-      input: `请对这个 PR 进行代码评审并发布评论。请按照以下步骤执行：
-      1. 首先使用 code_review 工具分析代码
-      2. 然后使用 create_pr_summary 工具发布总结评论
-      3. 最后使用 batch_file_comments 工具对有问题的代码变更发布行级评论
-      `
+      input: `请严格按照以下顺序执行且每个工具仅执行一次：
+      1. 使用 code_review 工具分析代码并保存结果
+      2. 使用 create_pr_summary 工具将保存的分析结果发布为总结评论
+      3. 使用 batch_file_comments 工具将保存的建议发布为行级评论
+      注意：每个工具只能执行一次，执行完一个工具后必须继续执行下一个工具。`
     });
 
     // 添加更详细的结果检查
