@@ -1,4 +1,5 @@
 "use client";
+
 import { defaultLocale } from "@/lib/i18n";
 import { motion } from "framer-motion";
 import { SiComicfury } from "react-icons/si";

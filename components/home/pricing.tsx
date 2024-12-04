@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import PricingCard from './pricing/card';
 import { PricingList } from '@/lib/pricingList';
 import { motion } from 'framer-motion';

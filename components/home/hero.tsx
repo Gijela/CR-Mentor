@@ -26,7 +26,7 @@ export default function Hero({ lang, locale, CTALocale }) {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
-  
+
   return (
     <>
       <section
@@ -78,7 +78,8 @@ export default function Hero({ lang, locale, CTALocale }) {
                 href={`https://github.com/Gijela/CR-Mentor/pull/6`}
                 target="_blank"
               >
-                <IoDocumentText className="text-white animate-pulse" /> Live Demo
+                <IoDocumentText className="text-white animate-pulse" /> Live
+                Demo
               </a>
             </div>
           </div>
