@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "smee": "smee -u https://smee.io/NCWNhl2nXLy4tKLN --path /api/test --port 7344",
+    "smeeM2": "smee -u https://smee.io/npbCNl5TxjOho9 --path /api/github/reviewCode --port 3000",
+    "smeeM3": "smee -u https://smee.io/nFMg9xJmgobJfSDr --path /api/github/reviewCode --port 3000",
     "clean": "rm -rf .next out"
   },
   "dependencies": {
@@ -37,7 +38,8 @@
     "react-dom": "^18",
     "react-icons": "^5.2.1",
     "react-markdown": "^9.0.1",
-    "react-virtuoso": "^4.12.2"
+    "react-virtuoso": "^4.12.2",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "20.14.10",

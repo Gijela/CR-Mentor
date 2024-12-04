@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createStore } from "hox";
-import { Repository } from "@/components/Repo/interface";
+import { Repository } from "@/components/Repository/interface";
 
 // 仓库列表信息
 export const [useRepoStore, RepoStoreProvider] = createStore(() => {

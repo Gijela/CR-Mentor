@@ -28,7 +28,8 @@ const ChatArea: React.FC<{
   const [editingTitle, setEditingTitle] = useState("");
 
   const handleStartEditing = () => {
-    const currentTitle = chatSessions.find((s) => s.id === currentSessionId)?.title || "";
+    const currentTitle =
+      chatSessions.find((s) => s.id === currentSessionId)?.title || "";
     setEditingTitle(currentTitle);
     setIsEditing(true);
   };
@@ -43,9 +44,9 @@ const ChatArea: React.FC<{
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSaveEdit();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       handleCancelEdit();
     }
   };
@@ -82,11 +83,12 @@ const ChatArea: React.FC<{
                   autoFocus
                 />
               ) : (
-                <span 
+                <span
                   className="font-medium cursor-pointer hover:text-violet-600"
                   onClick={handleStartEditing}
                 >
-                  {chatSessions.find((s) => s.id === currentSessionId)?.title || "随便聊聊"}
+                  {chatSessions.find((s) => s.id === currentSessionId)?.title ||
+                    "随便聊聊"}
                 </span>
               )}
               <span className="text-xs text-gray-500">@gpt-4o-mini</span>
@@ -192,9 +194,9 @@ const ChatArea: React.FC<{
                           }
 
                           const chunk = decoder.decode(value, { stream: true });
-                          const lines = chunk
-                            .split("\n")
-                            .filter((line) => line.trim() !== "");
+                          const lines = (chunk.split("\n") || []).filter(
+                            (line) => line.trim() !== ""
+                          );
 
                           for (const line of lines) {
                             try {

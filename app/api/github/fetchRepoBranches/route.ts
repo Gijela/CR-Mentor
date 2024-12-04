@@ -1,4 +1,4 @@
-import { Branch } from "@/components/Repo/CreatePRModal";
+import { Branch } from "@/components/Repository/CreatePRModal";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {

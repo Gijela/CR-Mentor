@@ -19,7 +19,7 @@ const KnowledgeBaseList: React.FC<{
 
   // 基于搜索词过滤知识库列表
   const filteredList = useMemo(() => {
-    return knowledgeBases.filter((item) =>
+    return (knowledgeBases || []).filter((item) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery, knowledgeBases]);
