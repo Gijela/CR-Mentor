@@ -278,69 +278,6 @@ export const FAQList = {
     },
   ],
 
-  FAQ_ES: [
-    {
-      question: "¿Qué es CR-Mentor?",
-      answer:
-        "CR-Mentor es una herramienta avanzada de revisión de código impulsada por inteligencia artificial que automatiza el proceso de revisión de código, desde el análisis del código hasta la generación de informes.",
-    },
-    {
-      question: "¿Cómo puedo usar CR-Mentor?",
-      answer:
-        "Usar CR-Mentor es sencillo: 1) Sube tu código al sistema. 2) Configura las reglas de revisión según las necesidades de tu proyecto. 3) Deja que CR-Mentor analice tu código y genere un informe detallado. 4) Revisa el informe y aplica las sugerencias de optimización proporcionadas.",
-    },
-    {
-      question: "¿Por qué es importante usar CR-Mentor?",
-      answer:
-        "CR-Mentor es crucial para cualquier equipo de desarrollo porque proporciona una plataforma automatizada para revisar el código, lo que mejora la calidad del código, aumenta la eficiencia del equipo y asegura el éxito del proyecto.",
-    },
-    {
-      question: "¿Por qué elegir CR-Mentor?",
-      answer:
-        "CR-Mentor utiliza algoritmos avanzados de procesamiento de lenguaje natural y aprendizaje automático para proporcionar revisiones de código precisas y detalladas. Es personalizable, fácil de usar y mejora significativamente la calidad del código.",
-    },
-    {
-      question: "¿Qué habilidades necesito para usar CR-Mentor?",
-      answer:
-        "Para usar CR-Mentor, solo necesitas habilidades básicas de desarrollo de software. La herramienta está diseñada para ser fácil de usar tanto para desarrolladores novatos como para expertos.",
-    },
-    {
-      question: "¿Cómo puedo empezar con CR-Mentor?",
-      answer:
-        "Empezar con CR-Mentor es muy sencillo. Regístrate en nuestra plataforma, sube tu código y configura las reglas de revisión. CR-Mentor se encargará del resto.",
-    },
-    {
-      question: "¿CR-Mentor admite múltiples lenguajes de programación?",
-      answer:
-        "Sí, CR-Mentor admite múltiples lenguajes de programación, lo que lo hace ideal para equipos de desarrollo que trabajan con diferentes tecnologías.",
-    },
-    {
-      question: "¿Puedo usar CR-Mentor para proyectos comerciales?",
-      answer:
-        "Absolutamente. CR-Mentor es adecuado para cualquier tipo de proyecto, incluidos los proyectos comerciales. Ayuda a mejorar la calidad del código y la eficiencia del equipo.",
-    },
-    {
-      question: "¿Ofrecen servicios de personalización?",
-      answer:
-        "Sí, ofrecemos servicios de personalización para adaptar CR-Mentor a las necesidades específicas de tu proyecto. Contáctanos para más detalles.",
-    },
-    {
-      question: "¿Hay alguna restricción para usar CR-Mentor?",
-      answer:
-        "No. Eres libre de usar y modificar CR-Mentor según tus necesidades. Alentamos a los desarrolladores a contribuir al proyecto para mejorarlo juntos.",
-    },
-    {
-      question: "¿CR-Mentor incluye funciones de optimización SEO?",
-      answer:
-        "Sí, CR-Mentor incluye funciones básicas de optimización SEO para ayudar a mejorar la visibilidad de tu código en los motores de búsqueda.",
-    },
-    {
-      question: "¿Qué debo hacer si tengo problemas al usar CR-Mentor?",
-      answer:
-        "Si encuentras problemas mientras usas CR-Mentor, comunícate con nosotros a través de nuestro soporte técnico o en nuestras redes sociales.",
-    },
-  ],
-
   FAQ_RU: [
     {
       question: "Что такое CR-Mentor?",
