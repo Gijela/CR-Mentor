@@ -8,7 +8,6 @@ import { GithubOutlined } from "@ant-design/icons";
 import { usePathname } from "next/navigation";
 import { defaultLocale } from "@/lib/i18n";
 import { NavLinksList } from "@/lib/navLinksList";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -64,15 +63,15 @@ export default function Navbar() {
       </ul>
 
       <div className="md:w-1/5 flex items-center justify-end gap-2">
-        <label className='flex items-center justify-center md:bg-base-100 md:rounded-full w-5 md:w-8 h-5 md:h-8 md:shadow-sm md:hover:shadow-md transition-all'>
-					<a
-						aria-label='get source code'
-						title='get source code'
-						href='https://github.com/Gijela/CR-Mentor'
+        <label className="flex items-center justify-center md:bg-base-100 md:rounded-full w-5 md:w-8 h-5 md:h-8 md:shadow-sm md:hover:shadow-md transition-all">
+          <a
+            aria-label="get source code"
+            title="get source code"
+            href="https://github.com/Gijela/CR-Mentor"
             target="_blank"
-					>
-            <GithubOutlined  />
-					</a>
+          >
+            <GithubOutlined />
+          </a>
         </label>
         <ThemeToggle />
         <LangSwitch />
@@ -96,13 +95,6 @@ export default function Navbar() {
             })}
           </ul>
         </details> */}
-
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
       </div>
     </header>
   );

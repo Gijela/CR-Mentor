@@ -1,4 +1,4 @@
-import { Repository } from "@/components/Repo/interface";
+import { Repository } from "@/components/Repository/interface";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {

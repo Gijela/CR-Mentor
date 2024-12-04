@@ -7,7 +7,7 @@ export const NavLinksList = {
     { name: "How It Works", url: "#how-it-works" },
     // { name: "About", url: "/about" },
     // { name: 'Blog', url: '/blog' },
-    { name: "Repositories", url: "/dash" },
+    { name: "Repositories", url: "/dashboard" },
   ], 
   LINK_ZH: [
     { name: "核心功能", url: "#feature" },
@@ -17,7 +17,7 @@ export const NavLinksList = {
     { name: "工作原理", url: "#how-it-works" },
     // { name: "关于", url: "/about" },
     // { name: '博客', url: '/blog' },
-    { name: "仓库列表", url: "/dash" },
+    { name: "仓库列表", url: "/dashboard" },
   ],
   LINK_ES: [
     { name: "Función", url: "#feature" },
@@ -27,7 +27,7 @@ export const NavLinksList = {
     { name: "Cómo Funciona", url: "#how-it-works" },
     // { name: "Acerca de", url: "/about" },
     // { name: 'Blog', url: '/blog' },
-    { name: "Repositorios", url: "/dash" },
+    { name: "Repositorios", url: "/dashboard" },
   ],
   LINK_RU: [
     { name: "Функция", url: "#feature" },
@@ -37,7 +37,7 @@ export const NavLinksList = {
     { name: "Как это работает", url: "#how-it-works" },
     // { name: "О нас", url: "/about" },
     // { name: 'Блог', url: '/blog' },
-    { name: "Репозитории", url: "/dash" },
+    { name: "Репозитории", url: "/dashboard" },
   ],
   LINK_JA: [
     { name: "機能", url: "#feature" },
@@ -47,7 +47,7 @@ export const NavLinksList = {
     { name: "仕組み", url: "#how-it-works" },
     // { name: "アバウト", url: "/about" },
     // { name: 'ブログ', url: '/blog' },
-    { name: "リポジトリ", url: "/dash" },
+    { name: "リポジトリ", url: "/dashboard" },
   ],
   LINK_AR: [
     { name: "ميزة", url: "#feature" },
@@ -57,7 +57,7 @@ export const NavLinksList = {
     { name: "كيف يعمل", url: "#how-it-works" },
     // { name: "حول", url: "/about" },
     // { name: 'مدونة', url: '/blog' },
-    { name: "المستودعات", url: "/dash" },
+    { name: "المستودعات", url: "/dashboard" },
   ],
   LINK_FR: [
     { name: "Fonctionnalité", url: "#feature" },
@@ -67,6 +67,6 @@ export const NavLinksList = {
     { name: "Comment ça marche", url: "#how-it-works" },
     // { name: "À propos", url: "/about" },
     // { name: 'Blog', url: '/blog' },
-    { name: "Dépôts", url: "/dash" },
+    { name: "Dépôts", url: "/dashboard" },
   ],
 };

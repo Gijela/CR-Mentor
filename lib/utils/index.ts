@@ -1,8 +1,8 @@
 // 从url中获取语言lang
 export const getLangFromUrl = () => {
   const url = window.location.href;
-  const match = url.match(/\/(\w{2})\/dash/);
-  return match ? match[1] : 'en'; // 默认返回'en'
+  const match = url.match(/\/(\w{2})\/dashboard/);
+  return match ? match[1] : "en"; // 默认返回'en'
 };
 
 // 获取dify知识库列表

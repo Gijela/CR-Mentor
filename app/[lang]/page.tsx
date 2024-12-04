@@ -4,8 +4,8 @@ import Hero from "@/components/home/hero";
 import Feature from "@/components/home/feature";
 // import Pricing from "@/components/home/pricing";
 // import Testimonial from "@/components/home/testimonial";
-import Faq from "@/components/home/faq";
-import HowItWork from "@/components/home/howItWork";
+// import Faq from "@/components/home/faq";
+// import HowItWork from "@/components/home/howItWork";
 import Cta from "@/components/home/cta";
 
 export default async function Home({ params }) {
@@ -25,7 +25,7 @@ export default async function Home({ params }) {
 				langName={langName}
 			/> */}
       {/* <Faq locale={dict.Faq} langName={langName} /> */}
-      <HowItWork locale={dict.HowItWork} />
+      {/* <HowItWork locale={dict.HowItWork} /> */}
       <Cta lang={langName} locale={dict.CTA} CTALocale={dict.CTAButton} />
     </div>
   );
