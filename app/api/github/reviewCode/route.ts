@@ -81,8 +81,45 @@ export async function POST(req: Request) {
     }
     const { files, commits } = await response.json();
 
-    // 3. 准备 PR 内容
+    // 向量查询
+    const moduleAnalysis = await model.invoke([
+      {
+        role: "user",
+        content: `根据这段${diff}代码，列出关于这段代码用到的工具库、模块包、编程语言。
+          请注意：
+          - 知识列表中的每一项都不要有类似或者重复的内容
+          - 列出的内容要和代码密切相关
+          - 最少列出 3 个, 最多不要超过 6 个
+          - 知识列表中的每一项要具体
+          - 列出列表，不要对工具库、模块做解释
+          - 输出中文
+        `
+      }
+    ]);
+    console.log("🚀 ~ POST ~ moduleAnalysis:", moduleAnalysis)
+    const relevantKnowledge = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/supabase/rag/kb_chunks/retrieval_agents`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `提供关于以下工具库、模块包和编程语言的最佳实践：${moduleAnalysis}`
+            }
+          ],
+          kb_id: 15, // 自定义知识库id
+          show_intermediate_steps: false,
+        }),
+      }
+    );
+    console.log("🚀 ~ POST ~ relevantKnowledge:", relevantKnowledge)
+
+    // 将知识整合到 PR 内容中
     const prContent = `
+    ### 技术背景知识
+    ${relevantKnowledge}
+
     ### PR Title
     ${title}
 

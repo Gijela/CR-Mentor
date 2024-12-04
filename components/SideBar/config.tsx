@@ -7,7 +7,16 @@ import KnowledgeBase from "@/components/KnowledgeBase";
 import ChatGPT from "../ChatGPT";
 import ChatGPTIcon from "./icons/ChatgptIcon";
 
-export const sidebarItems = [
+interface ISidebarItem {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  component: React.ReactNode;
+  children?: ISidebarItem[];
+  badge?: number;
+}
+
+export const sidebarItems: ISidebarItem[] = [
   // {
   //   key: "dashboard",
   //   label: "Dashboard",

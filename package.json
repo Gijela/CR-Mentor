@@ -9,7 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "smeeM2": "smee -u https://smee.io/npbCNl5TxjOho9 --path /api/github/reviewCode --port 3000",
-    "smeeM3": "smee -u https://smee.io/pzoHJgjpxdZBwAD0 --path /api/github/reviewCode --port 3000",
+    "smeeM3": "smee -u https://smee.io/nFMg9xJmgobJfSDr --path /api/github/reviewCode --port 3000",
     "clean": "rm -rf .next out"
   },
   "dependencies": {
