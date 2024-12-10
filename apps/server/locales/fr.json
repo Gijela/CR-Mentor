@@ -1,0 +1,40 @@
+{
+  "Hero": {
+    "h1": "AI CodeReview Mentor",
+    "h2": "Renforcez les capacités de toute l'équipe grâce aux retours contextuels pilotés par l'IA, prenant en charge toutes les langues, et réduisez de moitié le temps et les erreurs de révision de code."
+  },
+  "Feature": {
+    "h2": "Fonctionnalités principales",
+    "h3": "Caractéristiques clés de AI CodeReview Mentor",
+    "description1": "Analyse de code par IA, fournissant des rapports détaillés de révision de code.",
+    "description2": "Détection automatique des erreurs potentielles et des problèmes de performance dans le code.",
+    "description3": "Propose des suggestions d'optimisation pour améliorer la qualité du code et l'efficacité du développement."
+  },
+  "Pricing": {
+    "h2": "Plans tarifaires",
+    "h3": "Choisissez le plan qui vous convient",
+    "description": "AI CodeReview Mentor propose deux plans tarifaires, une version gratuite et une version professionnelle, pour répondre à différents besoins.",
+    "doYouLike": "Que pensez-vous de cet outil ?",
+    "follow": "Suivez-nous sur les réseaux sociaux pour en savoir plus."
+  },
+  "Testimonial": {
+    "h2": "Avis des utilisateurs",
+    "h3": "Ce qu'ils disent",
+    "description1": "Si vous avez utilisé AI CodeReview Mentor et partagé votre expérience sur les réseaux sociaux,",
+    "description2": "faites-le nous savoir,",
+    "description3": "nous présenterons ici vos précieux retours."
+  },
+  "Faq": {
+    "h2": "FAQ",
+    "h3": "Questions et réponses",
+    "description": "Voici quelques-unes des questions les plus fréquentes concernant AI CodeReview Mentor et leurs réponses."
+  },
+  "CTA": {
+    "h2": "Commencez votre voyage de révision de code",
+    "h3": "Essayez AI CodeReview Mentor dès maintenant et améliorez la qualité de votre code !"
+  },
+  "CTAButton": {
+    "btn1": "Essayer gratuitement",
+    "btn2": "En savoir plus"
+  }
+}
