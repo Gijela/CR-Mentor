@@ -191,6 +191,25 @@ export const menus: IMenu[] = [
     title: "KnowledgeBase",
     icon: BookOpen,
     to: "/knowledgeBase",
+    children: [
+      {
+        title: "kbList",
+        label: "128",
+        icon: Gauge,
+        to: "/knowledgeBase/kbList",
+      },
+      {
+        title: "editKb",
+        label: "9",
+        icon: ChartNoAxesCombined,
+        to: "/knowledgeBase/editKb",
+      },
+      // {
+      //   title: "workplace",
+      //   icon: Orbit,
+      //   to: "/dashboard/workplace",
+      // },
+    ],
   },
 ] as const
 
