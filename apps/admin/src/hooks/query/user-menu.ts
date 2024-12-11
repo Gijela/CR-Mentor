@@ -20,6 +20,7 @@ import {
   Table,
   TableProperties,
   Trash2,
+  BookMinus,
 } from "lucide-react"
 
 import type { IMenu } from "@/schema/menu"
@@ -180,4 +181,10 @@ export const menus: IMenu[] = [
       },
     ],
   },
+  {
+    title: "Repository",
+    icon: BookMinus,
+    to: "/repository",
+  },
 ] as const
+
