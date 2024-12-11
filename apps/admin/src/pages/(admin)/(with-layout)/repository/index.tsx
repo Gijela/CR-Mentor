@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils"
 import { SearchIcon } from "lucide-react"
 import { LoadingSpinner } from "@/components/loading-spinner"
 import type { Repository } from "./interface"
+import { CreatePRDialog } from "./components/create-pr-dialog"
 
 export function Component() {
   const { t } = useTranslation()
@@ -85,10 +86,7 @@ export function Component() {
           </Select>
         </div>
 
-        <Button>
-          <GitPullRequestIcon className="mr-2 h-4 w-4" />
-          {t('repository.create_pr', '创建 PR')}
-        </Button>
+        <CreatePRDialog />
       </div>
 
       <Separator />
