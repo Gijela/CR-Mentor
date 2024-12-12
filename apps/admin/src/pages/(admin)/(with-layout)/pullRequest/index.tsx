@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/ui/table"
-import { ExternalLink, GitBranch, MoreHorizontal, PlusCircle, Search } from "lucide-react"
+import { ExternalLink, GitBranch, MoreHorizontal, Search } from "lucide-react"
 import React, { useState } from "react"
 
 interface PullRequest {
@@ -170,10 +170,10 @@ export function Component() {
               </SelectContent>
             </Select>
           </div>
-          <Button>
+          {/* <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
             New PR
-          </Button>
+          </Button> */}
         </div>
       </div>
 

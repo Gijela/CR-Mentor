@@ -30,5 +30,5 @@
       "@pkg": ["./package.json"]
     }
   },
-  "include": ["src", "env.ts", "types/**/*.d.ts", ".storybook"]
+  "include": ["src", "env.ts", "types/**/*.d.ts", ".storybook", "src/providers/github/.tsx"]
 }

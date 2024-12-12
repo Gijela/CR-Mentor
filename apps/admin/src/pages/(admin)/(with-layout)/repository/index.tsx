@@ -1,12 +1,7 @@
-import { useState } from "react"
-import { useRepositories } from "@/hooks/query/use-repositories"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@repo/ui/select"
+import { Badge } from "@repo/ui/badge"
+import { Button } from "@repo/ui/button"
+import { Card, CardContent } from "@repo/ui/card"
+import { Input } from "@repo/ui/input"
 import {
   Pagination,
   PaginationContent,
@@ -14,50 +9,53 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@repo/ui/pagination"
-import { Separator } from "@repo/ui/separator"
-import { useTranslation } from "react-i18next"
-import { Button } from "@repo/ui/button"
-import { Input } from "@repo/ui/input"
-import { Card, CardHeader, CardContent } from "@repo/ui/card"
-import { Badge } from "@repo/ui/badge"
 import {
-  GitForkIcon,
-  StarIcon,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/select"
+import { Separator } from "@repo/ui/separator"
+import {
   ClockIcon,
-  SettingsIcon,
+  GitForkIcon,
   GitPullRequestIcon,
+  SearchIcon,
+  SettingsIcon,
+  StarIcon,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { SearchIcon } from "lucide-react"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+
 import { LoadingSpinner } from "@/components/loading-spinner"
-import type { Repository } from "./interface"
+import { useRepositories } from "@/hooks/query/use-repositories"
+import { cn } from "@/lib/utils"
+
 import { CreatePRDialog } from "./components/create-pr-dialog"
+import type { Repository } from "./interface"
+
+const githubName = "Gijela"
 
 export function Component() {
   const { t } = useTranslation()
-  const [page, setPage] = useState(1)
   const [search, setSearch] = useState("")
-  const [sort, setSort] = useState<'updated' | 'stars' | 'forks'>("updated")
+  const [sort, setSort] = useState<"updated" | "stars" | "forks">("updated")
 
   const handleSearch = (value: string) => {
     setSearch(value)
     setPage(1)
   }
 
-  const { data, isLoading, total, pageSize } = useRepositories({
-    page,
+  const { data, isLoading, page, setPage, totalCount, pageSize } = useRepositories({
+    githubName,
     search,
-    sort
+    sort,
   })
 
-  const totalPages = Math.ceil(total / pageSize)
-
-  const handlePageChange = (newPage: number) => {
-    setPage(Math.max(1, Math.min(newPage, totalPages)))
-  }
-
   const handleSortChange = (value: string) => {
-    setSort(value as 'updated' | 'stars' | 'forks')
+    setSort(value as "updated" | "stars" | "forks")
+    setPage(1)
   }
 
   return (
@@ -67,7 +65,7 @@ export function Component() {
           <div className="relative w-[300px]">
             <Input
               className="pl-8"
-              placeholder={t('repository.search_placeholder', '搜索仓库...')}
+              placeholder={t("repository.search_placeholder", "搜索仓库...")}
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
             />
@@ -76,12 +74,12 @@ export function Component() {
 
           <Select value={sort} onValueChange={handleSortChange}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t('repository.sort_by', '排序方式')} />
+              <SelectValue placeholder={t("repository.sort_by", "排序方式")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="updated">{t('repository.sort.updated', '最近更新')}</SelectItem>
-              <SelectItem value="stars">{t('repository.sort.stars', '星标数')}</SelectItem>
-              <SelectItem value="forks">{t('repository.sort.forks', '复刻数')}</SelectItem>
+              <SelectItem value="updated">{t("repository.sort.updated", "最近更新")}</SelectItem>
+              <SelectItem value="stars">{t("repository.sort.stars", "星标数")}</SelectItem>
+              <SelectItem value="forks">{t("repository.sort.forks", "复刻数")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -98,7 +96,7 @@ export function Component() {
       ) : (
         <>
           <div className="space-y-4">
-            {data?.map((repo: Repository, index: number) => (
+            {(data || []).map((repo: Repository, index: number) => (
               <Card key={index} className="hover:bg-muted/50 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -124,26 +122,36 @@ export function Component() {
                               {
                                 "bg-yellow-400": repo.language === "JavaScript",
                                 "bg-green-500": repo.language === "Vue",
-                                "bg-gray-400": !["JavaScript", "Vue"].includes(repo.language)
-                              }
+                                "bg-gray-400": !["JavaScript", "Vue"].includes(repo.language),
+                              },
                             )}
                           />
                           {repo.language}
                         </div>
                         <div className="flex items-center gap-1">
                           <StarIcon className="h-4 w-4" />
-                          {repo.stars}
+                          {repo.stargazers_count}
                         </div>
                         <div className="flex items-center gap-1">
                           <GitForkIcon className="h-4 w-4" />
-                          {repo.forks}
+                          {repo.forks_count}
                         </div>
                         <div className="flex items-center gap-1">
                           <ClockIcon className="h-4 w-4" />
-                          Updated on {repo.updatedAt}
+                          Updated on
+                          {" "}
+                          {new Date(repo.updated_at).toLocaleString("zh-CN", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: false,
+                          })}
                         </div>
                         {repo.license && (
-                          <Badge variant="outline">{repo.license}</Badge>
+                          <Badge variant="outline">{repo.license.name}</Badge>
                         )}
                       </div>
                     </div>
@@ -151,11 +159,11 @@ export function Component() {
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm">
                         <SettingsIcon className="mr-2 h-4 w-4" />
-                        {t('repository.setting', '设置')}
+                        {t("repository.setting", "设置")}
                       </Button>
                       <Button variant="outline" size="sm">
                         <GitPullRequestIcon className="mr-2 h-4 w-4" />
-                        {t('repository.prs', 'PRs')}
+                        {t("repository.prs", "PRs")}
                       </Button>
                     </div>
                   </div>
@@ -164,39 +172,36 @@ export function Component() {
             ))}
           </div>
 
-          {total > 0 && (
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-muted-foreground whitespace-nowrap">
-                {t('repository.total_items', {
-                  total,
-                  defaultValue: '共 {{total}} 个仓库'
-                })}
-              </div>
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      size="default"
-                      onClick={() => handlePageChange(page - 1)}
-                      className={page === 1 ? 'pointer-events-none opacity-50' : ''}
-                    />
-                  </PaginationItem>
-                  <PaginationItem>
-                    <span className="px-4">
-                      {page} / {totalPages}
-                    </span>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext
-                      size="default"
-                      onClick={() => handlePageChange(page + 1)}
-                      className={page >= totalPages ? 'pointer-events-none opacity-50' : ''}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground whitespace-nowrap">
+              {t("repository.total_items", {
+                defaultValue: `总共 ${totalCount} 个仓库`,
+              })}
             </div>
-          )}
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    size="default"
+                    onClick={() => setPage(page - 1)}
+                    className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <span className="px-4">
+                    {page}
+                  </span>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext
+                    size="default"
+                    onClick={() => setPage(page + 1)}
+                    className={page === Math.ceil(totalCount / pageSize) ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
         </>
       )}
     </div>

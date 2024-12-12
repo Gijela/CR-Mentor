@@ -1,10 +1,13 @@
 export interface Repository {
+  id: number
   name: string
-  visibility: string
+  visibility: "public" | "private"
   language: string
-  stars: number
-  forks: number
-  updatedAt: string
+  stargazers_count: number
+  forks_count: number
+  updated_at: string
   description?: string
-  license?: string
-} 
+  license?: {
+    name: string
+  }
+}

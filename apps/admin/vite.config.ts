@@ -40,6 +40,10 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       proxy: {
+        "/api/github/": {
+          target: "http://localhost:3000",
+          changeOrigin: true,
+        },
         "/api/": {
           target: viteEnv.VITE_API_URL,
           changeOrigin: true,
