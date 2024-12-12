@@ -47,10 +47,11 @@ export function Component() {
     setPage(1)
   }
 
-  const { data, isLoading, page, setPage, totalCount, pageSize } = useRepositories({
+  const { data, isLoading, page, setPage, totalCount } = useRepositories({
     githubName,
     search,
     sort,
+    pageSize: 20,
   })
 
   const handleSortChange = (value: string) => {
@@ -84,7 +85,7 @@ export function Component() {
           </Select>
         </div>
 
-        <CreatePRDialog />
+        <CreatePRDialog githubName={githubName} totalCount={totalCount} />
       </div>
 
       <Separator />
@@ -196,7 +197,7 @@ export function Component() {
                   <PaginationNext
                     size="default"
                     onClick={() => setPage(page + 1)}
-                    className={page === Math.ceil(totalCount / pageSize) ? "pointer-events-none opacity-50" : ""}
+                    className={page === Math.ceil(totalCount / 20) ? "pointer-events-none opacity-50" : ""}
                   />
                 </PaginationItem>
               </PaginationContent>

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@repo/ui/button"
 import { Input } from "@repo/ui/input"
@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/select"
+import { useRepositories } from "@/hooks/query/use-repositories"
+import { toast } from "sonner"
 
 const knowledgeBases = [
   { label: "通用知识库", value: "general" },
@@ -29,28 +31,68 @@ const knowledgeBases = [
   { label: "用户指南", value: "user-guide" },
 ]
 
-export function CreatePRDialog() {
+export function CreatePRDialog({ githubName, totalCount }: { githubName: string, totalCount: number }) {
   const { t } = useTranslation()
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
-  const [sourceBranch, setSourceBranch] = useState("feature")
-  const [targetBranch, setTargetBranch] = useState("main")
+  const [sourceBranch, setSourceBranch] = useState("")
+  const [targetBranch, setTargetBranch] = useState("")
   const [selectedKb, setSelectedKb] = useState("")
+  const [selectedRepo, setSelectedRepo] = useState("")
+  const [searchRepo, setSearchRepo] = useState("")
+  const [branches, setBranches] = useState<{ value: string, label: string }[]>([])
+  const [open, setOpen] = useState(false)
 
-  const handleCreatePR = () => {
-    console.log({
-      title,
-      description,
-      sourceBranch,
-      targetBranch,
-      knowledgeBase: selectedKb
+  const { data: repositories, isLoading } = useRepositories({
+    githubName,
+    search: searchRepo,
+    pageSize: totalCount,
+  })
+
+  const formattedRepositories = repositories.map(repo => ({
+    label: repo.name,
+    value: repo.name
+  }))
+
+  const handleCreatePR = async () => {
+    const response = await fetch(`/api/github/createPullRequest`, {
+      method: "POST",
+      body: JSON.stringify({ githubName, repoName: selectedRepo, data: { title, description, head: sourceBranch, base: targetBranch } }),
     })
+    const { success, msg } = await response.json()
+    if (!success) {
+      toast.error(msg)
+      console.error(msg)
+      return
+    }
+    toast.success(msg)
+    setOpen(false)
   }
 
+  const handleRepoBranch = async (repoName: string) => {
+    const response = await fetch(`/api/github/fetchRepoBranches`, {
+      method: "POST",
+      body: JSON.stringify({ githubName, repoName }),
+    })
+    const { success, data: branches, msg } = await response.json()
+    if (!success) {
+      toast.error(msg)
+      console.error(msg)
+      return
+    }
+    setBranches(branches.map((branch: { name: string }) => ({ value: branch.name, label: branch.name })))
+  }
+
+  useEffect(() => {
+    if (selectedRepo) {
+      handleRepoBranch(selectedRepo)
+    }
+  }, [selectedRepo])
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button onClick={() => setOpen(true)}>
           <GitPullRequestIcon className="mr-2 h-4 w-4" />
           {t('repository.create_pr', '创建 PR')}
         </Button>
@@ -61,24 +103,48 @@ export function CreatePRDialog() {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>{t('repository.pr.title', 'PR 标题')}</Label>
-            <Input
-              placeholder={t('repository.pr.title_placeholder', '请输入 PR 标题')}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+            <Label>{t('repository.pr.repository', '选择仓库')}</Label>
+            <Select value={selectedRepo} onValueChange={setSelectedRepo}>
+              <SelectTrigger>
+                <SelectValue
+                  placeholder="搜索或选择仓库..."
+                  className={!selectedRepo ? "text-muted-foreground" : undefined}
+                >
+                  {selectedRepo}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {isLoading ? (
+                  <SelectItem value="loading">加载中...</SelectItem>
+                ) : formattedRepositories.length === 0 ? (
+                  <SelectItem value="" disabled>
+                    未找到匹配的仓库
+                  </SelectItem>
+                ) : (
+                  formattedRepositories.map((repo) => (
+                    <SelectItem key={repo.value} value={repo.value}>
+                      {repo.label}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t('repository.pr.source_branch', '源分支')}</Label>
               <Select value={sourceBranch} onValueChange={setSourceBranch}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue
+                    placeholder={'请选择源分支'}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="feature">feature</SelectItem>
-                  <SelectItem value="bugfix">bugfix</SelectItem>
-                  <SelectItem value="hotfix">hotfix</SelectItem>
+                  {branches.map((branch) => (
+                    <SelectItem key={branch.value} value={branch.value}>
+                      {branch.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -86,12 +152,16 @@ export function CreatePRDialog() {
               <Label>{t('repository.pr.target_branch', '目标分支')}</Label>
               <Select value={targetBranch} onValueChange={setTargetBranch}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue
+                    placeholder={t('repository.pr.target_branch_placeholder', '请选择目标分支')}
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="main">main</SelectItem>
-                  <SelectItem value="develop">develop</SelectItem>
-                  <SelectItem value="staging">staging</SelectItem>
+                  {branches.map((branch) => (
+                    <SelectItem key={branch.value} value={branch.value}>
+                      {branch.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -110,6 +180,14 @@ export function CreatePRDialog() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{t('repository.pr.title', 'PR 标题')}</Label>
+            <Input
+              placeholder={t('repository.pr.title_placeholder', '请输入 PR 标题')}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label>{t('repository.pr.description', 'PR 描述')}</Label>

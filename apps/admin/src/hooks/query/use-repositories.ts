@@ -19,6 +19,7 @@ interface UseRepositoriesOptions {
   search?: string
   sort?: "created" | "updated" | "pushed" | "full_name" | "stars" | "forks"
   order?: "desc" | "asc"
+  pageSize?: number
 }
 
 export function useRepositories(options: UseRepositoriesOptions) {
@@ -27,12 +28,12 @@ export function useRepositories(options: UseRepositoriesOptions) {
     search = "",
     sort = "updated",
     order = "desc",
+    pageSize = 20,
   } = options
   const [isLoading, setIsLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [data, setData] = useState<Repository[]>([])
   const [totalCount, setTotalCount] = useState(0)
-  const pageSize = 20
 
   const fetchData = async () => {
     setIsLoading(true)
@@ -88,7 +89,6 @@ export function useRepositories(options: UseRepositoriesOptions) {
   return {
     data,
     isLoading,
-    pageSize,
     page,
     setPage,
     totalCount,
