@@ -103,7 +103,7 @@ export function Component() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-semibold text-primary hover:underline cursor-pointer">
+                        <h3 onClick={() => window.open(repo.html_url, "_blank")} className="text-lg font-semibold text-primary hover:underline cursor-pointer">
                           {repo.name}
                         </h3>
                         <Badge variant="secondary">{repo.visibility}</Badge>

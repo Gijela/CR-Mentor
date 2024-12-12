@@ -1,6 +1,7 @@
 export interface Repository {
   id: number
   name: string
+  html_url?: string
   visibility: "public" | "private"
   language: string
   stargazers_count: number
