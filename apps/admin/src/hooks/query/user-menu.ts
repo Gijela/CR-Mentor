@@ -2,6 +2,8 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query"
 import {
   Archive,
   ArchiveX,
+  BookMinus,
+  BookOpen,
   ChartArea,
   ChartBar,
   ChartLine,
@@ -9,6 +11,7 @@ import {
   ChartPie,
   CircleDot,
   Gauge,
+  GitPullRequest,
   Info,
   List,
   ListTree,
@@ -20,8 +23,6 @@ import {
   Table,
   TableProperties,
   Trash2,
-  BookMinus,
-  BookOpen,
 } from "lucide-react"
 
 import type { IMenu } from "@/schema/menu"
@@ -188,7 +189,7 @@ export const menus: IMenu[] = [
     to: "/repository",
   },
   {
-    title: "KnowledgeBase",
+    title: "Knowledge Base",
     icon: BookOpen,
     to: "/knowledgeBase",
     children: [
@@ -204,12 +205,11 @@ export const menus: IMenu[] = [
         icon: ChartNoAxesCombined,
         to: "/knowledgeBase/editKb",
       },
-      // {
-      //   title: "workplace",
-      //   icon: Orbit,
-      //   to: "/dashboard/workplace",
-      // },
     ],
   },
+  {
+    title: "Pull Request",
+    icon: GitPullRequest,
+    to: "/pullRequest",
+  },
 ] as const
-
