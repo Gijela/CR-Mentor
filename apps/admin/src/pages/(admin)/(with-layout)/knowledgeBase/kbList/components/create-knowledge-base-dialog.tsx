@@ -11,9 +11,11 @@ import { Input } from "@repo/ui/input"
 import { Textarea } from "@repo/ui/textarea"
 import { Plus } from "lucide-react"
 import { toast } from "sonner"
+import { useCreateKnowledgeBase } from "@/hooks/query/use-knowledge-base"
 
 interface CreateKnowledgeBaseProps {
-  onSuccess: () => void
+  user_id: string
+  onSuccess?: () => void
 }
 
 interface CreateKnowledgeBaseData {
@@ -21,25 +23,9 @@ interface CreateKnowledgeBaseData {
   description: string
 }
 
-// Mock 创建知识库 API
-const mockCreateKnowledgeBase = async (data: CreateKnowledgeBaseData) => {
-  await new Promise(resolve => setTimeout(resolve, 1000))
-
-  if (!data.title.trim()) {
-    throw new Error("知识库标题不能为空")
-  }
-
-  return {
-    id: Math.random().toString(36).slice(2),
-    ...data,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }
-}
-
-export function CreateKnowledgeBaseDialog({ onSuccess }: CreateKnowledgeBaseProps) {
+export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledgeBaseProps) {
   const [open, setOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { mutate: createKB, isPending } = useCreateKnowledgeBase()
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -49,16 +35,18 @@ export function CreateKnowledgeBaseDialog({ onSuccess }: CreateKnowledgeBaseProp
     e.preventDefault()
 
     try {
-      setIsLoading(true)
-      await mockCreateKnowledgeBase(formData)
+      await createKB({
+        user_id,
+        title: formData.title,
+        description: formData.description,
+      })
+
       toast.success("知识库创建成功")
       setOpen(false)
-      setFormData({ title: "", description: "" }) // 重置表单
-      onSuccess() // 通知父组件刷新列表
+      setFormData({ title: "", description: "" })
+      onSuccess?.()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "创建知识库失败")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -84,7 +72,7 @@ export function CreateKnowledgeBaseDialog({ onSuccess }: CreateKnowledgeBaseProp
               placeholder="请输入知识库名称"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              disabled={isLoading}
+              disabled={isPending}
               required
             />
           </div>
@@ -94,7 +82,7 @@ export function CreateKnowledgeBaseDialog({ onSuccess }: CreateKnowledgeBaseProp
               placeholder="请输入知识库描述"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              disabled={isLoading}
+              disabled={isPending}
               rows={4}
             />
           </div>
@@ -103,12 +91,12 @@ export function CreateKnowledgeBaseDialog({ onSuccess }: CreateKnowledgeBaseProp
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              disabled={isLoading}
+              disabled={isPending}
             >
               取消
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "创建中..." : "创建"}
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "创建中..." : "创建"}
             </Button>
           </div>
         </form>

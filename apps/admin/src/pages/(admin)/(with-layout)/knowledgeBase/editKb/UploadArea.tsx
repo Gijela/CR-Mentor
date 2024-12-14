@@ -1,47 +1,41 @@
 import { useState } from "react";
 import { Button } from "@repo/ui/button";
 import { Upload } from "lucide-react";
+import { useCreateChunk } from "@/hooks/query/use-knowledge-chunks";
+import { toast } from "sonner";
 
-const UploadArea = ({ kb_id, refreshDocumentChunks }: { kb_id: number, refreshDocumentChunks: () => void }) => {
-  const [isUploading, setIsUploading] = useState(false);
+interface UploadAreaProps {
+  kb_id: number;
+}
 
-  // 处理文件上传
+const UploadArea = ({ kb_id }: UploadAreaProps) => {
+  const { mutate: createChunk, isPending } = useCreateChunk();
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 检查文件类型
     if (!file.name.toLowerCase().endsWith(".md")) {
+      toast.error("只支持上传 Markdown 文件");
       return;
     }
 
-    setIsUploading(true);
     try {
-      // 读取文件内容
       const content = await file.text();
-
-      const res = await fetch("/api/supabase/rag/kb_chunks/insertChunk", {
-        method: "POST",
-        body: JSON.stringify({
-          kb_id,
-          content,
-          metadata: {
-            source: file.name,
-            title: file.name.replace(".md", ""),
-          },
-        }),
+      await createChunk({
+        kb_id,
+        content,
+        metadata: {
+          source: file.name,
+          title: file.name.replace(".md", ""),
+        },
       });
-      const data = await res.json();
-      if (data.ok) {
-        refreshDocumentChunks();
-      }
 
-      // 清空 input 的值，允许重复上传相同文件
+      toast.success("文档上传成功");
       e.target.value = "";
     } catch (error) {
+      toast.error("上传失败");
       console.error("Upload error:", error);
-    } finally {
-      setIsUploading(false);
     }
   };
 
@@ -49,16 +43,16 @@ const UploadArea = ({ kb_id, refreshDocumentChunks }: { kb_id: number, refreshDo
     <label
       className={`w-fit flex items-center justify-center gap-2 border border-dashed rounded-lg
           hover:bg-accent transition-colors duration-200 cursor-pointer
-          ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
+          ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       <input
         type="file"
         accept=".md"
         onChange={handleFileUpload}
         className="hidden"
-        disabled={isUploading}
+        disabled={isPending}
       />
-      {isUploading ? (
+      {isPending ? (
         <div className="flex items-center gap-2">
           <svg
             className="animate-spin h-5 w-5"
@@ -80,22 +74,20 @@ const UploadArea = ({ kb_id, refreshDocumentChunks }: { kb_id: number, refreshDo
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span>Uploading...</span>
+          <span>上传中...</span>
         </div>
       ) : (
-        <>
-          <Button
-            onClick={(e) => {
-              e.preventDefault();
-              const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-              input?.click();
-            }}
-            className="flex items-center justify-center gap-2"
-          >
-            <Upload className="h-4 w-4" />
-            <span>Upload</span>
-          </Button>
-        </>
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+            input?.click();
+          }}
+          className="flex items-center justify-center gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          <span>上传</span>
+        </Button>
       )}
     </label>
   );

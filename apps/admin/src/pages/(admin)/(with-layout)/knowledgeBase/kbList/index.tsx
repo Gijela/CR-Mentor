@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@repo/ui/card"
 import { Button } from "@repo/ui/button"
 import { Input } from "@repo/ui/input"
@@ -23,93 +23,31 @@ import { Trash } from "lucide-react"
 import { toast } from "sonner"
 import { CreateKnowledgeBaseDialog } from "./components/create-knowledge-base-dialog"
 import { useNavigate } from "react-router-dom"
+import { useKnowledgeBases, useDeleteKnowledgeBase } from "@/hooks/query/use-knowledge-base"
 
 interface KnowledgeBase {
-  id: string
+  id: number
   title: string
   description: string
-  createdAt: string
-  updatedAt: string
-}
-
-// Mock API 函数
-const mockApi = {
-  // 获取知识库列表
-  getKnowledgeBases: async (): Promise<KnowledgeBase[]> => {
-    // 模拟网络延迟
-    await new Promise(resolve => setTimeout(resolve, 800))
-
-    return [
-      {
-        id: "1",
-        title: "产品知识库",
-        description: "包含产品相关的所有文档、规范和指南",
-        createdAt: "2024-03-15T10:00:00Z",
-        updatedAt: "2024-03-20T15:30:00Z"
-      },
-      {
-        id: "2",
-        title: "这是一个超长的标题用来测试文本截断效果这是一个超长的标题用来测试文本截断效果",
-        description: "这是一个很长的描述文本，用来测试多行文本截断的效果。这是一个很长的描述文本，用来测试多行文本截断的效果。这是一个很长的描述文本，用来测试多行文本截断的效果。",
-        createdAt: "2024-03-10T08:00:00Z",
-        updatedAt: "2024-03-19T11:20:00Z"
-      },
-      {
-        id: "3",
-        title: "",  // 测试空标题
-        description: "",  // 测试空描述
-        createdAt: "2024-03-18T09:00:00Z",
-        updatedAt: "2024-03-18T09:00:00Z"
-      }
-    ]
-  },
-
-  // 删除知识库
-  deleteKnowledgeBase: async (id: string): Promise<boolean> => {
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    // 模拟一些错误情况
-    if (id === "1") {
-      throw new Error("无法删除默认知识库")
-    }
-
-    return true
-  }
+  created_at: string
+  updated_at: string
 }
 
 export function Component() {
-  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const user_id = "Gijela-123456" // 这里需要从认证上下文中获取
+  const { data: knowledgeBases = [], isLoading } = useKnowledgeBases(user_id)
+  const { mutate: deleteKB, isPending: isDeleting } = useDeleteKnowledgeBase()
   const [searchQuery, setSearchQuery] = useState('')
-  const [deleteKbId, setDeleteKbId] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteKbId, setDeleteKbId] = useState<number | null>(null)
   const navigate = useNavigate()
 
-  // 加载知识库列表
-  const loadKnowledgeBases = useCallback(async () => {
+  const handleDelete = async (kbId: number) => {
     try {
-      setIsLoading(true)
-      const data = await mockApi.getKnowledgeBases()
-      setKnowledgeBases(data)
-    } catch (error) {
-      toast.error("加载知识库列表失败")
-      console.error(error)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  // 处理删除
-  const handleDelete = async (kbId: string) => {
-    try {
-      setIsDeleting(true)
-      await mockApi.deleteKnowledgeBase(kbId)
-      setKnowledgeBases(prev => prev.filter(kb => kb.id !== kbId))
+      await deleteKB({ id: kbId, user_id })
       toast.success("知识库删除成功")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "删除知识库失败")
     } finally {
-      setIsDeleting(false)
       setDeleteKbId(null)
     }
   }
@@ -123,11 +61,6 @@ export function Component() {
       kb.description.toLowerCase().includes(query)
     )
   }, [searchQuery, knowledgeBases])
-
-  // 加载初始数据
-  useEffect(() => {
-    loadKnowledgeBases()
-  }, [loadKnowledgeBases])
 
   return (
     <div className="container px-0">
@@ -144,7 +77,7 @@ export function Component() {
             />
           </div>
         </div>
-        <CreateKnowledgeBaseDialog onSuccess={loadKnowledgeBases} />
+        <CreateKnowledgeBaseDialog user_id={user_id} onSuccess={() => { }} />
       </div>
 
       {/* 知识库列表 */}
@@ -232,7 +165,7 @@ export function Component() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
-              您确定要删除这个知识库吗？此操作无法撤销。
+              您确定要删除吗？此操作无法撤销。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

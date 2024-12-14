@@ -44,6 +44,10 @@ export default defineConfig(({ mode }) => {
           target: "http://localhost:3000",
           changeOrigin: true,
         },
+        "/api/supabase/": {
+          target: "http://localhost:3000",
+          changeOrigin: true,
+        },
         "/api/": {
           target: viteEnv.VITE_API_URL,
           changeOrigin: true,

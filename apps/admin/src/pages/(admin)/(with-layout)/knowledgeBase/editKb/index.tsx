@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import UploadArea from "./UploadArea";
-import { ChevronLeft } from "lucide-react";
-import ChunkCard from "./ChunkCard";
+import { useState } from "react"
+import { useSearchParams, useNavigate } from "react-router-dom"
+import { ChevronLeft, BookOpen } from "lucide-react"
 import { Button } from "@repo/ui/button"
 import { Textarea } from "@repo/ui/textarea"
 import {
@@ -11,180 +10,104 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/ui/dialog"
-import { useNavigate, useSearchParams } from "react-router-dom"
-
-// 文档区块接口定义
-export type DocumentChunk = {
-  id: number;
-  kb_id: number;
-  content: string;
-  embedding: string;
-  created_at: string;
-  metadata: {
-    // 文件完全名(带后缀)
-    source: string;
-    // 文件名(不带后缀)
-    title: string;
-  };
-};
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@repo/ui/card"
+import { toast } from "sonner"
+import { useKnowledgeChunks, useUpdateChunk, type DocumentChunk } from "@/hooks/query/use-knowledge-chunks"
+import ChunkCard from "./ChunkCard"
+import UploadArea from "./UploadArea"
 
 export function Component() {
-  const [searchParams] = useSearchParams();
-  const kbId = searchParams.get('id');
-  const kbName = searchParams.get('name');
-
-  const [documentChunks, setDocumentChunks] = useState<DocumentChunk[]>([]);
-
-  // 添加新的 state 来控制文档内容弹窗
-  const [isChunkModalOpen, setIsChunkModalOpen] = useState(false);
-  const [selectedChunk, setSelectedChunk] = useState<DocumentChunk | null>(
-    null
-  );
-  const [editingContent, setEditingContent] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  // 更新文档区块内容
-  const handleSaveContent = async () => {
-    if (!selectedChunk) return;
+  const kbId = searchParams.get('id')
+  const kbName = searchParams.get('name')
 
-    // setIsSaving(true);
-    // try {
-    //   // TODO: 替换为实际的 API 调用
-    //   // const result = await fetch('/api/updateChunk', {
-    //   //   method: 'POST',
-    //   //   body: JSON.stringify({
-    //   //     id: selectedChunk.id,
-    //   //     content: editingContent
-    //   //   })
-    //   // });
+  // 如果没有知识库 ID 或名称，显示引导页面
+  if (!kbId || !kbName) {
+    return (
+      <div className="container max-w-md mx-auto py-24">
+        <Card>
+          <CardHeader>
+            <div className="w-12 h-12 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
+              <BookOpen className="w-6 h-6 text-muted-foreground" />
+            </div>
+            <CardTitle className="text-center">未选择知识库</CardTitle>
+            <CardDescription className="text-center">
+              请先在知识库列表中选择一个知识库进行编辑
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex flex-col gap-2">
+            <Button 
+              onClick={() => navigate('/knowledgeBase/kbList')}
+              className="w-full"
+            >
+              前往知识库列表
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate(-1)}
+              className="w-full"
+            >
+              返回上一页
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
 
-    //   // if (result.ok) {
-    //   //   message.success('内容已更新');
-    //   //   // 更新本地数据
-    //   //   setDocumentChunks(prevChunks =>
-    //   //     prevChunks.map(chunk =>
-    //   //       chunk.id === selectedChunk.id
-    //   //         ? { ...chunk, content: editingContent }
-    //   //         : chunk
-    //   //     )
-    //   //   );
-    //   // }
+  // 验证 kbId 是否为有效数字
+  const numericKbId = Number(kbId)
+  if (isNaN(numericKbId)) {
+    toast.error("无效的知识库 ID")
+    navigate('/knowledgeBase/kbList')
+    return null
+  }
 
-    //   // 模拟 API 调用
-    //   await new Promise((resolve) => setTimeout(resolve, 500));
-    //   message.success("内容已更新");
-    //   setDocumentChunks((prevChunks) =>
-    //     prevChunks.map((chunk) =>
-    //       chunk.id === selectedChunk.id
-    //         ? { ...chunk, content: editingContent }
-    //         : chunk
-    //     )
-    //   );
-    //   setIsChunkModalOpen(false);
-    // } catch (error) {
-    //   message.error("更新失败");
-    // } finally {
-    //   setIsSaving(false);
-    // }
-  };
+  const { data: documentChunks = [], isLoading } = useKnowledgeChunks(numericKbId)
+  const { mutate: updateChunk, isPending: isUpdating } = useUpdateChunk()
 
-  // 处理文档区块点击
+  const [isChunkModalOpen, setIsChunkModalOpen] = useState(false)
+  const [selectedChunk, setSelectedChunk] = useState<DocumentChunk | null>(null)
+  const [editingContent, setEditingContent] = useState("")
+
   const handleChunkClick = (chunk: DocumentChunk) => {
-    setSelectedChunk(chunk);
-    setEditingContent(chunk.content);
-    setIsChunkModalOpen(true);
-  };
+    setSelectedChunk(chunk)
+    setEditingContent(chunk.content)
+    setIsChunkModalOpen(true)
+  }
 
-  // 查询某个知识库的所有向量文档区块
-  const fetchDocumentChunks = async () => {
-    // const res = await fetch(`/api/supabase/rag/kb_chunks/getOneKBTotalChunks`, {
-    //   method: "POST",
-    //   body: JSON.stringify({ kb_id: Number(kbId) }),
-    // });
-    // const { success, data }: { success: boolean; data: DocumentChunk[] } =
-    //   await res.json();
-    // if (success) {
-    //   setDocumentChunks(data);
-    // } else {
-    //   // message.error("Failed to fetch document chunks");
-    // }
+  const handleSaveContent = async () => {
+    // 临时处理：显示开发中提示
+    toast.error("更新功能正在开发中，敬请期待")
+    setIsChunkModalOpen(false)
+    return
 
-    // mock
-    // 模拟数据
-    const mockData: DocumentChunk[] = [
-      {
-        id: 1,
-        kb_id: Number(kbId),
-        content: "这是第一个文档区块的内容。这里可以包含很多文本信息...",
-        embedding: "",
-        created_at: new Date().toISOString(),
-        metadata: {
-          source: "document1.md",
-          title: "document1"
-        }
-      },
-      {
-        id: 2,
-        kb_id: Number(kbId),
-        content: "这是第二个文档区块的内容。可以包含不同的信息...",
-        embedding: "",
-        created_at: new Date().toISOString(),
-        metadata: {
-          source: "document2.md",
-          title: "document2"
-        }
-      },
-      {
-        id: 3,
-        kb_id: Number(kbId),
-        content: "第三个文档区块的示例内容...",
-        embedding: "",
-        created_at: new Date().toISOString(),
-        metadata: {
-          source: "document3.md",
-          title: "document3"
-        }
-      },
-      {
-        id: 4,
-        kb_id: Number(kbId),
-        content: "第四个文档区块的示例内容...",
-        embedding: "",
-        created_at: new Date().toISOString(),
-        metadata: {
-          source: "document4.md",
-          title: "document4"
-        }
-      },
-      {
-        id: 5,
-        kb_id: Number(kbId),
-        content: "第五个文档区块的示例内容...",
-        embedding: "",
-        created_at: new Date().toISOString(),
-        metadata: {
-          source: "document5.md",
-          title: "document5"
-        }
-      }
-    ];
+    // 实际的更新逻辑暂时注释
+    /*
+    if (!selectedChunk) return
 
-    // 模拟 API 延迟
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    setDocumentChunks(mockData);
-  };
-
-  // 刷新文档区块列表
-  const refreshDocumentChunks = () => {
-    fetchDocumentChunks();
-  };
-
-  // 示例数据，实际应该通过 API 获取
-  useEffect(() => {
-    fetchDocumentChunks();
-  }, []);
+    try {
+      await updateChunk({
+        id: selectedChunk.id,
+        kb_id: kbId,
+        content: editingContent,
+      })
+      toast.success("内容已更新")
+      setIsChunkModalOpen(false)
+    } catch (error) {
+      toast.error("更新失败")
+    }
+    */
+  }
 
   return (
     <>
@@ -192,32 +115,33 @@ export function Component() {
         <div className="flex justify-between items-center pr-2">
           <Button
             variant="ghost"
-            onClick={() => {
-              navigate(-1)
-            }}
+            onClick={() => navigate(-1)}
             className="flex items-center gap-2 px-0"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>Back {kbName || '未命名知识库'} </span>
+            <span>返回 {kbName || '未命名知识库'} </span>
           </Button>
-          <UploadArea kb_id={Number(kbId)} refreshDocumentChunks={refreshDocumentChunks} />
+          <UploadArea kb_id={Number(kbId)} />
         </div>
       </div>
 
       <div className="overflow-y-auto pr-2">
         <div className="grid grid-cols-1 gap-4">
-          {documentChunks.length > 0 ? (
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+              <p className="mt-4 text-muted-foreground">加载中...</p>
+            </div>
+          ) : documentChunks.length > 0 ? (
             documentChunks.map((chunk) => (
               <ChunkCard
                 key={chunk.id}
                 chunk={chunk}
-                documentChunks={documentChunks}
-                setDocumentChunks={setDocumentChunks}
-                handleChunkClick={handleChunkClick}
+                onEdit={handleChunkClick}
               />
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <svg
                 className="w-16 h-16 mb-4"
                 fill="none"
@@ -231,9 +155,9 @@ export function Component() {
                   d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <p className="text-lg mb-2">No document chunks</p>
+              <p className="text-lg mb-2">暂无文档</p>
               <p className="text-sm">
-                Please upload Markdown files to add document chunks
+                请上传 Markdown 文件以添加文档
               </p>
             </div>
           )}
@@ -243,7 +167,7 @@ export function Component() {
       <Dialog open={isChunkModalOpen} onOpenChange={setIsChunkModalOpen}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
-            <DialogTitle>Edit content</DialogTitle>
+            <DialogTitle>编辑内容</DialogTitle>
           </DialogHeader>
 
           <div className="py-4">
@@ -255,20 +179,20 @@ export function Component() {
           </div>
 
           <DialogFooter>
-            <div className="flex items-center gap-4 w-full">
+            <div className="flex items-center justify-between gap-4 w-full">
               <span className="text-sm text-muted-foreground">
-                Characters: {editingContent.length}
+                字符数：{editingContent.length}
               </span>
               <Button
                 onClick={handleSaveContent}
-                disabled={isSaving}
+                disabled={isUpdating}
               >
-                {isSaving ? "Updating..." : "Update"}
+                {isUpdating ? "更新中..." : "更新"}
               </Button>
             </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  );
-};
+  )
+}
