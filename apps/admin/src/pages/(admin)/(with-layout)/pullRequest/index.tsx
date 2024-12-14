@@ -35,6 +35,7 @@ import { ExternalLink, GitBranch, MoreHorizontal, Search } from "lucide-react"
 import React, { useState, useEffect } from "react"
 import { usePullRequests } from "@/hooks/query/use-pull-request"
 import { RepositorySearch } from "@/components/repository-search"
+import { useSearchParams, useNavigate } from "react-router-dom"
 
 interface PullRequest {
   id: number
@@ -70,6 +71,7 @@ const getStatusBadge = (status: PullRequest["status"]) => {
 const owner = "Gijela"
 
 export function Component() {
+  const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<PullRequest["status"] | "all">("all")
@@ -77,7 +79,16 @@ export function Component() {
   const [searchRepo, setSearchRepo] = useState("")
   const [selectedRepo, setSelectedRepo] = useState<string>("all")
   const [isLoadingRepos, setIsLoadingRepos] = useState(false)
-  const itemsPerPage = 10
+  const itemsPerPage = 20
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const repoFromUrl = searchParams.get("repo")
+    if (repoFromUrl) {
+      setSelectedRepo(repoFromUrl)
+      setSearchRepo(repoFromUrl)
+    }
+  }, [searchParams])
 
   // 当筛选条件改变时重置页码
   useEffect(() => {
@@ -249,7 +260,7 @@ export function Component() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
+                <TableHead className="w-[280px]">Title</TableHead>
                 {selectedRepo === "all" && <TableHead>Repository</TableHead>}
                 <TableHead>Status</TableHead>
                 <TableHead>Author</TableHead>
@@ -266,15 +277,18 @@ export function Component() {
             <TableBody>
               {filteredPRs.map((pr) => (
                 <TableRow key={pr.id}>
-                  <TableCell className="font-medium">
-                    <a
-                      href={pr.prUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-blue-600 hover:underline cursor-pointer"
-                    >
-                      {pr.title}
-                    </a>
+                  <TableCell>
+                    <div className="w-[280px] overflow-hidden">
+                      <a
+                        href={pr.prUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-blue-600 hover:underline cursor-pointer truncate block"
+                        title={pr.title}
+                      >
+                        {pr.title}
+                      </a>
+                    </div>
                   </TableCell>
                   {selectedRepo === "all" && (
                     <TableCell>

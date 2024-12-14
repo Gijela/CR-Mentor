@@ -27,6 +27,7 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 import { LoadingSpinner } from "@/components/loading-spinner"
 import { useRepositories } from "@/hooks/query/use-repositories"
@@ -41,6 +42,7 @@ export function Component() {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const [sort, setSort] = useState<"updated" | "stars" | "forks">("updated")
+  const navigate = useNavigate()
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -162,7 +164,11 @@ export function Component() {
                         <SettingsIcon className="mr-2 h-4 w-4" />
                         {t("repository.setting", "设置")}
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => navigate(`/pullRequest?repo=${repo.name}`)}
+                      >
                         <GitPullRequestIcon className="mr-2 h-4 w-4" />
                         {t("repository.prs", "PRs")}
                       </Button>

@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
 import { createToken } from "@/lib/github/createToken"
 
 interface Repository {
@@ -13,6 +14,7 @@ interface Repository {
   license?: {
     name: string
   }
+  html_url: string
 }
 
 interface UseRepositoriesOptions {
@@ -23,38 +25,40 @@ interface UseRepositoriesOptions {
   pageSize?: number
 }
 
+interface RepositoryResponse {
+  items: Repository[]
+  total_count: number
+}
+
+function useGithubToken(githubName: string) {
+  return useQuery({
+    queryKey: ['githubToken', githubName],
+    queryFn: () => createToken(githubName),
+    staleTime: 10 * 60 * 1000, // 10分钟的缓存时间
+    gcTime: 15 * 60 * 1000,    // 15分钟的垃圾回收时间
+    retry: 2, // 失败时重试2次
+  })
+}
+
 export function useRepositories(options: UseRepositoriesOptions) {
-  const {
-    githubName,
-    search = "",
-    sort = "updated",
-    order = "desc",
-    pageSize = 20,
-  } = options
-  const [isLoading, setIsLoading] = useState(false)
   const [page, setPage] = useState(1)
-  const [data, setData] = useState<Repository[]>([])
-  const [totalCount, setTotalCount] = useState(0)
-
-  const fetchData = async () => {
-    setIsLoading(true)
-
-    try {
-      // 1. 获取 githubName 对应用户的 token
-      const token = await createToken(githubName)
+  const { githubName, search = "", sort = "updated", order = "desc", pageSize = 20 } = options
+  
+  const tokenQuery = useGithubToken(githubName)
+  
+  const query = useQuery<RepositoryResponse>({
+    queryKey: ['repositories', { githubName, search, sort, order, page, pageSize }],
+    queryFn: async () => {
+      const token = tokenQuery.data
       if (!token) {
         throw new Error("Get token failed")
       }
 
-      // 2. 获取 githubName 对应用户的仓库
-      let url = `https://api.github.com/`
-
-      url += `search/repositories?q=user:${githubName}`
+      let url = `https://api.github.com/search/repositories?q=user:${githubName}`
       if (search) {
         url += `+${encodeURIComponent(search)}`
       }
       url += `&page=${page}&per_page=${pageSize}`
-
       url += `&sort=${sort}&order=${order}`
 
       const response = await fetch(url, {
@@ -68,26 +72,16 @@ export function useRepositories(options: UseRepositoriesOptions) {
         throw new Error("Get repositories failed")
       }
 
-      const result = await response.json()
-      setData(result.items)
-      setTotalCount(result.total_count)
-    } catch (error) {
-      console.error("Get repositories failed:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchData()
-  }, [page, search, sort, order])
+      return await response.json()
+    },
+    enabled: !!tokenQuery.data,
+  })
 
   return {
-    data,
-    isLoading,
+    data: query.data?.items || [],
+    isLoading: tokenQuery.isLoading || query.isLoading,
     page,
     setPage,
-    totalCount,
-    createToken,
+    totalCount: query.data?.total_count || 0,
   }
 }
