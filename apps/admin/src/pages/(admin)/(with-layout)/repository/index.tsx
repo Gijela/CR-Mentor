@@ -139,7 +139,7 @@ export function Component() {
                         </div>
                         <div className="flex items-center gap-1">
                           <ClockIcon className="h-4 w-4" />
-                          Updated on
+                          Updated
                           {" "}
                           {new Date(repo.updated_at).toLocaleString("zh-CN", {
                             year: "numeric",

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { createToken } from "@/lib/github/createToken"
 
 interface Repository {
   id: number
@@ -40,13 +41,8 @@ export function useRepositories(options: UseRepositoriesOptions) {
 
     try {
       // 1. 获取 githubName 对应用户的 token
-      const tokenResponse = await fetch("/api/github/createToken", {
-        method: "POST",
-        body: JSON.stringify({ githubName }),
-      })
-
-      const { token, success } = await tokenResponse.json()
-      if (!success) {
+      const token = await createToken(githubName)
+      if (!token) {
         throw new Error("Get token failed")
       }
 
@@ -92,5 +88,6 @@ export function useRepositories(options: UseRepositoriesOptions) {
     page,
     setPage,
     totalCount,
+    createToken,
   }
 }

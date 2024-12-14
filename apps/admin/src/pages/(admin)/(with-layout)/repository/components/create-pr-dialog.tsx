@@ -20,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/ui/select"
-import { useRepositories } from "@/hooks/query/use-repositories"
 import { toast } from "sonner"
+import { SearchIcon } from "lucide-react"
+import { createToken } from "@/lib/github/createToken"
 
 const knowledgeBases = [
   { label: "通用知识库", value: "general" },
@@ -40,16 +41,61 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
   const [selectedKb, setSelectedKb] = useState("")
   const [selectedRepo, setSelectedRepo] = useState("")
   const [searchRepo, setSearchRepo] = useState("")
+  const [repositories, setRepositories] = useState<Array<{ name: string }>>([])
   const [branches, setBranches] = useState<{ value: string, label: string }[]>([])
   const [open, setOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [accessToken, setAccessToken] = useState("")
+  const [tokenExpiredFlag, setTokenExpiredFlag] = useState(false)
 
-  const { data: repositories, isLoading } = useRepositories({
-    githubName,
-    search: searchRepo,
-    pageSize: totalCount,
-  })
+  // 搜索仓库
+  const searchRepositories = async (query: string) => {
+    setIsLoading(true)
 
-  const formattedRepositories = repositories.map(repo => ({
+    try {
+      let token = accessToken
+      if (!token || tokenExpiredFlag) {
+        token = await createToken(githubName)
+        setAccessToken(token)
+        setTokenExpiredFlag(false)
+      }
+
+      const response = await fetch(`https://api.github.com/search/repositories?q=${query}+user:${githubName}&sort=updated&per_page=10`, {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('搜索仓库失败')
+      }
+
+      const data = await response.json()
+      setRepositories(data.items)
+    } catch (error) {
+      setTokenExpiredFlag(true)
+      toast.error("搜索仓库失败")
+      console.error(error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // 当搜索输入变化时触发搜索
+  useEffect(() => {
+    if (searchRepo) {
+      const debounce = setTimeout(() => {
+        searchRepositories(searchRepo)
+      }, 300)
+      return () => clearTimeout(debounce)
+    } else {
+      setRepositories([])
+    }
+  }, [searchRepo])
+
+  const filteredRepositories = repositories.map(repo => ({
     label: repo.name,
     value: repo.name
   }))
@@ -104,31 +150,46 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>{t('repository.pr.repository', '选择仓库')}</Label>
-            <Select value={selectedRepo} onValueChange={setSelectedRepo}>
-              <SelectTrigger>
-                <SelectValue
-                  placeholder="搜索或选择仓库..."
-                  className={!selectedRepo ? "text-muted-foreground" : undefined}
-                >
-                  {selectedRepo}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {isLoading ? (
-                  <SelectItem value="loading">加载中...</SelectItem>
-                ) : formattedRepositories.length === 0 ? (
-                  <SelectItem value="" disabled>
-                    未找到匹配的仓库
-                  </SelectItem>
-                ) : (
-                  formattedRepositories.map((repo) => (
-                    <SelectItem key={repo.value} value={repo.value}>
-                      {repo.label}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <div className="relative">
+                <Input
+                  placeholder="搜索仓库..."
+                  value={searchRepo}
+                  onChange={(e) => setSearchRepo(e.target.value)}
+                  onFocus={() => setShowDropdown(true)}
+                  onBlur={() => {
+                    setTimeout(() => {
+                      setShowDropdown(false)
+                    }, 200)
+                  }}
+                  className="pl-8"
+                />
+                <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              </div>
+              {searchRepo && showDropdown && (
+                <div style={{ width: '475px' }} className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
+                  {isLoading ? (
+                    <div className="px-2 py-1 text-sm text-muted-foreground">加载中...</div>
+                  ) : filteredRepositories.length === 0 ? (
+                    <div className="px-2 py-1 text-sm text-muted-foreground">未找到匹配的仓库</div>
+                  ) : (
+                    filteredRepositories.map((repo) => (
+                      <div
+                        key={repo.value}
+                        className="cursor-pointer rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                        onClick={() => {
+                          setSelectedRepo(repo.value);
+                          setSearchRepo(repo.label);
+                          setShowDropdown(false);
+                        }}
+                      >
+                        {repo.label}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
