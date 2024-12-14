@@ -32,7 +32,9 @@ import {
   TableRow,
 } from "@repo/ui/table"
 import { ExternalLink, GitBranch, MoreHorizontal, Search } from "lucide-react"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
+import { usePullRequests } from "@/hooks/query/use-pull-request"
+import { RepositorySearch } from "@/components/repository-search"
 
 interface PullRequest {
   id: number
@@ -52,43 +54,6 @@ interface PullRequest {
   prUrl: string
 }
 
-const pullRequests: PullRequest[] = [
-  {
-    id: 1,
-    title: "添加用户认证功能",
-    status: "open",
-    author: {
-      name: "张三",
-      avatar: "https://github.com/shadcn.png",
-    },
-    createdAt: "2024-03-20",
-    sourceBranch: "feature/auth",
-    targetBranch: "main",
-    repository: {
-      name: "frontend-bds",
-      url: "https://github.com/org/frontend-bds",
-    },
-    prUrl: "https://github.com/org/frontend-bds/pull/1",
-  },
-  {
-    id: 2,
-    title: "优化首页性能",
-    status: "merged",
-    author: {
-      name: "李四",
-      avatar: "https://github.com/shadcn.png",
-    },
-    createdAt: "2024-03-19",
-    sourceBranch: "feature/performance",
-    targetBranch: "main",
-    repository: {
-      name: "frontend-app",
-      url: "https://github.com/org/frontend-app",
-    },
-    prUrl: "https://github.com/org/frontend-app/pull/2",
-  },
-]
-
 const getStatusBadge = (status: PullRequest["status"]) => {
   const styles = {
     open: "bg-green-100 text-green-800",
@@ -102,50 +67,129 @@ const getStatusBadge = (status: PullRequest["status"]) => {
     </Badge>
   )
 }
+const owner = "Gijela"
 
 export function Component() {
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<PullRequest["status"] | "all">("all")
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc")
+  const [searchRepo, setSearchRepo] = useState("")
+  const [selectedRepo, setSelectedRepo] = useState<string>("all")
+  const [isLoadingRepos, setIsLoadingRepos] = useState(false)
   const itemsPerPage = 10
 
-  const filteredPRs = pullRequests
-    .filter((pr) => {
-      const matchesSearch =
-        pr.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pr.sourceBranch.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pr.targetBranch.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pr.repository.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        pr.author.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // 当筛选条件改变时重置页码
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [statusFilter, sortOrder, selectedRepo, searchQuery])
 
-      const matchesStatus = statusFilter === "all" || pr.status === statusFilter
+  const { data: pullResponse = { items: [], totalCount: 0 }, isLoading: isLoadingPRs } = usePullRequests({
+    owner,
+    repo: selectedRepo === "all" ? "" : selectedRepo,
+    state: statusFilter === "all" ? "all" : statusFilter,
+    sort: "created",
+    direction: sortOrder,
+    per_page: itemsPerPage,
+    page: currentPage,
+    query: searchQuery,
+  })
 
-      return matchesSearch && matchesStatus
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime()
-      const dateB = new Date(b.createdAt).getTime()
-      return sortOrder === "desc" ? dateB - dateA : dateA - dateB
-    })
+  // 直接使用 API 返回的结果
+  const filteredPRs = pullResponse.items
 
-  const totalPages = Math.ceil(filteredPRs.length / itemsPerPage)
-  const paginatedPRs = filteredPRs.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  )
+  // 计算总页数，使用 API 返回的总数
+  const totalPages = Math.max(1, Math.ceil(pullResponse.totalCount / itemsPerPage))
+
+  // 处理页码变化
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage)
+    }
+  }
+
+  // 生成要显示的页码数组
+  const getPageNumbers = () => {
+    const pageNumbers = []
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      // 如果总页数小于等于最大显示页数，显示所有页码
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i)
+      }
+    } else {
+      // 总是显示第一页
+      pageNumbers.push(1)
+
+      let startPage = Math.max(2, currentPage - 1)
+      let endPage = Math.min(totalPages - 1, currentPage + 1)
+
+      // 如果当前页靠近开始
+      if (currentPage <= 3) {
+        startPage = 2
+        endPage = 4
+      }
+
+      // 如果当前页靠近结束
+      if (currentPage >= totalPages - 2) {
+        startPage = totalPages - 3
+        endPage = totalPages - 1
+      }
+
+      // 添加省略号
+      if (startPage > 2) {
+        pageNumbers.push('...')
+      }
+
+      // 添加中间的页码
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i)
+      }
+
+      // 添加省略号
+      if (endPage < totalPages - 1) {
+        pageNumbers.push('...')
+      }
+
+      // 总是显示最后一页
+      pageNumbers.push(totalPages)
+    }
+
+    return pageNumbers
+  }
 
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <div className="flex justify-between gap-4 w-full">
           <div className="flex gap-4">
+            <RepositorySearch
+              owner={owner}
+              value={searchRepo}
+              onChange={(value) => {
+                setSearchRepo(value)
+                // 当搜索框被清空时，重置为搜索所有仓库
+                if (!value) {
+                  setSelectedRepo("all")
+                }
+              }}
+              onSelect={(repo) => {
+                setSelectedRepo(repo.value)
+                setSearchRepo(repo.label)
+              }}
+              className="w-[200px]"
+            />
+
             <div className="relative w-[300px]">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
               <Input
-                placeholder="Search PR..."
+                placeholder={selectedRepo === "all" ? "Search all PRs..." : `Search PRs in ${selectedRepo}...`}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  // 可以添加防抖逻辑
+                }}
                 className="pl-8"
               />
             </div>
@@ -177,112 +221,162 @@ export function Component() {
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Repository</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Author</TableHead>
-            <TableHead>Source Branch</TableHead>
-            <TableHead>Target Branch</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedPRs.map((pr) => (
-            <TableRow key={pr.id}>
-              <TableCell className="font-medium">{pr.title}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <GitBranch className="h-4 w-4" />
-                  <a
-                    href={pr.repository.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    {pr.repository.name}
-                  </a>
-                </div>
-              </TableCell>
-              <TableCell>{getStatusBadge(pr.status)}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={pr.author.avatar} />
-                    <AvatarFallback>{pr.author.name[0]}</AvatarFallback>
-                  </Avatar>
-                  {pr.author.name}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  <GitBranch className="h-4 w-4" />
-                  {pr.sourceBranch}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  <GitBranch className="h-4 w-4" />
-                  {pr.targetBranch}
-                </div>
-              </TableCell>
-              <TableCell>{pr.createdAt}</TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => window.open(pr.prUrl, "_blank")}
-                    >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      View PR
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      {(isLoadingRepos || isLoadingPRs) && (
+        <div className="flex justify-center items-center py-8">
+          Loading...
+        </div>
+      )}
 
-      <div className="mt-4">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                size="default"
-                onClick={() => setCurrentPage((p) => p - 1)}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i + 1}>
-                <PaginationLink
-                  size="default"
-                  onClick={() => setCurrentPage(i + 1)}
-                  isActive={currentPage === i + 1}
-                >
-                  {i + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                size="default"
-                onClick={() => setCurrentPage((p) => p + 1)}
-                className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      {!isLoadingPRs && filteredPRs.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
+          <GitBranch className="h-12 w-12 mb-4 text-gray-400" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">暂无 Pull Requests</h3>
+          <p className="text-sm text-gray-500">
+            {searchQuery
+              ? `没有找到包含 "${searchQuery}" 的 Pull Requests`
+              : selectedRepo !== "all"
+                ? `${selectedRepo} 仓库暂无${statusFilter === "all" ? "" : statusFilter === "open" ? "开放的" : statusFilter === "closed" ? "关闭的" : "已合并的"} Pull Requests`
+                : statusFilter === "all"
+                  ? "暂无任何 Pull Requests"
+                  : `暂无${statusFilter === "open" ? "开放的" : statusFilter === "closed" ? "关闭的" : "已合并的"} Pull Requests`
+            }
+          </p>
+        </div>
+      )}
+
+      {!isLoadingPRs && filteredPRs.length > 0 && (
+        <>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                {selectedRepo === "all" && <TableHead>Repository</TableHead>}
+                <TableHead>Status</TableHead>
+                <TableHead>Author</TableHead>
+                {selectedRepo !== "all" && (
+                  <>
+                    <TableHead>Source Branch</TableHead>
+                    <TableHead>Target Branch</TableHead>
+                  </>
+                )}
+                <TableHead>Created At</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPRs.map((pr) => (
+                <TableRow key={pr.id}>
+                  <TableCell className="font-medium">
+                    <a
+                      href={pr.prUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-600 hover:underline cursor-pointer"
+                    >
+                      {pr.title}
+                    </a>
+                  </TableCell>
+                  {selectedRepo === "all" && (
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <GitBranch className="h-4 w-4" />
+                        <a
+                          href={pr.repository.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline"
+                        >
+                          {pr.repository.name}
+                        </a>
+                      </div>
+                    </TableCell>
+                  )}
+                  <TableCell>{getStatusBadge(pr.status)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={pr.author.avatar} />
+                        <AvatarFallback>{pr.author.name[0]}</AvatarFallback>
+                      </Avatar>
+                      {pr.author.name}
+                    </div>
+                  </TableCell>
+                  {selectedRepo !== "all" && (
+                    <>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <GitBranch className="h-4 w-4" />
+                          {pr.sourceBranch}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          <GitBranch className="h-4 w-4" />
+                          {pr.targetBranch}
+                        </div>
+                      </TableCell>
+                    </>
+                  )}
+                  <TableCell>{pr.createdAt}</TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => window.open(pr.prUrl, "_blank")}
+                        >
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          View PR
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <div className="mt-4">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    size="default"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                {getPageNumbers().map((pageNumber, index) => (
+                  <PaginationItem key={index}>
+                    {pageNumber === '...' ? (
+                      <span className="px-4 py-2">...</span>
+                    ) : (
+                      <PaginationLink
+                        size="default"
+                        onClick={() => handlePageChange(pageNumber as number)}
+                        isActive={currentPage === pageNumber}
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    size="default"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </>
+      )}
     </>
   )
 }
