@@ -93,9 +93,7 @@ export function Component() {
       <Separator />
 
       {isLoading ? (
-        <div className="flex justify-center p-8">
-          <LoadingSpinner />
-        </div>
+        <LoadingSpinner />
       ) : (
         <>
           <div className="space-y-4">

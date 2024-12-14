@@ -36,6 +36,7 @@ import React, { useState, useEffect } from "react"
 import { usePullRequests } from "@/hooks/query/use-pull-request"
 import { RepositorySearch } from "@/components/repository-search"
 import { useSearchParams, useNavigate } from "react-router-dom"
+import { LoadingSpinner } from "@/components/loading-spinner"
 
 interface PullRequest {
   id: number
@@ -180,7 +181,7 @@ export function Component() {
               value={searchRepo}
               onChange={(value) => {
                 setSearchRepo(value)
-                // 当搜索框被清空时，重置为搜索所有仓库
+                // 当搜索框被清空时，重��为搜索所有仓库
                 if (!value) {
                   setSelectedRepo("all")
                 }
@@ -232,11 +233,7 @@ export function Component() {
         </div>
       </div>
 
-      {(isLoadingRepos || isLoadingPRs) && (
-        <div className="flex justify-center items-center py-8">
-          Loading...
-        </div>
-      )}
+      {(isLoadingRepos || isLoadingPRs) && <LoadingSpinner />}
 
       {!isLoadingPRs && filteredPRs.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
