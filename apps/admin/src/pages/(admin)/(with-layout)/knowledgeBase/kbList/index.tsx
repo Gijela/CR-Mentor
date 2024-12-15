@@ -24,6 +24,7 @@ import { toast } from "sonner"
 import { CreateKnowledgeBaseDialog } from "./components/create-knowledge-base-dialog"
 import { useNavigate } from "react-router-dom"
 import { useKnowledgeBases, useDeleteKnowledgeBase } from "@/hooks/query/use-knowledge-base"
+import { LoadingSpinner } from '@/components/loading-spinner'
 
 interface KnowledgeBase {
   id: number
@@ -82,10 +83,7 @@ export function Component() {
 
       {/* 知识库列表 */}
       {isLoading ? (
-        <div className="col-span-full text-center py-8">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
-          <div className="mt-4 text-muted-foreground">加载中...</div>
-        </div>
+        <LoadingSpinner />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredKnowledgeBases.length > 0 ? (

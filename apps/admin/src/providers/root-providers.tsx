@@ -16,31 +16,40 @@ import { queryClient } from "@/lib/query-client"
 const loadFeatures = () =>
   import("../framer-lazy-feature").then((res) => res.default)
 
-export const RootProviders: FC<PropsWithChildren> = ({ children }) => (
-  <I18nextProvider i18n={i18n}>
-    <LazyMotion features={loadFeatures} strict key="framer">
-      <MotionConfig
-        transition={{
-          type: "tween",
-          duration: 0.15,
-          ease: "easeInOut",
-        }}
-      >
-        <QueryClientProvider client={queryClient}>
-          <ThemeWrapper>
-            <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-              <TooltipProvider>
-                <HotkeysProvider initiallyActiveScopes={["home"]}>
-                  {children}
-                </HotkeysProvider>
-                <ToasterPrimitive />
-              </TooltipProvider>
-              <ThemesStyle />
-              <SonnerToaster richColors />
-            </ThemeProvider>
-          </ThemeWrapper>
-        </QueryClientProvider>
-      </MotionConfig>
-    </LazyMotion>
-  </I18nextProvider>
-)
+export const RootProviders: FC<PropsWithChildren> = ({ children }) => {
+  // 不需要使用 framer-motion LazyMotion 的页面
+  const isChatPage = window.location.pathname.includes('chatgpt');
+
+  return (
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeWrapper>
+          <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+            <TooltipProvider>
+              <HotkeysProvider initiallyActiveScopes={["home"]}>
+                {isChatPage ? (
+                  children
+                ) : (
+                  <LazyMotion features={loadFeatures} strict key="framer">
+                    <MotionConfig
+                      transition={{
+                        type: "tween",
+                        duration: 0.15,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      {children}
+                    </MotionConfig>
+                  </LazyMotion>
+                )}
+              </HotkeysProvider>
+              <ToasterPrimitive />
+            </TooltipProvider>
+            <ThemesStyle />
+            <SonnerToaster richColors />
+          </ThemeProvider>
+        </ThemeWrapper>
+      </QueryClientProvider>
+    </I18nextProvider>
+  )
+}

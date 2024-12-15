@@ -212,4 +212,9 @@ export const menus: IMenu[] = [
     icon: GitPullRequest,
     to: "/pullRequest",
   },
+  {
+    title: "ChatGPT",
+    icon: MessagesSquare,
+    to: "/chatgpt",
+  },
 ] as const
