@@ -43,7 +43,7 @@ export function ErrorElement() {
         <h2 className="mb-4 mt-12 text-2xl">
           Sorry,
           {" "}
-          {APP_NAME}
+          CR-Mentor
           {" "}
           has encountered an error
         </h2>
@@ -56,7 +56,7 @@ export function ErrorElement() {
       ) : null}
 
       <p className="my-8">
-        {APP_NAME}
+        CR-Mentor
         {" "}
         has a temporary problem, click the button below to try
         reloading the app or another solution?
@@ -90,7 +90,7 @@ export function ErrorElement() {
       <footer className="center mt-12 flex gap-2">
         Powered by
         {" "}
-        <Logo className="size-5" />
+        {/* <Logo className="size-5" /> */}
         {" "}
         <a
           href={pkg.homepage}
@@ -98,7 +98,7 @@ export function ErrorElement() {
           target="_blank"
           rel="noreferrer"
         >
-          {APP_NAME}
+          CR-Mentor
         </a>
       </footer>
     </div>

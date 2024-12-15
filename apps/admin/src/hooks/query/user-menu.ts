@@ -23,6 +23,7 @@ import {
   Table,
   TableProperties,
   Trash2,
+  Bot,
 } from "lucide-react"
 
 import type { IMenu } from "@/schema/menu"
@@ -214,7 +215,7 @@ export const menus: IMenu[] = [
   },
   {
     title: "ChatGPT",
-    icon: MessagesSquare,
+    icon: Bot,
     to: "/chatgpt",
   },
 ] as const

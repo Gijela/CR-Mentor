@@ -41,12 +41,12 @@ export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledg
         description: formData.description,
       })
 
-      toast.success("知识库创建成功")
+      toast.success("Knowledge base created successfully")
       setOpen(false)
       setFormData({ title: "", description: "" })
       onSuccess?.()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "创建知识库失败")
+      toast.error(error instanceof Error ? error.message : "Failed to create knowledge base")
     }
   }
 
@@ -55,21 +55,21 @@ export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledg
       <DialogTrigger asChild>
         <Button>
           <Plus className="w-4 h-4 mr-2" />
-          创建知识库
+          Create knowledge base
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>创建新知识库</DialogTitle>
+          <DialogTitle>Create new knowledge base</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">
-              知识库名称
+              Knowledge base name
               <span className="text-destructive">*</span>
             </label>
             <Input
-              placeholder="请输入知识库名称"
+              placeholder="Enter knowledge base name"
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
               disabled={isPending}
@@ -77,9 +77,9 @@ export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledg
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">知识库描述</label>
+            <label className="text-sm font-medium">Knowledge base description</label>
             <Textarea
-              placeholder="请输入知识库描述"
+              placeholder="Enter knowledge base description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               disabled={isPending}
@@ -93,10 +93,10 @@ export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledg
               onClick={() => setOpen(false)}
               disabled={isPending}
             >
-              取消
+              Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "创建中..." : "创建"}
+              {isPending ? "Creating..." : "Create"}
             </Button>
           </div>
         </form>

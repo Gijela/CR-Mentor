@@ -68,7 +68,7 @@ export function Component() {
           <div className="relative w-[300px]">
             <Input
               className="pl-8"
-              placeholder={t("repository.search_placeholder", "搜索仓库...")}
+              placeholder={t("repository.search_placeholder", "Search repositories...")}
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
             />
@@ -77,12 +77,12 @@ export function Component() {
 
           <Select value={sort} onValueChange={handleSortChange}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t("repository.sort_by", "排序方式")} />
+              <SelectValue placeholder={t("repository.sort_by", "Sort by")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="updated">{t("repository.sort.updated", "最近更新")}</SelectItem>
-              <SelectItem value="stars">{t("repository.sort.stars", "星标数")}</SelectItem>
-              <SelectItem value="forks">{t("repository.sort.forks", "复刻数")}</SelectItem>
+              <SelectItem value="updated">{t("repository.sort.updated", "Recently updated")}</SelectItem>
+              <SelectItem value="stars">{t("repository.sort.stars", "Stars")}</SelectItem>
+              <SelectItem value="forks">{t("repository.sort.forks", "Forks")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -160,10 +160,10 @@ export function Component() {
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm">
                         <SettingsIcon className="mr-2 h-4 w-4" />
-                        {t("repository.setting", "设置")}
+                        {t("repository.setting", "Setting")}
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => navigate(`/pullRequest?repo=${repo.name}`)}
                       >
@@ -180,7 +180,7 @@ export function Component() {
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground whitespace-nowrap">
               {t("repository.total_items", {
-                defaultValue: `总共 ${totalCount} 个仓库`,
+                defaultValue: `Total ${totalCount} repositories`,
               })}
             </div>
             <Pagination>

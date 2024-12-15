@@ -134,7 +134,7 @@ export function Component() {
     // loadSessionMessages(sessionId);
   };
 
-  // 获取当前���话选中的知识库详细信息
+  // 获取当前话选中的知识库详细信息
   const currentSelectedKbDetails = useMemo(() => {
     const selectedKbs =
       chatSessions.find((s) => s.id === currentSessionId)?.selectedKbs || [];
@@ -176,7 +176,7 @@ export function Component() {
     handleGetKnowledgeBases();
   }, []);
 
-  // 添加 URL 参数��理的 useEffect
+  // 添加 URL 参数理的 useEffect
   useEffect(() => {
     // 获取 URL 参数中的 kb_id
     const urlParams = new URLSearchParams(window.location.search);
@@ -190,7 +190,7 @@ export function Component() {
         // 创建新会话并选中该知识库
         const newSession: ChatSessionDetail = {
           id: Date.now().toString(),
-          title: `${targetKb.title} 会话`,
+          title: `Chat with ${targetKb.title}`,
           timestamp: new Date(),
           selectedKbs: [targetKb.title], // 默认选中该知识库
           messages: [],

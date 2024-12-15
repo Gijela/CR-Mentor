@@ -45,9 +45,9 @@ export function Component() {
   const handleDelete = async (kbId: number) => {
     try {
       await deleteKB({ id: kbId, user_id })
-      toast.success("知识库删除成功")
+      toast.success("Knowledge base deleted successfully")
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "删除知识库失败")
+      toast.error(error instanceof Error ? error.message : "Failed to delete knowledge base")
     } finally {
       setDeleteKbId(null)
     }
@@ -71,7 +71,7 @@ export function Component() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="搜索知识库..."
+              placeholder="Search knowledge base..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -100,7 +100,7 @@ export function Component() {
                           <MessageSquare className="w-5 h-5" />
                         </div>
                         <CardTitle className="text-lg font-medium tracking-tight truncate max-w-[200px]">
-                          {kb.title || '(未命名知识库)'}
+                          {kb.title || '(Unnamed knowledge base)'}
                         </CardTitle>
                       </div>
                       <DropdownMenu>
@@ -115,13 +115,13 @@ export function Component() {
                             onClick={() => setDeleteKbId(kb.id)}
                           >
                             <Trash className="w-4 h-4 mr-2" />
-                            删除知识库
+                            Delete knowledge base
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
                     <CardDescription className="text-sm line-clamp-2">
-                      {kb.description || '暂无描述'}
+                      {kb.description || 'No description'}
                     </CardDescription>
                   </div>
                 </CardHeader>
@@ -144,14 +144,14 @@ export function Component() {
                     }}
                   >
                     <Edit className="w-4 h-4 mr-1.5" />
-                    编辑
+                    Edit KB
                   </Button>
                 </CardFooter>
               </Card>
             ))
           ) : (
             <div className="col-span-full text-center py-8 text-muted-foreground">
-              未找到匹配的知识库
+              No matching knowledge base found
             </div>
           )}
         </div>
@@ -161,19 +161,19 @@ export function Component() {
       <AlertDialog open={!!deleteKbId} onOpenChange={() => !isDeleting && setDeleteKbId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
             <AlertDialogDescription>
-              您确定要删除吗？此操作无法撤销。
+              Are you sure you want to delete? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>取消</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive hover:bg-destructive/90"
               onClick={() => deleteKbId && handleDelete(deleteKbId)}
               disabled={isDeleting}
             >
-              {isDeleting ? "删除中..." : "删除"}
+              {isDeleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

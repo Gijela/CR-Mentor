@@ -94,7 +94,7 @@ const KnowledgeBaseList: React.FC<{
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="search kb..."
+                    placeholder="Search knowledge base..."
                     className="flex-1 bg-transparent border-none outline-none text-sm"
                     autoFocus
                     onBlur={handleSearchBlur}

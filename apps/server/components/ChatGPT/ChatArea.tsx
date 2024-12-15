@@ -158,6 +158,7 @@ const ChatArea: React.FC<{
           >
             <ProChat
               key={session.id}
+              locale="en-US"
               sendMessageRequest={async (messages) => {
                 const response = await fetch(
                   "/api/supabase/rag/kb_chunks/retrieval_agents",

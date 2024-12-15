@@ -24,11 +24,11 @@ import { toast } from "sonner"
 import { RepositorySearch } from "@/components/repository-search"
 
 const knowledgeBases = [
-  { label: "通用知识库", value: "general" },
-  { label: "产品文档", value: "product" },
-  { label: "技术文档", value: "tech" },
-  { label: "API 文档", value: "api" },
-  { label: "用户指南", value: "user-guide" },
+  { label: "General Knowledge Base", value: "general" },
+  { label: "Product Documentation", value: "product" },
+  { label: "Technical Documentation", value: "tech" },
+  { label: "API Documentation", value: "api" },
+  { label: "User Guide", value: "user-guide" },
 ]
 
 export function CreatePRDialog({ githubName, totalCount }: { githubName: string, totalCount: number }) {
@@ -76,16 +76,16 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
       <DialogTrigger asChild>
         <Button onClick={() => setOpen(true)}>
           <GitPullRequestIcon className="mr-2 h-4 w-4" />
-          {t('repository.create_pr', '创建 PR')}
+          {t('repository.create_pr', 'Create PR')}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>{t('repository.create_pr', '创建 PR')}</DialogTitle>
+          <DialogTitle>{t('repository.create_pr', 'Create PR')}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>{t('repository.pr.repository', '选择仓库')}</Label>
+            <Label>{t('repository.pr.repository', 'Select Repository')}</Label>
             <RepositorySearch
               owner={githubName}
               value={selectedRepo}
@@ -98,11 +98,11 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>{t('repository.pr.source_branch', '源分支')}</Label>
+              <Label>{t('repository.pr.source_branch', 'Source Branch')}</Label>
               <Select value={sourceBranch} onValueChange={setSourceBranch}>
                 <SelectTrigger>
                   <SelectValue
-                    placeholder={'请选择源分支'}
+                    placeholder={t('repository.pr.source_branch_placeholder', 'Select...')}
                   />
                 </SelectTrigger>
                 <SelectContent>
@@ -115,11 +115,11 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>{t('repository.pr.target_branch', '目标分支')}</Label>
+              <Label>{t('repository.pr.target_branch', 'Target Branch')}</Label>
               <Select value={targetBranch} onValueChange={setTargetBranch}>
                 <SelectTrigger>
                   <SelectValue
-                    placeholder={t('repository.pr.target_branch_placeholder', '请选择目标分支')}
+                    placeholder={t('repository.pr.target_branch_placeholder', 'Select...')}
                   />
                 </SelectTrigger>
                 <SelectContent>
@@ -133,10 +133,10 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
             </div>
           </div>
           <div className="space-y-2">
-            <Label>{t('repository.pr.knowledge_base', '关联知识库')}</Label>
+            <Label>{t('repository.pr.knowledge_base', 'Knowledge Base')}</Label>
             <Select value={selectedKb} onValueChange={setSelectedKb}>
               <SelectTrigger>
-                <SelectValue placeholder="选择知识库..." />
+                <SelectValue placeholder="Select knowledge base..." />
               </SelectTrigger>
               <SelectContent>
                 {knowledgeBases.map((kb) => (
@@ -148,17 +148,17 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>{t('repository.pr.title', 'PR 标题')}</Label>
+            <Label>{t('repository.pr.title', 'PR Title')}</Label>
             <Input
-              placeholder={t('repository.pr.title_placeholder', '请输入 PR 标题')}
+              placeholder={t('repository.pr.title_placeholder', 'Enter PR title')}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label>{t('repository.pr.description', 'PR 描述')}</Label>
+            <Label>{t('repository.pr.description', 'PR Description')}</Label>
             <Textarea
-              placeholder={t('repository.pr.description_placeholder', '请输入 PR 描述')}
+              placeholder={t('repository.pr.description_placeholder', 'Enter PR description')}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
@@ -168,11 +168,11 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
         <DialogFooter>
           <DialogTrigger asChild>
             <Button variant="outline">
-              {t('common.cancel', '取消')}
+              {t('common.cancel', 'Cancel')}
             </Button>
           </DialogTrigger>
           <Button onClick={handleCreatePR}>
-            {t('repository.pr.submit', '创建')}
+            {t('repository.pr.submit', 'Submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

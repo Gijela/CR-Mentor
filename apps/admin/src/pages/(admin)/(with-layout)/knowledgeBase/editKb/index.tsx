@@ -39,9 +39,9 @@ export function Component() {
             <div className="w-12 h-12 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
               <BookOpen className="w-6 h-6 text-muted-foreground" />
             </div>
-            <CardTitle className="text-center">未选择知识库</CardTitle>
+            <CardTitle className="text-center">No knowledge base selected</CardTitle>
             <CardDescription className="text-center">
-              请先在知识库列表中选择一个知识库进行编辑
+              Please select a knowledge base from the knowledge base list to edit
             </CardDescription>
           </CardHeader>
           <CardFooter className="flex flex-col gap-2">
@@ -49,14 +49,14 @@ export function Component() {
               onClick={() => navigate('/knowledgeBase/kbList')}
               className="w-full"
             >
-              前往知识库列表
+              Go to knowledge base list
             </Button>
             <Button 
               variant="outline"
               onClick={() => navigate(-1)}
               className="w-full"
             >
-              返回上一页
+              Back to previous page
             </Button>
           </CardFooter>
         </Card>
@@ -67,7 +67,7 @@ export function Component() {
   // 验证 kbId 是否为有效数字
   const numericKbId = Number(kbId)
   if (isNaN(numericKbId)) {
-    toast.error("无效的知识库 ID")
+    toast.error("Invalid knowledge base ID")
     navigate('/knowledgeBase/kbList')
     return null
   }
@@ -87,7 +87,7 @@ export function Component() {
 
   const handleSaveContent = async () => {
     // 临时处理：显示开发中提示
-    toast.error("更新功能正在开发中，敬请期待")
+    toast.error("Updating feature is under development, please stay tuned")
     setIsChunkModalOpen(false)
     return
 
@@ -101,10 +101,10 @@ export function Component() {
         kb_id: kbId,
         content: editingContent,
       })
-      toast.success("内容已更新")
+      toast.success("Content updated")
       setIsChunkModalOpen(false)
     } catch (error) {
-      toast.error("更新失败")
+      toast.error("Update failed")
     }
     */
   }
@@ -119,7 +119,7 @@ export function Component() {
             className="flex items-center gap-2 px-0"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>返回 {kbName || '未命名知识库'} </span>
+            <span>Back to {kbName || 'Unnamed knowledge base'} </span>
           </Button>
           <UploadArea kb_id={Number(kbId)} />
         </div>
@@ -130,7 +130,7 @@ export function Component() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-              <p className="mt-4 text-muted-foreground">加载中...</p>
+              <p className="mt-4 text-muted-foreground">Loading...</p>
             </div>
           ) : documentChunks.length > 0 ? (
             documentChunks.map((chunk) => (
@@ -155,9 +155,9 @@ export function Component() {
                   d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <p className="text-lg mb-2">暂无文档</p>
+              <p className="text-lg mb-2">No documents</p>
               <p className="text-sm">
-                请上传 Markdown 文件以添加文档
+                Please upload a markdown file to add documents
               </p>
             </div>
           )}
@@ -167,7 +167,7 @@ export function Component() {
       <Dialog open={isChunkModalOpen} onOpenChange={setIsChunkModalOpen}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
-            <DialogTitle>编辑内容</DialogTitle>
+            <DialogTitle>Edit content</DialogTitle>
           </DialogHeader>
 
           <div className="py-4">
@@ -181,13 +181,13 @@ export function Component() {
           <DialogFooter>
             <div className="flex items-center justify-between gap-4 w-full">
               <span className="text-sm text-muted-foreground">
-                字符数：{editingContent.length}
+                Characters: {editingContent.length}
               </span>
               <Button
                 onClick={handleSaveContent}
                 disabled={isUpdating}
               >
-                {isUpdating ? "更新中..." : "更新"}
+                {isUpdating ? "Updating..." : "Update"}
               </Button>
             </div>
           </DialogFooter>

@@ -42,7 +42,7 @@ export function RepositorySearch({
 
       // 如果需要新 token，先获取并等待
       if (!tokenRef.current || tokenRef.current.expiresAt < Date.now() + 30000) {
-        console.log("需要新 token")
+        console.log("Need new token")
         const newToken = await createToken(owner)
         currentToken = newToken
         tokenRef.current = {
@@ -73,14 +73,14 @@ export function RepositorySearch({
       }
 
       if (!response.ok) {
-        throw new Error('搜索仓库失败')
+        throw new Error('Failed to search repositories')
       }
 
       const data = await response.json()
       setRepositories(data.items)
     } catch (error) {
       console.error(error)
-      toast.error("搜索仓库失败")
+      toast.error("Failed to search repositories")
     } finally {
       setIsLoading(false)
     }
@@ -106,7 +106,7 @@ export function RepositorySearch({
   return (
     <div className={`relative ${className}`}>
       <Input
-        placeholder="搜索仓库..."
+        placeholder="Search repositories..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setShowDropdown(true)}
@@ -121,9 +121,9 @@ export function RepositorySearch({
       {value && showDropdown && (
         <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-popover p-1 shadow-md">
           {isLoading ? (
-            <div className="px-2 py-1 text-sm text-muted-foreground">加载中...</div>
+            <div className="px-2 py-1 text-sm text-muted-foreground">loading...</div>
           ) : filteredRepositories.length === 0 ? (
-            <div className="px-2 py-1 text-sm text-muted-foreground">未找到匹配的仓库</div>
+            <div className="px-2 py-1 text-sm text-muted-foreground">No matching repositories found</div>
           ) : (
             filteredRepositories.map((repo) => (
               <div

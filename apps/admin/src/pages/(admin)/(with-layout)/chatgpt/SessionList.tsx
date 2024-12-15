@@ -100,7 +100,7 @@ const SessionList: React.FC<{
                 type="text"
                 value={chatSearchQuery}
                 onChange={(e) => setChatSearchQuery(e.target.value)}
-                placeholder="search session..."
+                placeholder="Search session..."
                 className="w-full pl-10 pr-4 py-2 rounded-lg border 
                   focus:outline-none focus:border-primary
                   hover:border-primary transition-colors duration-200"

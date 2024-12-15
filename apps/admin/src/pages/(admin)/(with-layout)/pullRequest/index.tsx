@@ -181,7 +181,7 @@ export function Component() {
               value={searchRepo}
               onChange={(value) => {
                 setSearchRepo(value)
-                // 当搜索框被清空时，重��为搜索所有仓库
+                // 当搜索框被清空时，重置为搜索所有仓库
                 if (!value) {
                   setSelectedRepo("all")
                 }
@@ -236,17 +236,17 @@ export function Component() {
       {(isLoadingRepos || isLoadingPRs) && <LoadingSpinner />}
 
       {!isLoadingPRs && filteredPRs.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
+        <div className="flex flex-col items-center justify-center py-12 rounded-lg">
           <GitBranch className="h-12 w-12 mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">暂无 Pull Requests</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Pull Requests</h3>
           <p className="text-sm text-gray-500">
             {searchQuery
-              ? `没有找到包含 "${searchQuery}" 的 Pull Requests`
+              ? `No Pull Requests found containing "${searchQuery}"`
               : selectedRepo !== "all"
-                ? `${selectedRepo} 仓库暂无${statusFilter === "all" ? "" : statusFilter === "open" ? "开放的" : statusFilter === "closed" ? "关闭的" : "已合并的"} Pull Requests`
+                ? `${selectedRepo} repository has no${statusFilter === "all" ? "" : statusFilter === "open" ? " open" : statusFilter === "closed" ? " closed" : " merged"} Pull Requests`
                 : statusFilter === "all"
-                  ? "暂无任何 Pull Requests"
-                  : `暂无${statusFilter === "open" ? "开放的" : statusFilter === "closed" ? "关闭的" : "已合并的"} Pull Requests`
+                  ? "No Pull Requests found"
+                  : `No ${statusFilter === "open" ? "open" : statusFilter === "closed" ? "closed" : "merged"} Pull Requests found`
             }
           </p>
         </div>

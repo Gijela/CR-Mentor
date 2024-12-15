@@ -16,7 +16,7 @@ const UploadArea = ({ kb_id }: UploadAreaProps) => {
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith(".md")) {
-      toast.error("只支持上传 Markdown 文件");
+      toast.error("Only markdown files are supported");
       return;
     }
 
@@ -31,10 +31,10 @@ const UploadArea = ({ kb_id }: UploadAreaProps) => {
         },
       });
 
-      toast.success("文档上传成功");
+      toast.success("Document uploaded successfully");
       e.target.value = "";
     } catch (error) {
-      toast.error("上传失败");
+      toast.error("Upload failed");
       console.error("Upload error:", error);
     }
   };
@@ -74,7 +74,7 @@ const UploadArea = ({ kb_id }: UploadAreaProps) => {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span>上传中...</span>
+          <span>Uploading...</span>
         </div>
       ) : (
         <Button
@@ -86,7 +86,7 @@ const UploadArea = ({ kb_id }: UploadAreaProps) => {
           className="flex items-center justify-center gap-2"
         >
           <Upload className="h-4 w-4" />
-          <span>上传</span>
+          <span>Upload</span>
         </Button>
       )}
     </label>

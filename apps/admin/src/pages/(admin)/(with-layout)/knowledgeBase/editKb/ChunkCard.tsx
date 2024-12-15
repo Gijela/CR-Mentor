@@ -26,7 +26,7 @@ const ChunkCard = ({ chunk, onEdit }: ChunkCardProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const handleDeleteChunk = async () => {
-    toast.error("删除功能正在开发中，敬请期待")
+    toast.error("Deleting feature is under development, please stay tuned")
     setShowDeleteDialog(false)
     return
 
@@ -91,7 +91,7 @@ const ChunkCard = ({ chunk, onEdit }: ChunkCardProps) => {
               </div>
               <div className="flex items-center">
                 <ArrowUpDown className="w-4 h-4 mr-2" />
-                <span>{chunk.content.length} 字符</span>
+                <span>{chunk.content.length} characters</span>
               </div>
             </div>
             <div className="flex items-center">
@@ -105,19 +105,19 @@ const ChunkCard = ({ chunk, onEdit }: ChunkCardProps) => {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
             <AlertDialogDescription>
-              您确定要删除这个文档块吗？此操作无法撤销。
+              Are you sure you want to delete this document chunk? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>取消</AlertDialogCancel>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive hover:bg-destructive/90"
               onClick={handleDeleteChunk}
               disabled={isPending}
             >
-              {isPending ? "删除中..." : "删除"}
+              {isPending ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
