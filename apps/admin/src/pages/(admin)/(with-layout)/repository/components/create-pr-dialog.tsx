@@ -47,6 +47,16 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
   const [loading, setLoading] = useState(false)
   const { data: knowledgeBases = [] } = useKnowledgeBases(user_id)
 
+  const resetForm = () => {
+    setTitle("")
+    setDescription("")
+    setSourceBranch("")
+    setTargetBranch("")
+    setSelectedKb("")
+    setSelectedRepo("")
+    setBranches([])
+  }
+
   const handleCreatePR = async () => {
     setLoading(true)
     try {
@@ -85,6 +95,7 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
       //   newWindow.blur();
       //   window.focus();
       // }
+      resetForm()
       setOpen(false)
     } finally {
       setLoading(false)
@@ -107,7 +118,15 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(isOpen) => {
+        setOpen(isOpen)
+        if (!isOpen) {
+          resetForm()
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button onClick={() => setOpen(true)}>
           <GitPullRequestIcon className="mr-2 h-4 w-4" />
