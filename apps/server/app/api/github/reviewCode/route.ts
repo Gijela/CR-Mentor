@@ -38,13 +38,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: `only support pr opened, ${action} is not opened` }, { status: 200 });
     }
 
-    let githubName = user.login;
+    let githubName = user.login, kb_id = '', isCreatedByBot = false;
     if (githubName === 'cr-mentor[bot]') {
-      // 从 CR-Mentor 控制台创建的PR, 需要从 body 中提取出 githubName
+      // 从 CR-Mentor 控制台创建的PR, 需要从 body 中提取出 githubName 和 kb_id
       const creatorMatch = body.match(/Created by: \[@([^\]]+)\]/);
+      const kbMatch = body.match(/Knowledge Base\[([^\]]+)\]/);
       githubName = creatorMatch ? creatorMatch[1] : githubName;
+      kb_id = kbMatch ? kbMatch[1] : null;
+      isCreatedByBot = true;
     }
 
+    console.log("🚀 ~ POST ~ isCreatedByBot:", isCreatedByBot)
 
     // 1. 获取用户 token
     const tokenResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/github/createToken`, {
@@ -105,22 +109,28 @@ export async function POST(req: Request) {
       }
     ]);
     console.log("🚀 ~ POST ~ moduleAnalysis:", moduleAnalysis)
-    const relevantKnowledge = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/supabase/rag/kb_chunks/retrieval_agents`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: `提供关于以下工具库、模块包和编程语言的最佳实践：${moduleAnalysis}`
-            }
-          ],
-          kb_id: 15, // 自定义知识库id
-          show_intermediate_steps: false,
-        }),
-      }
-    );
+
+    let relevantKnowledge = '';
+    if (isCreatedByBot) {
+      const relevantKnowledgeResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/supabase/rag/kb_chunks/retrieval_agents`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: `提供关于以下工具库、模块包和编程语言的最佳实践：${moduleAnalysis}`
+              }
+            ],
+            kb_id: Number(kb_id), // 自定义知识库id
+            show_intermediate_steps: true,
+          }),
+        }
+      );
+      relevantKnowledge = await relevantKnowledgeResponse.json();
+    }
+
     console.log("🚀 ~ POST ~ relevantKnowledge:", relevantKnowledge)
 
     // 将知识整合到 PR 内容中

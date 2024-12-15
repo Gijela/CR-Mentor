@@ -5,6 +5,8 @@ export interface CreatePRParams {
   body: string;
   head: string;
   base: string;
+  kb_id?: string;
+  kb_title?: string;
 }
 
 export async function POST(req: Request): Promise<NextResponse> {
@@ -38,7 +40,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         },
         body: JSON.stringify({
           ...data,
-          body: `${data.body}\n\nCreated by: [@${githubName}](https://github.com/${githubName})`
+          body: `${data.body}\n\nCreated by: [@${githubName}](https://github.com/${githubName})\nKnowledge Base[${data.kb_id}]: [${data.kb_title}](https://dashboard.cr-mentor.top/knowledgeBase/editKb/?id=${data.kb_id}&name=${data.kb_title})`
         })
       }
     );

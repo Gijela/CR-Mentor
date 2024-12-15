@@ -22,14 +22,17 @@ import {
 } from "@repo/ui/select"
 import { toast } from "sonner"
 import { RepositorySearch } from "@/components/repository-search"
+import { useKnowledgeBases } from "@/hooks/query/use-knowledge-base"
 
-const knowledgeBases = [
-  { label: "General Knowledge Base", value: "general" },
-  { label: "Product Documentation", value: "product" },
-  { label: "Technical Documentation", value: "tech" },
-  { label: "API Documentation", value: "api" },
-  { label: "User Guide", value: "user-guide" },
-]
+// const knowledgeBases = [
+//   { label: "General Knowledge Base", value: "general" },
+//   { label: "Product Documentation", value: "product" },
+//   { label: "Technical Documentation", value: "tech" },
+//   { label: "API Documentation", value: "api" },
+//   { label: "User Guide", value: "user-guide" },
+// ]
+
+const user_id = "Gijela-123456" // 这里需要从认证上下文中获取
 
 export function CreatePRDialog({ githubName, totalCount }: { githubName: string, totalCount: number }) {
   const { t } = useTranslation()
@@ -42,13 +45,14 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
   const [branches, setBranches] = useState<{ value: string, label: string }[]>([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { data: knowledgeBases = [] } = useKnowledgeBases(user_id)
 
   const handleCreatePR = async () => {
     setLoading(true)
     try {
       const response = await fetch(`/api/github/createPullRequest`, {
         method: "POST",
-        body: JSON.stringify({ githubName, repoName: selectedRepo, data: { title, body: description, head: sourceBranch, base: targetBranch } }),
+        body: JSON.stringify({ githubName, repoName: selectedRepo, data: { title, body: description, head: sourceBranch, base: targetBranch, kb_id: selectedKb, kb_title: knowledgeBases.find(kb => kb.id === Number(selectedKb))?.title } }),
       })
       const { success, msg, token, data } = await response.json()
       if (!success) {
@@ -171,8 +175,8 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
               </SelectTrigger>
               <SelectContent>
                 {knowledgeBases.map((kb) => (
-                  <SelectItem key={kb.value} value={kb.value}>
-                    {kb.label}
+                  <SelectItem key={kb.id} value={kb.id.toString()}>
+                    {kb.title}
                   </SelectItem>
                 ))}
               </SelectContent>
