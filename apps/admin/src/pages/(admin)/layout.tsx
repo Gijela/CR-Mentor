@@ -42,12 +42,12 @@ export function Component() {
                 </div>
                 <div className="ml-auto flex flex-1 items-center space-x-2 px-2 sm:px-4 md:max-w-96 lg:max-w-lg">
                   <Search />
-                  <Link to="https://github.com/TinsFox/shadcnui-boilerplate" target="_blank">
+                  <Link to="https://github.com/Gijela/CR-Mentor" target="_blank">
                     <Button variant="ghost" size="icon">
                       <Icons.gitHub className="size-5" />
                     </Button>
                   </Link>
-                  <Link to="https://shadcnui-boilerplate.pages.dev" target="_blank">
+                  <Link to="https://cr-mentor.top" target="_blank">
                     <Button variant="ghost" size="icon">
                       <CircleHelp className="size-5" />
                     </Button>

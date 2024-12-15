@@ -23,7 +23,7 @@ import { useNavMenu } from "@/hooks/query/user-menu"
 const navSecondary = [
   {
     title: "Feedback",
-    url: "https://github.com/TinsFox/shadcnui-boilerplate/issues",
+    url: "https://github.com/Gijela/CR-Mentor/issues",
     icon: Send,
     external: true,
   },

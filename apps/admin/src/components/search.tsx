@@ -80,7 +80,8 @@ export function Search({ ...props }: ButtonProps & DialogProps) {
               value={pkg.repository.url}
               onSelect={() => {
                 runCommand(() =>
-                  navigate(pkg.repository.url),
+                  // navigate('https://github.com/Gijela/CR-Mentor'),
+                  window.open("https://github.com/Gijela/CR-Mentor", "_blank"),
                 )
               }}
             >
@@ -91,12 +92,13 @@ export function Search({ ...props }: ButtonProps & DialogProps) {
               value="https://shadcnui-boilerplate.pages.dev/"
               onSelect={() => {
                 runCommand(() =>
-                  navigate("https://shadcnui-boilerplate.pages.dev/"),
+                  // navigate("https://cr-mentor.top"),
+                  window.open("https://cr-mentor.top", "_blank"),
                 )
               }}
             >
               <CircleHelp className="mr-2 size-4" />
-              Document
+              Landing Page
             </CommandItem>
           </CommandGroup>
           <CommandSeparator />

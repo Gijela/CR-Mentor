@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils"
 
 import { CreatePRDialog } from "./components/create-pr-dialog"
 import type { Repository } from "./interface"
+import { toast } from "sonner"
 
 const githubName = "Gijela"
 
@@ -158,7 +159,11 @@ export function Component() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => toast.info("Repository personalization settings are under development, stay tuned ~")}
+                      >
                         <SettingsIcon className="mr-2 h-4 w-4" />
                         {t("repository.setting", "Setting")}
                       </Button>
