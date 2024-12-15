@@ -20,9 +20,29 @@ export const queryUser = () => queryOptions({
 export const queryUserInfo = () =>
   queryOptions({
     queryKey: ["user-info"],
-    queryFn: async () => apiFetch<{
-      data: IUserProfile
-    }>(`/api/users/info`),
+    // queryFn: async () => apiFetch<{
+    //   data: IUserProfile
+    // }>(`/api/users/info`),
+    queryFn: async () => ({
+      code: 200,
+      msg: "Get user info success",
+      data: {
+        id: "cb9dacc8-2cbf-48de-bb17-ac47c34379ab",
+        email: "admin@shadcn.com",
+        password: "$2a$10$jzcPjzUKWCUd1Tc1tqq2ZOThLyRdvSy2bY6iZDnmnefgJUTNL9P2a",
+        name: "Admin",
+        username: "admin",
+        avatar: "https://avatars.githubusercontent.com/u/31701936",
+        birthdate: "2005-08-15T11:00:26.555Z",
+        registeredAt: "2024-11-29T06:47:01.680Z",
+        createdAt: "2024-11-29T06:47:01.680Z",
+        updatedAt: "2024-11-29T06:47:01.575Z",
+        status: "active",
+        role: "admin",
+        bio: "Tremo tabella capillus benigne supplanto surculus arcesso subnecto aliquid minima. Valens attero vilis caecus auctus consectetur beneficium copiose viscus ipsum. Tendo confido terminatio itaque.",
+        amount: "1000"
+      }
+    }),
   })
 
 export function useUser() {
