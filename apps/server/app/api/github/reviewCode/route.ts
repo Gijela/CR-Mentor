@@ -38,13 +38,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: `only support pr opened, ${action} is not opened` }, { status: 200 });
     }
 
+    let githubName = user.login;
+    if (githubName === 'cr-mentor[bot]') {
+      // 从 CR-Mentor 控制台创建的PR, 需要从 body 中提取出 githubName
+      const creatorMatch = body.match(/Created by: \[@([^\]]+)\]/);
+      githubName = creatorMatch ? creatorMatch[1] : githubName;
+    }
+
+
     // 1. 获取用户 token
     const tokenResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/github/createToken`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ githubName: user.login }),
+      body: JSON.stringify({ githubName }),
     });
     const { success, token, msg, error } = await tokenResponse.json();
     console.log("🚀 ~ POST ~ token:", token)

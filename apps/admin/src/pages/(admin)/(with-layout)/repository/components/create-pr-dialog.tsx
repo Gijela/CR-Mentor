@@ -41,21 +41,52 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
   const [selectedRepo, setSelectedRepo] = useState("")
   const [branches, setBranches] = useState<{ value: string, label: string }[]>([])
   const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleCreatePR = async () => {
-    const response = await fetch(`/api/github/createPullRequest`, {
-      method: "POST",
-      body: JSON.stringify({ githubName, repoName: selectedRepo, data: { title, description, head: sourceBranch, base: targetBranch } }),
-    })
-    const { success, msg } = await response.json()
-    if (!success) {
-      toast.error(msg)
-      console.error(msg)
-      return
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/github/createPullRequest`, {
+        method: "POST",
+        body: JSON.stringify({ githubName, repoName: selectedRepo, data: { title, body: description, head: sourceBranch, base: targetBranch } }),
+      })
+      const { success, msg, token, data } = await response.json()
+      if (!success) {
+        toast.error(msg)
+        console.error(msg)
+        return
+      }
+      toast.success(msg)
+
+      // if (token) {
+      //   try {
+      //     await fetch(`${data.comments_url}`, {
+      //       method: "POST",
+      //       headers: {
+      //         "Authorization": `Bearer ${token}`,
+      //         "Content-Type": "application/json"
+      //       },
+      //       body: JSON.stringify({
+      //         body: `Created by: [@${githubName}](https://github.com/${githubName})\n\nPowered by [CR-Mentor](https://cr-mentor.top)`
+      //       })
+      //     })
+      //   } catch (error) {
+      //     toast.error("Add creator comment failed")
+      //     console.error(error)
+      //   }
+      // }
+
+      // const newWindow = window.open(`https://github.com/${githubName}/${selectedRepo}/pull/${data.number}`, '_blank', 'noopener,noreferrer');
+      // if (newWindow) {
+      //   newWindow.blur();
+      //   window.focus();
+      // }
+      setOpen(false)
+    } finally {
+      setLoading(false)
     }
-    toast.success(msg)
-    setOpen(false)
   }
+
 
   const handleRepoBranch = async (repoName: string) => {
     const response = await fetch(`/api/github/fetchRepoBranches`, {
@@ -171,8 +202,8 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
               {t('common.cancel', 'Cancel')}
             </Button>
           </DialogTrigger>
-          <Button onClick={handleCreatePR}>
-            {t('repository.pr.submit', 'Submit')}
+          <Button onClick={handleCreatePR} disabled={loading}>
+            {loading ? t('common.loading', 'Loading...') : t('repository.pr.submit', 'Submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -36,7 +36,10 @@ export async function POST(req: Request): Promise<NextResponse> {
           'Content-Type': 'application/json',
           'User-Agent': 'CR-Mentor'
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({
+          ...data,
+          body: `${data.body}\n\nCreated by: [@${githubName}](https://github.com/${githubName})`
+        })
       }
     );
 
@@ -51,7 +54,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       return NextResponse.json({ success: false, data: pullRequestResponseData, msg: pullRequestResponseData?.errors?.[0]?.message || 'create PR failed' }, { status: 200 });
     }
 
-    return NextResponse.json({ success: true, data: pullRequestResponseData, msg: 'create pull request success' }, { status: 200 });
+    return NextResponse.json({ success: true, token, data: pullRequestResponseData, msg: 'create pull request success' }, { status: 200 });
 
   } catch (error) {
     return NextResponse.json({
