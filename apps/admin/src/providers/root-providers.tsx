@@ -26,7 +26,7 @@ export const RootProviders: FC<PropsWithChildren> = ({ children }) => {
       <QueryClientProvider client={queryClient}>
         <ThemeWrapper>
           <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-            <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/dashboard">
+            <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/quickStart">
               <TooltipProvider>
                 <HotkeysProvider initiallyActiveScopes={["home"]}>
                   {isChatPage ? (

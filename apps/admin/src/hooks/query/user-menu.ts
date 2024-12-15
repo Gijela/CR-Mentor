@@ -24,6 +24,7 @@ import {
   TableProperties,
   Trash2,
   Bot,
+  TrendingUp,
 } from "lucide-react"
 
 import type { IMenu } from "@/schema/menu"
@@ -46,6 +47,11 @@ async function mockMenu(): Promise<IMenu[]> {
 }
 
 export const menus: IMenu[] = [
+  {
+    title: "Quick Start",
+    icon: TrendingUp,
+    to: "/quickStart",
+  },
   // {
   //   title: "dashboard",
   //   icon: Gauge,

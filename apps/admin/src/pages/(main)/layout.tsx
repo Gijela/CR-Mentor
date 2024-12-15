@@ -18,7 +18,7 @@ export function Component() {
             </div>
             <div className="flex items-center gap-5">
               <Button asChild variant="ghost" size="lg">
-                <Link to="/dashboard">Dashboard</Link>
+                <Link to="/quickStart">Dashboard</Link>
               </Button>
             </div>
           </div>
