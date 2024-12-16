@@ -32,11 +32,11 @@ function Sidebar() {
       >
         {/* [内容]菜单 */}
         <div className="space-y-8">
-          <ul className="mt-3">
+          {/* <ul className="mt-3">
             {sidebarItems.map((item, index) => (
               <SidebarItem menuData={item} key={index} />
             ))}
-          </ul>
+          </ul> */}
         </div>
 
         {/* [底部]展开/折叠按钮 */}
