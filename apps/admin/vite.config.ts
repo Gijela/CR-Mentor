@@ -41,11 +41,11 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         "/api/github/": {
-          target: "http://localhost:3000",
+          target: viteEnv.VITE_GITHUB_SERVER_API,
           changeOrigin: true,
         },
         "/api/supabase/": {
-          target: "http://localhost:3000",
+          target: viteEnv.VITE_GITHUB_SERVER_API,
           changeOrigin: true,
         },
         "/api/": {

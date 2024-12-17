@@ -11,6 +11,7 @@ export const env = createEnv({
     VITE_ENABLE_DEVTOOLS: z.string().default("false").transform((s) => s !== "false" && s !== "0"),
     VITE_EDITOR: z.string().default("vscode"),
     VITE_ENABLE_MOCK: z.string().default(isDev.toString()).transform((s) => s !== "false" && s !== "0"),
+    VITE_GITHUB_SERVER_API: z.string().url(),
   },
   emptyStringAsUndefined: true,
   runtimeEnv: import.meta.env,

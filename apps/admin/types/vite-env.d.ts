@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   VITE_ENABLE_DEVTOOLS: string
   VITE_EDITOR: string
   VITE_ENABLE_MOCK: string
+  VITE_GITHUB_SERVER_API: string
 }
 
 interface ImportMeta {
