@@ -1,13 +1,15 @@
 import { createClient } from "@supabase/supabase-js"; // Supabase数据库客户端
 import { NextRequest, NextResponse } from "next/server";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!,
-);
-
 export async function POST(req: NextRequest) {
   const { id, user_id, title, description } = await req.json();
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_KEY!,
+  );
+
+
   try {
 
     let { data } = await supabase

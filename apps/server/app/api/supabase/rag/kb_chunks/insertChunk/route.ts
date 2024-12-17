@@ -3,12 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters"; // 文本分割工具
 import { OpenAIEmbeddings } from "@langchain/openai"; // OpenAI文本嵌入模型
 
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!,
-);
 export async function POST(req: NextRequest) {
   const { kb_id, content, metadata } = await req.json();
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_KEY!,
+  );
 
   try {
     // 创建文本分割器实例，设置为处理markdown格式的文本
