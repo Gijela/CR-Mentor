@@ -5,6 +5,9 @@ import { AGENT_SYSTEM_TEMPLATE } from '@/lib/prompt/github/pull_request';
 import { model } from '@/lib/model';
 import { createBatchFileCommentsTool, createCodeReviewTool, createPrSummaryTool, createSpecialFileCommentTool } from '@/lib/agentTools/github/pull_request';
 
+// 添加这行来强制动态路由
+export const dynamic = 'force-dynamic';
+
 // 优化 Agent 配置
 let agentExecutor: AgentExecutor | null = null;
 
