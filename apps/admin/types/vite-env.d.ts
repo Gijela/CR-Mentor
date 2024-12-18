@@ -11,8 +11,6 @@ interface ImportMetaEnv {
   VITE_EDITOR: string
   VITE_ENABLE_MOCK: string
   VITE_GITHUB_SERVER_API: string
-  VITE_GITHUB_NAME: string
-  VITE_GITHUB_USER_ID: string
 }
 
 interface ImportMeta {
