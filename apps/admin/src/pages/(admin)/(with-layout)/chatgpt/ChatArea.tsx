@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { KnowledgeBase, ChatSessionDetail } from "../chatgpt/index";
+import type { KnowledgeBase, ChatSessionDetail } from "../chatgpt/index";
 import HideLeftArea from "./icons/HideLeftArea";
 import HideRightArea from "./icons/HideRightArea";
 import { ProChat } from "@ant-design/pro-chat";
@@ -25,6 +25,8 @@ const ChatArea: React.FC<{
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingTitle, setEditingTitle] = useState("");
+  const apiUrl = import.meta.env.VITE_GITHUB_SERVER_API
+  console.log("🚀 ~ ChatArea ~ apiUrl:", apiUrl)
 
   const handleStartEditing = () => {
     const currentTitle =
@@ -158,7 +160,7 @@ const ChatArea: React.FC<{
               key="chat-area"
               sendMessageRequest={async (messages) => {
                 const response = await fetch(
-                  "/api/supabase/rag/kb_chunks/retrieval_agents",
+                  `${apiUrl}/api/supabase/rag/kb_chunks/retrieval_agents`,
                   {
                     method: "POST",
                     body: JSON.stringify({

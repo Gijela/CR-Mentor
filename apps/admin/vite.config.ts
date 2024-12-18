@@ -40,14 +40,14 @@ export default defineConfig(({ mode }) => {
       port: 5173,
       strictPort: true,
       proxy: {
-        "/api/github/": {
-          target: "https://server-cr.zeabur.app/",
-          changeOrigin: true,
-        },
-        "/api/supabase/": {
-          target: "https://server-cr.zeabur.app/",
-          changeOrigin: true,
-        },
+        // "/api/github/": {
+        //   target: "https://server-cr.zeabur.app/",
+        //   changeOrigin: true,
+        // },
+        // "/api/supabase/": {
+        //   target: "https://server-cr.zeabur.app/",
+        //   changeOrigin: true,
+        // },
         "/api/": {
           target: viteEnv.VITE_API_URL,
           changeOrigin: true,

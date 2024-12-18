@@ -33,6 +33,7 @@ import { useKnowledgeBases } from "@/hooks/query/use-knowledge-base"
 // ]
 
 const user_id = "Gijela-123456" // 这里需要从认证上下文中获取
+const apiUrl = import.meta.env.VITE_GITHUB_SERVER_API
 
 export function CreatePRDialog({ githubName, totalCount }: { githubName: string, totalCount: number }) {
   const { t } = useTranslation()
@@ -60,7 +61,7 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
   const handleCreatePR = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/github/createPullRequest`, {
+      const response = await fetch(`${apiUrl}/api/github/createPullRequest`, {
         method: "POST",
         body: JSON.stringify({ githubName, repoName: selectedRepo, data: { title, body: description, head: sourceBranch, base: targetBranch, kb_id: selectedKb, kb_title: knowledgeBases.find(kb => kb.id === Number(selectedKb))?.title } }),
       })
@@ -104,7 +105,7 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
 
 
   const handleRepoBranch = async (repoName: string) => {
-    const response = await fetch(`/api/github/fetchRepoBranches`, {
+    const response = await fetch(`${apiUrl}/api/github/fetchRepoBranches`, {
       method: "POST",
       body: JSON.stringify({ githubName, repoName }),
     })

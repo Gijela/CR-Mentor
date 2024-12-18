@@ -1,7 +1,8 @@
 // 获取 githubName 对应用户的 token
 export const createToken = async (githubName: string) => {
   try {
-    const tokenResponse = await fetch("/api/github/createToken", {
+    const apiUrl = import.meta.env.VITE_GITHUB_SERVER_API
+    const tokenResponse = await fetch(`${apiUrl}/api/github/createToken`, {
       method: "POST",
       body: JSON.stringify({ githubName }),
     })
