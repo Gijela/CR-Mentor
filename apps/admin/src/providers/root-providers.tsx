@@ -12,7 +12,6 @@ import { ThemeWrapper } from "@/components/theme/theme-wrapper"
 import { ThemesStyle } from "@/components/theme/themes-styles"
 import { i18n } from "@/i18n"
 import { queryClient } from "@/lib/query-client"
-import { ClerkProvider } from '@clerk/clerk-react'
 
 const loadFeatures = () =>
   import("../framer-lazy-feature").then((res) => res.default)
@@ -26,28 +25,26 @@ export const RootProviders: FC<PropsWithChildren> = ({ children }) => {
       <QueryClientProvider client={queryClient}>
         <ThemeWrapper>
           <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-            <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/quickStart">
-              <TooltipProvider>
-                <HotkeysProvider initiallyActiveScopes={["home"]}>
-                  {isChatPage ? (
-                    children
-                  ) : (
-                    <LazyMotion features={loadFeatures} strict key="framer">
-                      <MotionConfig
-                        transition={{
-                          type: "tween",
-                          duration: 0.15,
-                          ease: "easeInOut",
-                        }}
-                      >
-                        {children}
-                      </MotionConfig>
-                    </LazyMotion>
-                  )}
-                </HotkeysProvider>
-                <ToasterPrimitive />
-              </TooltipProvider>
-            </ClerkProvider>
+            <TooltipProvider>
+              <HotkeysProvider initiallyActiveScopes={["home"]}>
+                {isChatPage ? (
+                  children
+                ) : (
+                  <LazyMotion features={loadFeatures} strict key="framer">
+                    <MotionConfig
+                      transition={{
+                        type: "tween",
+                        duration: 0.15,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      {children}
+                    </MotionConfig>
+                  </LazyMotion>
+                )}
+              </HotkeysProvider>
+              <ToasterPrimitive />
+            </TooltipProvider>
             <ThemesStyle />
             <SonnerToaster richColors />
           </ThemeProvider>

@@ -19,7 +19,6 @@ import { NavMain } from "@/components/nav-sidebar/nav-main"
 import { NavSecondary } from "@/components/nav-sidebar/nav-secondary"
 import { NavUser } from "@/components/nav-sidebar/nav-user"
 import { useNavMenu } from "@/hooks/query/user-menu"
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react"
 
 const navSecondary = [
   {
@@ -51,17 +50,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </Link>
               </SidebarMenuButton>
 
-              {/* clerk */}
-              <div className="flex-shrink-0 text-primary">
-                <SignedOut>
-                  <SignInButton />
-                </SignedOut>
-                <SignedIn>
-                  <div className="mt-[6px]">
-                    <UserButton />
-                  </div>
-                </SignedIn>
-              </div>
+              <div className="flex-shrink-0 text-primary"></div>
             </div>
           </SidebarMenuItem>
         </SidebarMenu>

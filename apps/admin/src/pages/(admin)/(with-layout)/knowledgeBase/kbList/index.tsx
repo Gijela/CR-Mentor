@@ -34,8 +34,9 @@ interface KnowledgeBase {
   updated_at: string
 }
 
+const user_id = import.meta.env.VITE_GITHUB_USER_ID
+
 export function Component() {
-  const user_id = "Gijela-123456" // 这里需要从认证上下文中获取
   const { data: knowledgeBases = [], isLoading } = useKnowledgeBases(user_id)
   const { mutate: deleteKB, isPending: isDeleting } = useDeleteKnowledgeBase()
   const [searchQuery, setSearchQuery] = useState('')

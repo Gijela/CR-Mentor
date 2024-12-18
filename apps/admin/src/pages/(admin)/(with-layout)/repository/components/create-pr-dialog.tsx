@@ -32,7 +32,7 @@ import { useKnowledgeBases } from "@/hooks/query/use-knowledge-base"
 //   { label: "User Guide", value: "user-guide" },
 // ]
 
-const user_id = "Gijela-123456" // 这里需要从认证上下文中获取
+const user_id = import.meta.env.VITE_GITHUB_USER_ID
 const apiUrl = import.meta.env.VITE_GITHUB_SERVER_API
 
 export function CreatePRDialog({ githubName, totalCount }: { githubName: string, totalCount: number }) {

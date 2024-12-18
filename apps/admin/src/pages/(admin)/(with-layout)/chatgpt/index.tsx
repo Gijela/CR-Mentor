@@ -32,7 +32,7 @@ export interface KnowledgeBase {
 }
 
 
-export const clientUserId = "Gijela-123456";
+export const clientUserId = import.meta.env.VITE_GITHUB_USER_ID;
 
 // 获取知识库列表
 const getKnowledgeBases = async (user_id: string) => {

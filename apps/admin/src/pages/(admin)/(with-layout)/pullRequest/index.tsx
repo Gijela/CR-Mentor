@@ -69,7 +69,8 @@ const getStatusBadge = (status: PullRequest["status"]) => {
     </Badge>
   )
 }
-const owner = "Gijela"
+
+const owner = import.meta.env.VITE_GITHUB_NAME
 
 export function Component() {
   const [searchParams] = useSearchParams()

@@ -37,7 +37,7 @@ import { CreatePRDialog } from "./components/create-pr-dialog"
 import type { Repository } from "./interface"
 import { toast } from "sonner"
 
-const githubName = "Gijela"
+const githubName = import.meta.env.VITE_GITHUB_NAME
 
 export function Component() {
   const { t } = useTranslation()
