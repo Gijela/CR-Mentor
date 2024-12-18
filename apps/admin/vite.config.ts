@@ -41,11 +41,11 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         "/api/github/": {
-          target: viteEnv.VITE_GITHUB_SERVER_API,
+          target: "https://server-cr.zeabur.app/",
           changeOrigin: true,
         },
         "/api/supabase/": {
-          target: viteEnv.VITE_GITHUB_SERVER_API,
+          target: "https://server-cr.zeabur.app/",
           changeOrigin: true,
         },
         "/api/": {
