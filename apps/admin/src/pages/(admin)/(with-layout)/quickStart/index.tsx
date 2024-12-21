@@ -56,6 +56,8 @@ const optionalSteps: Step[] = [
   },
 ]
 
+const apiUrl = import.meta.env.VITE_GITHUB_SERVER_API
+
 export function Component() {
   const location = useLocation()
   const [progress, setProgress] = useState(0)
@@ -111,11 +113,19 @@ export function Component() {
           }
         })
         const { login } = await userRes.json()
-        await user?.update({
-          unsafeMetadata: {
+        const res = await fetch(`${apiUrl}/api/clerk/setMetadata`, {
+          method: "POST",
+          body: JSON.stringify({
+            userId: user?.id,
             githubName: login
-          }
+          })
         })
+        const { success } = await res.json()
+        if (success) {
+          setCurrentStep(2)
+          setProgress(100)
+          setShowOptional(true)
+        }
       } catch (error) {
         console.error("获取GitHub信息失败:", error)
       }
@@ -126,14 +136,14 @@ export function Component() {
 
   console.log(user?.unsafeMetadata)
 
-  useEffect(() => {
-    console.log("🚀 ~ useEffect ~ user?.unsafeMetadata?.githubName:", user?.unsafeMetadata?.githubName)
-    if (user?.unsafeMetadata?.githubName) {
-      setCurrentStep(2)
-      setProgress(2 * 50)
-      setShowOptional(true)
-    }
-  }, [user?.unsafeMetadata?.githubName])
+  // useEffect(() => {
+  //   console.log("🚀 ~ useEffect ~ user?.unsafeMetadata?.githubName:", user?.unsafeMetadata?.githubName)
+  //   if (user?.unsafeMetadata?.githubName) {
+  //     setCurrentStep(2)
+  //     setProgress(2 * 50)
+  //     setShowOptional(true)
+  //   }
+  // }, [user?.unsafeMetadata?.githubName])
 
   return (
     <div className="container mx-auto py-10">
