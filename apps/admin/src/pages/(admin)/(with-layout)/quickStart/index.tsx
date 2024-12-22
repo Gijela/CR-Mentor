@@ -62,7 +62,7 @@ export function Component() {
   const [currentStep, setCurrentStep] = useState(0)
   const [showOptional, setShowOptional] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isSaveInstallationId, setIsSaveInstallationId] = useState(false)
+  const [isSavingGithubName, setIsSavingGithubName] = useState(false)
 
   const { isLoaded, isSignedIn, user } = useUser()
   const navigate = useNavigate()
@@ -85,34 +85,34 @@ export function Component() {
   }, [isLoggedIn])
 
   useEffect(() => {
-    if (user?.publicMetadata && user?.publicMetadata?.installationId) {
+    if (user?.publicMetadata && user?.publicMetadata?.githubName) {
       setCurrentStep(2)
       setProgress(100)
       setShowOptional(true)
     }
-  }, [user?.publicMetadata?.installationId])
+  }, [user?.publicMetadata?.githubName])
 
-  const handleSaveInstal = async (userId: string, installationId: string) => {
+  const handleSaveGithubName = async (userId: string, code: string) => {
     try {
-      setIsSaveInstallationId(true)
+      setIsSavingGithubName(true)
       await fetch(`${apiUrl}/api/clerk/setMetadata`, {
         method: "POST",
-        body: JSON.stringify({ userId, installationId })
+        body: JSON.stringify({ userId, code })
       })
       setCurrentStep(2)
       setProgress(100)
       setShowOptional(true)
-      setIsSaveInstallationId(false)
+      setIsSavingGithubName(false)
     } catch (error) {
-      setIsSaveInstallationId(false)
+      setIsSavingGithubName(false)
       console.error("Failed to save GitHub name:", error)
     }
   }
 
   useEffect(() => {
-    const installationId = new URLSearchParams(location.search).get("installation_id")
-    if (!installationId || !user?.id) return
-    handleSaveInstal(user?.id, installationId)
+    const code = new URLSearchParams(location.search).get("code")
+    if (!code || !user?.id) return
+    handleSaveGithubName(user?.id, code)
   }, [location, user?.id])
 
   return (
@@ -184,7 +184,7 @@ export function Component() {
                     </div>
                   ) : (
                     <>
-                      {isSaveInstallationId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
+                      {isSavingGithubName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
                       {step.action}
                     </>
                   )}
