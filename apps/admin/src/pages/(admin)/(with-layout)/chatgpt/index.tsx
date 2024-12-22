@@ -3,6 +3,7 @@ import SessionList from "./SessionList";
 import KnowledgeBaseList from "./KnowledgeBaseList";
 import ChatArea from "./ChatArea";
 import { toast } from "sonner";
+import { useUser } from "@clerk/clerk-react";
 
 // 添加消息类型定义
 interface Message {
@@ -32,8 +33,6 @@ export interface KnowledgeBase {
 }
 
 
-export const clientUserId = import.meta.env.VITE_GITHUB_USER_ID;
-
 // 获取知识库列表
 const getKnowledgeBases = async (user_id: string) => {
   const result = await fetch("/api/supabase/rag/knowledge_bases/getTotalKB", {
@@ -57,6 +56,7 @@ const getKnowledgeBases = async (user_id: string) => {
 export function Component() {
   const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { user } = useUser()
 
   // 添加会话列表状态
   const [chatSessions, setChatSessions] = useState<ChatSessionDetail[]>([
@@ -153,7 +153,7 @@ export function Component() {
         (s) => s.id !== sessionId
       );
       if (remainingSessions.length > 0) {
-        setCurrentSessionId(remainingSessions[0].id);
+        setCurrentSessionId(remainingSessions[0]!.id);
       } else {
         // 如果没有剩余会话，创建一个新会话
         handleCreateNewChat();
@@ -168,7 +168,7 @@ export function Component() {
 
   // 获取知识库列表
   const handleGetKnowledgeBases = async () => {
-    const data = await getKnowledgeBases(clientUserId);
+    const data = await getKnowledgeBases(user?.id as string);
     setKnowledgeBases(data);
   };
 

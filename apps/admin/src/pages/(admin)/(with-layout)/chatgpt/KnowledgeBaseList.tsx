@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { KnowledgeBase } from "../chatgpt/index";
+import type { KnowledgeBase } from "../chatgpt/index";
 
 const KnowledgeBaseList: React.FC<{
   isRightSidebarOpen: boolean;
@@ -20,7 +20,7 @@ const KnowledgeBaseList: React.FC<{
   // 对知识库列表进行排序和过滤
   const sortedAndFilteredList = useMemo(() => {
     // 首先基于搜索词过滤
-    const filtered = knowledgeBases.filter((item) =>
+    const filtered = (knowledgeBases || []).filter((item) =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
@@ -44,9 +44,8 @@ const KnowledgeBaseList: React.FC<{
 
   return (
     <div
-      className={`${
-        isRightSidebarOpen ? "w-[288px] border-x" : "w-0 border-l"
-      } flex-shrink-0 transition-all duration-300 relative group`}
+      className={`${isRightSidebarOpen ? "w-[288px] border-x" : "w-0 border-l"
+        } flex-shrink-0 transition-all duration-300 relative group`}
     >
       {/* 左侧切换按钮 */}
       <button
@@ -54,11 +53,10 @@ const KnowledgeBaseList: React.FC<{
         className={`absolute -left-4 top-[40%] transform -translate-y-1/2 bg-accent 
             border h-11 w-4 hover:bg-accent/80
             z-50 flex items-center justify-center rounded-l-md
-            ${
-              isRightSidebarOpen
-                ? "opacity-0 group-hover:opacity-100"
-                : "opacity-100"
-            }
+            ${isRightSidebarOpen
+            ? "opacity-0 group-hover:opacity-100"
+            : "opacity-100"
+          }
             transition-opacity duration-200`}
       >
         <svg
@@ -78,9 +76,8 @@ const KnowledgeBaseList: React.FC<{
       </button>
 
       <div
-        className={`${
-          isRightSidebarOpen ? "opacity-100" : "opacity-0"
-        } bg-background flex flex-col h-full relative`}
+        className={`${isRightSidebarOpen ? "opacity-100" : "opacity-0"
+          } bg-background flex flex-col h-full relative`}
       >
         {/* 右侧头部 */}
         <div className="sticky top-0 bg-background z-10">
@@ -152,20 +149,18 @@ const KnowledgeBaseList: React.FC<{
               {sortedAndFilteredList.map((item) => (
                 <div
                   key={item.title}
-                  className={`p-2 rounded-lg cursor-pointer flex items-center gap-3 ${
-                    currentSelectedKbs.includes(item.title)
+                  className={`p-2 rounded-lg cursor-pointer flex items-center gap-3 ${currentSelectedKbs.includes(item.title)
                       ? "bg-accent"
                       : "hover:bg-accent/50"
-                  }`}
+                    }`}
                   onClick={() => handleKbSelection(item.title)}
                 >
                   {/* 头像 */}
                   <div
-                    className={`flex-shrink-0 rounded-full ${
-                      currentSelectedKbs.includes(item.title)
+                    className={`flex-shrink-0 rounded-full ${currentSelectedKbs.includes(item.title)
                         ? "bg-primary/10"
                         : "bg-accent"
-                    }`}
+                      }`}
                   >
                     <div className="w-10 h-10 rounded-full flex items-center justify-center">
                       <div className={`flex items-center justify-center`}>

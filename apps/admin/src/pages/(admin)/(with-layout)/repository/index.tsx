@@ -37,6 +37,7 @@ import { CreatePRDialog } from "./components/create-pr-dialog"
 import type { Repository } from "./interface"
 import { toast } from "sonner"
 import { useUser } from "@clerk/clerk-react"
+import EmptyCard from "../pullRequest/components/emptyCard"
 
 export function Component() {
   const { t } = useTranslation()
@@ -96,6 +97,8 @@ export function Component() {
 
       {isLoading ? (
         <LoadingSpinner />
+      ) : (data || []).length === 0 ? (
+        <EmptyCard icon={<GitForkIcon className="h-12 w-12 text-gray-400 mx-auto" />} title="No Repositories found" description="Please Sign in First" />
       ) : (
         <>
           <div className="space-y-4">

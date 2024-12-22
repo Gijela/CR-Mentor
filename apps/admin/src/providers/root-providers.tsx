@@ -19,7 +19,7 @@ const loadFeatures = () =>
 
 export const RootProviders: FC<PropsWithChildren> = ({ children }) => {
   // 不需要使用 framer-motion LazyMotion 的页面
-  const isChatPage = window.location.pathname.includes('chatgpt');
+  // const isChatPage = window.location.pathname.includes('chatgpt');
 
   return (
     <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/quickStart">
@@ -29,7 +29,8 @@ export const RootProviders: FC<PropsWithChildren> = ({ children }) => {
             <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
               <TooltipProvider>
                 <HotkeysProvider initiallyActiveScopes={["home"]}>
-                  {isChatPage ? (
+                  {children}
+                  {/* {isChatPage ? (
                     children
                   ) : (
                     <LazyMotion features={loadFeatures} strict key="framer">
@@ -43,7 +44,7 @@ export const RootProviders: FC<PropsWithChildren> = ({ children }) => {
                         {children}
                       </MotionConfig>
                     </LazyMotion>
-                  )}
+                  )} */}
                 </HotkeysProvider>
                 <ToasterPrimitive />
               </TooltipProvider>

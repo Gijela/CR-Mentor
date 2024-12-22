@@ -22,6 +22,7 @@ import { toast } from "sonner"
 import { useKnowledgeChunks, useUpdateChunk, type DocumentChunk } from "@/hooks/query/use-knowledge-chunks"
 import ChunkCard from "./ChunkCard"
 import UploadArea from "./UploadArea"
+import EmptyCard from "../../pullRequest/components/emptyCard"
 
 export function Component() {
   const [searchParams] = useSearchParams()
@@ -33,34 +34,7 @@ export function Component() {
   // 如果没有知识库 ID 或名称，显示引导页面
   if (!kbId || !kbName) {
     return (
-      <div className="container max-w-md mx-auto py-24">
-        <Card>
-          <CardHeader>
-            <div className="w-12 h-12 rounded-full bg-muted mx-auto mb-4 flex items-center justify-center">
-              <BookOpen className="w-6 h-6 text-muted-foreground" />
-            </div>
-            <CardTitle className="text-center">No knowledge base selected</CardTitle>
-            <CardDescription className="text-center">
-              Please select a knowledge base from the knowledge base list to edit
-            </CardDescription>
-          </CardHeader>
-          <CardFooter className="flex flex-col gap-2">
-            <Button 
-              onClick={() => navigate('/knowledgeBase/kbList')}
-              className="w-full"
-            >
-              Go to knowledge base list
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => navigate(-1)}
-              className="w-full"
-            >
-              Back to previous page
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+      <EmptyCard icon={<BookOpen className="h-12 w-12 text-gray-400 mx-auto" />} title="No knowledge base selected" description="Please select a knowledge base from the knowledge base list to edit" />
     )
   }
 
