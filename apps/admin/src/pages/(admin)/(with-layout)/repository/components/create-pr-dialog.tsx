@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner"
 import { RepositorySearch } from "@/components/repository-search"
 import { useKnowledgeBases } from "@/hooks/query/use-knowledge-base"
+import { useUser } from "@clerk/clerk-react"
 
 // const knowledgeBases = [
 //   { label: "General Knowledge Base", value: "general" },
@@ -32,7 +33,6 @@ import { useKnowledgeBases } from "@/hooks/query/use-knowledge-base"
 //   { label: "User Guide", value: "user-guide" },
 // ]
 
-const user_id = import.meta.env.VITE_GITHUB_USER_ID
 const apiUrl = import.meta.env.VITE_GITHUB_SERVER_API
 
 export function CreatePRDialog({ githubName, totalCount }: { githubName: string, totalCount: number }) {
@@ -46,7 +46,8 @@ export function CreatePRDialog({ githubName, totalCount }: { githubName: string,
   const [branches, setBranches] = useState<{ value: string, label: string }[]>([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { data: knowledgeBases = [] } = useKnowledgeBases(user_id)
+  const { user } = useUser()
+  const { data: knowledgeBases = [] } = useKnowledgeBases(user?.id as string)
 
   const resetForm = () => {
     setTitle("")

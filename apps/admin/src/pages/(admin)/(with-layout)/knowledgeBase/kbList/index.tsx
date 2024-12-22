@@ -25,6 +25,7 @@ import { CreateKnowledgeBaseDialog } from "./components/create-knowledge-base-di
 import { useNavigate } from "react-router-dom"
 import { useKnowledgeBases, useDeleteKnowledgeBase } from "@/hooks/query/use-knowledge-base"
 import { LoadingSpinner } from '@/components/loading-spinner'
+import { useUser } from '@clerk/clerk-react'
 
 interface KnowledgeBase {
   id: number
@@ -34,18 +35,17 @@ interface KnowledgeBase {
   updated_at: string
 }
 
-const user_id = import.meta.env.VITE_GITHUB_USER_ID
-
 export function Component() {
-  const { data: knowledgeBases = [], isLoading } = useKnowledgeBases(user_id)
   const { mutate: deleteKB, isPending: isDeleting } = useDeleteKnowledgeBase()
   const [searchQuery, setSearchQuery] = useState('')
   const [deleteKbId, setDeleteKbId] = useState<number | null>(null)
   const navigate = useNavigate()
+  const { user } = useUser()
+  const { data: knowledgeBases = [], isLoading } = useKnowledgeBases(user?.id as string)
 
   const handleDelete = async (kbId: number) => {
     try {
-      await deleteKB({ id: kbId, user_id })
+      await deleteKB({ id: kbId, user_id: user?.id as string })
       toast.success("Knowledge base deleted successfully")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete knowledge base")
@@ -79,7 +79,7 @@ export function Component() {
             />
           </div>
         </div>
-        <CreateKnowledgeBaseDialog user_id={user_id} onSuccess={() => { }} />
+        <CreateKnowledgeBaseDialog user_id={user?.id as string} onSuccess={() => { }} />
       </div>
 
       {/* 知识库列表 */}

@@ -36,14 +36,15 @@ import { cn } from "@/lib/utils"
 import { CreatePRDialog } from "./components/create-pr-dialog"
 import type { Repository } from "./interface"
 import { toast } from "sonner"
-
-const githubName = import.meta.env.VITE_GITHUB_NAME
+import { useUser } from "@clerk/clerk-react"
 
 export function Component() {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
   const [sort, setSort] = useState<"updated" | "stars" | "forks">("updated")
+
   const navigate = useNavigate()
+  const { user } = useUser()
 
   const handleSearch = (value: string) => {
     setSearch(value)
@@ -51,7 +52,7 @@ export function Component() {
   }
 
   const { data, isLoading, page, setPage, totalCount } = useRepositories({
-    githubName,
+    githubName: user?.publicMetadata?.githubName as string,
     search,
     sort,
     pageSize: 20,
@@ -88,7 +89,7 @@ export function Component() {
           </Select>
         </div>
 
-        <CreatePRDialog githubName={githubName} totalCount={totalCount} />
+        <CreatePRDialog githubName={user?.publicMetadata?.githubName as string} totalCount={totalCount} />
       </div>
 
       <Separator />
