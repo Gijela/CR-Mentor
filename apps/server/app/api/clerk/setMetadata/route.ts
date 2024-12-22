@@ -2,17 +2,14 @@ import { NextResponse } from "next/server";
 import { clerkClient } from '@clerk/nextjs/server'
 
 export async function POST(req: Request) {
-  const { userId, githubName } = await req.json();
+  const { installationId, userId } = await req.json();
 
   try {
-    const { publicMetadata: rawData } = await clerkClient.users.getUser(userId);
-
-    await clerkClient.users.updateUser(userId, {
-      publicMetadata: {
-        ...rawData,
-        githubName
-      },
-    });
+    // 保存 installationId 到 clerk 中
+    const client = await clerkClient()
+    await client.users.updateUserMetadata(userId, {
+      publicMetadata: { installationId },
+    })
 
     return NextResponse.json({ success: true, msg: 'Save successfully ~' }, { status: 200 });
   } catch (error) {

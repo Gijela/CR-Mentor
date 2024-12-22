@@ -7,11 +7,12 @@ import {
   CardTitle,
 } from "@repo/ui/card"
 import { Progress } from "@repo/ui/progress"
-import { Github, CheckCircle2, Circle, FileText, MessageSquare } from "lucide-react"
+import { Github, CheckCircle2, Circle, FileText, MessageSquare, Loader2, } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
+import { apiUrl } from "@/lib/constants"
 
 interface Step {
   key: string
@@ -25,38 +26,35 @@ interface Step {
 const requiredSteps: Step[] = [
   {
     key: "register",
-    title: "注册并登录",
-    description: "创建您的账号或使用现有账号登录系统",
-    action: "前往注册/登录",
+    title: "Register and Login",
+    description: "Create your account or login with an existing account",
+    action: "Go to Register/Login",
   },
   {
     key: "auth-github",
-    title: "授权 GitHub",
-    description: "授权 CR-Mentor GitHub App 访问您的 GitHub 账户，以便进行代码审查",
-    action: "授权 GitHub",
-    icon: Github,
-    href: "https://github.com/apps/cr-mentor"
+    title: "Authorize GitHub",
+    description: "Authorize CR-Mentor GitHub App to access your GitHub account for code review",
+    action: "Authorize GitHub",
+    href: "https://github.com/apps/cr-mentor/installations/select_target"
   },
 ]
 
 const optionalSteps: Step[] = [
   {
     key: "create-pr",
-    title: "创建知识库 PR",
-    description: "体验如何创建一个携带知识库的 Pull Request",
-    action: "查看演示",
+    title: "Create Knowledge Base PR",
+    description: "Experience how to create a Pull Request with knowledge base",
+    action: "Try Now",
     icon: FileText,
   },
   {
     key: "doc-chat",
-    title: "文档对话",
-    description: "创建知识库并上传文档，体验与文档对话的功能",
-    action: "开始体验",
+    title: "Document Chat",
+    description: "Create a knowledge base and upload documents to experience document chat functionality",
+    action: "Try Now",
     icon: MessageSquare,
   },
 ]
-
-const apiUrl = import.meta.env.VITE_GITHUB_SERVER_API
 
 export function Component() {
   const location = useLocation()
@@ -64,8 +62,10 @@ export function Component() {
   const [currentStep, setCurrentStep] = useState(0)
   const [showOptional, setShowOptional] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isSaveInstallationId, setIsSaveInstallationId] = useState(false)
 
   const { isLoaded, isSignedIn, user } = useUser()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (isLoaded) {
@@ -78,76 +78,46 @@ export function Component() {
     const initialStep = isLoggedIn ? 1 : 0
 
     const timer = setTimeout(() => {
-      setProgress(initialProgress)
-      setCurrentStep(initialStep)
+      setProgress(progress === 100 ? 100 : initialProgress)
+      setCurrentStep(currentStep === 2 ? 2 : initialStep)
     }, 500)
     return () => clearTimeout(timer)
   }, [isLoggedIn])
 
+  useEffect(() => {
+    if (user?.publicMetadata && user?.publicMetadata?.installationId) {
+      setCurrentStep(2)
+      setProgress(100)
+      setShowOptional(true)
+    }
+  }, [user?.publicMetadata?.installationId])
+
+  const handleSaveInstal = async (userId: string, installationId: string) => {
+    try {
+      setIsSaveInstallationId(true)
+      await fetch(`${apiUrl}/api/clerk/setMetadata`, {
+        method: "POST",
+        body: JSON.stringify({ userId, installationId })
+      })
+      setCurrentStep(2)
+      setProgress(100)
+      setShowOptional(true)
+      setIsSaveInstallationId(false)
+    } catch (error) {
+      setIsSaveInstallationId(false)
+      console.error("Failed to save GitHub name:", error)
+    }
+  }
 
   useEffect(() => {
-    const code = new URLSearchParams(location.search).get("code")
-    if (!code) return
-
-    const getGithubInfo = async () => {
-      try {
-        // 获取 access token
-        const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
-          method: "POST",
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            client_id: "Iv23lirfuP3isbwXrgfi",
-            client_secret: "dc2f2f7aad207f6810f22739bde31c15abf9a83c",
-            code
-          })
-        })
-        const { access_token } = await tokenRes.json()
-
-        // 获取用户信息
-        const userRes = await fetch("https://api.github.com/user", {
-          headers: {
-            "Authorization": `Bearer ${access_token}`
-          }
-        })
-        const { login } = await userRes.json()
-        const res = await fetch(`${apiUrl}/api/clerk/setMetadata`, {
-          method: "POST",
-          body: JSON.stringify({
-            userId: user?.id,
-            githubName: login
-          })
-        })
-        const { success } = await res.json()
-        if (success) {
-          setCurrentStep(2)
-          setProgress(100)
-          setShowOptional(true)
-        }
-      } catch (error) {
-        console.error("获取GitHub信息失败:", error)
-      }
-    }
-
-    getGithubInfo()
-  }, [location])
-
-  console.log(user?.unsafeMetadata)
-
-  // useEffect(() => {
-  //   console.log("🚀 ~ useEffect ~ user?.unsafeMetadata?.githubName:", user?.unsafeMetadata?.githubName)
-  //   if (user?.unsafeMetadata?.githubName) {
-  //     setCurrentStep(2)
-  //     setProgress(2 * 50)
-  //     setShowOptional(true)
-  //   }
-  // }, [user?.unsafeMetadata?.githubName])
+    const installationId = new URLSearchParams(location.search).get("installation_id")
+    if (!installationId || !user?.id) return
+    handleSaveInstal(user?.id, installationId)
+  }, [location, user?.id])
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">快速开始</h1>
+    <div className="container mx-auto py-4">
+      <h1 className="text-3xl font-bold mb-6">Quick Start</h1>
 
       <div className="mb-8">
         <Progress value={progress} className="h-2" />
@@ -165,7 +135,7 @@ export function Component() {
               ) : (
                 <Circle className="w-4 h-4 mr-1" />
               )}
-              必选步骤 {index + 1}
+              Step {index + 1}
             </div>
           ))}
         </div>
@@ -173,19 +143,18 @@ export function Component() {
 
       <div className="space-y-6">
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">必选步骤</h2>
           {requiredSteps.map((step, index) => (
             <Card
               key={step.key}
               className={cn(
                 "transition-all duration-300",
-                (!isLoggedIn && index === 0) || (isLoggedIn && index === 1)
-                  ? "border-primary shadow-lg scale-100"
-                  : "scale-95 opacity-70"
+                currentStep > index
+                  ? "scale-95 opacity-70"
+                  : "border-primary shadow-lg scale-100"
               )}
             >
               <CardHeader>
-                <CardTitle>第 {index + 1} 步：{step.title}</CardTitle>
+                <CardTitle>Step {index + 1}: {step.title}</CardTitle>
                 <CardDescription>{step.description}</CardDescription>
               </CardHeader>
               <CardContent>
@@ -198,14 +167,8 @@ export function Component() {
                   disabled={index === 1 && !isLoggedIn}
                   onClick={() => {
                     if (step.key === "auth-github") {
-                      setCurrentStep(index + 1)
-                      setProgress((index + 1) * 50)
                       window.open(step.href, "_blank")
                     }
-
-                    // if (step.key === requiredSteps?.[requiredSteps.length - 1]?.key) {
-                    //   setShowOptional(true)
-                    // }
                   }}
                 >
                   {index === 0 ? (
@@ -221,7 +184,7 @@ export function Component() {
                     </div>
                   ) : (
                     <>
-                      {step.icon && <step.icon className="mr-2 h-4 w-4" />}
+                      {isSaveInstallationId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
                       {step.action}
                     </>
                   )}
@@ -233,10 +196,17 @@ export function Component() {
 
         {showOptional && (
           <div className="space-y-4 pt-6">
-            <h2 className="text-xl font-semibold">可选功能体验</h2>
+            <h2 className="text-xl font-semibold">Feature Experience</h2>
             <div className="grid md:grid-cols-2 gap-4">
               {optionalSteps.map((step, index) => (
-                <Card key={index} className="transition-all duration-300 hover:shadow-lg">
+                <Card key={index} className="transition-all duration-300 hover:shadow-lg" onClick={() => {
+                  if (step.key === "create-pr") {
+                    navigate('/repository')
+                  }
+                  if (step.key === "doc-chat") {
+                    navigate('/knowledgeBase')
+                  }
+                }}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       {step.icon && <step.icon className="h-5 w-5" />}

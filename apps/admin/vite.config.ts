@@ -48,10 +48,10 @@ export default defineConfig(({ mode }) => {
         //   target: "https://server-cr.zeabur.app/",
         //   changeOrigin: true,
         // },
-        "/api/": {
-          target: viteEnv.VITE_API_URL,
-          changeOrigin: true,
-        },
+        // "/api/": {
+        //   target: viteEnv.VITE_API_URL,
+        //   changeOrigin: true,
+        // },
       },
     },
   }

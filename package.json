@@ -12,7 +12,7 @@
   "scripts": {
     "admin:build": "turbo --filter admin build",
     "admin:dev": "turbo --filter admin dev",
-    "server": "pnpm --filter server dev",
+    "server:dev": "pnpm --filter server dev",
     "api:deploy": "pnpm --filter api workers:deploy",
     "api:dev": "turbo --filter api dev",
     "coverage": "vitest run --coverage",
