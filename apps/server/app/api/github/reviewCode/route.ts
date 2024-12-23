@@ -34,7 +34,9 @@ async function getOrCreateAgent(tools: any[]) {
 export async function POST(req: Request) {
   try {
     console.log("====== 开始处理 PR 评审请求 ======")
-    const { payload } = await req.json();
+    const request = await req.json();
+    console.log("🚀 ~ POST ~ request:", request)
+    const { payload } = request;
     console.log("🚀 ~ POST ~ payload:", payload)
     console.log("====== payload 信息======", payload)
     const { action, pull_request }: PullRequestPayload = JSON.parse(payload);
