@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         template: "index.html",
         inject: {
           data: {
-            title: viteEnv.VITE_APP_NAME,
+            title: "CR-Mentor",
           },
         },
       }),

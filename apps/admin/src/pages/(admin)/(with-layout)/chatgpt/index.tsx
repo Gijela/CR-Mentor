@@ -4,6 +4,7 @@ import KnowledgeBaseList from "./KnowledgeBaseList";
 import ChatArea from "./ChatArea";
 import { toast } from "sonner";
 import { useUser } from "@clerk/clerk-react";
+import { apiUrl } from "@/lib/constants";
 
 // 添加消息类型定义
 interface Message {
@@ -32,10 +33,9 @@ export interface KnowledgeBase {
   updated_at: string;
 }
 
-
 // 获取知识库列表
 const getKnowledgeBases = async (user_id: string) => {
-  const result = await fetch("/api/supabase/rag/knowledge_bases/getTotalKB", {
+  const result = await fetch(`${apiUrl}/api/supabase/rag/knowledge_bases/getTotalKB`, {
     method: "POST",
     body: JSON.stringify({ user_id }),
   });
