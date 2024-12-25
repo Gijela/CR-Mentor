@@ -136,6 +136,9 @@ export function Component() {
                       variant="ghost"
                       size="sm"
                       className="flex-1 h-12 justify-center rounded-none border-r"
+                      onClick={() => {
+                        navigate(`/chatgpt/?kb_id=${kb.id}`)
+                      }}
                     >
                       <MessageSquare className="w-4 h-4 mr-1.5" />
                       Chat KB
