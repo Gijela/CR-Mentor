@@ -125,8 +125,9 @@ export async function POST(req: Request) {
 
     let relevantKnowledge = '';
     if (isCreatedByBot) {
+      console.log("🚀 ~ 审查代码 ~ isCreatedByBot:", isCreatedByBot)
       const relevantKnowledgeResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/supabase/rag/kb_chunks/retrieval_agents`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/supabase/rag/kb_chunks/retrievalChunk`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -144,7 +145,7 @@ export async function POST(req: Request) {
       relevantKnowledge = await relevantKnowledgeResponse.json();
     }
 
-    console.log("🚀 ~ POST ~ relevantKnowledge:", relevantKnowledge)
+    console.log("🚀 ~ 查询到的背景信息 ~ relevantKnowledge:", relevantKnowledge)
 
     // 将知识整合到 PR 内容中
     const prContent = `
