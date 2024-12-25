@@ -46,7 +46,7 @@ const vectorstore = new SupabaseVectorStore(embeddings, {
  */
 export async function POST(req: NextRequest) {
   try {
-    const { kb_id, messages: messagesData } = await req.json();
+    const { kb_id, messages: messagesData, stream = true } = await req.json();
 
     // 获取最后一条用户消息
     const lastMessage = messagesData[messagesData.length - 1].content;
@@ -67,63 +67,80 @@ export async function POST(req: NextRequest) {
     const systemMessage = `请基于以下检索到的内容回答用户问题。如果检索内容与问题相关性不高，请直接说明。\n\n检索内容：\n${relevantDocs.map(doc => doc.pageContent).join('\n\n')}`;
 
     console.log("🚀 ~ POST ~ prompt ===>:", systemMessage)
-    // 使用 ChatOpenAI 生成回答
-    const response = await chatModel.stream([
-      new SystemMessage(systemMessage),
-      new HumanMessage(lastMessage)
-    ]);
 
-    // 设置响应头
-    const headers = {
-      'Content-Type': 'text/event-stream',
-      'Content-Encoding': 'none'
-    };
+    if (stream) {
+      // 流式响应
+      const response = await chatModel.stream([
+        new SystemMessage(systemMessage),
+        new HumanMessage(lastMessage)
+      ]);
 
-    // 创建编码器
-    const encoder = new TextEncoder();
+      // 设置响应头
+      const headers = {
+        'Content-Type': 'text/event-stream',
+        'Content-Encoding': 'none'
+      };
 
-    // 返回流式响应
-    return new Response(
-      new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of response) {
-              if (chunk.content) {
-                const sseChunk = {
-                  id: crypto.randomUUID(),
-                  object: "chat.completion.chunk",
-                  created: Date.now(),
-                  model: "deepseek-ai/DeepSeek-V2.5",
-                  choices: [
-                    {
-                      delta: { content: chunk.content },
-                      index: 0,
-                      finish_reason: null
-                    }
-                  ]
-                };
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify(sseChunk)}\n\n`));
+      // 创建编码器
+      const encoder = new TextEncoder();
+
+      // 返回流式响应
+      return new Response(
+        new ReadableStream({
+          async start(controller) {
+            try {
+              for await (const chunk of response) {
+                if (chunk.content) {
+                  const sseChunk = {
+                    id: crypto.randomUUID(),
+                    object: "chat.completion.chunk",
+                    created: Date.now(),
+                    model: "deepseek-ai/DeepSeek-V2.5",
+                    choices: [
+                      {
+                        delta: { content: chunk.content },
+                        index: 0,
+                        finish_reason: null
+                      }
+                    ]
+                  };
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify(sseChunk)}\n\n`));
+                }
               }
+              // 发送结束消息
+              const finalChunk = {
+                id: crypto.randomUUID(),
+                object: "chat.completion.chunk",
+                created: Date.now(),
+                model: "deepseek-ai/DeepSeek-V2.5",
+                choices: [{ delta: {}, index: 0, finish_reason: "stop" }]
+              };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalChunk)}\n\n`));
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+              controller.close();
+            } catch (e) {
+              console.error("Stream error:", e);
+              controller.error(e);
             }
-            // 发送结束消息
-            const finalChunk = {
-              id: crypto.randomUUID(),
-              object: "chat.completion.chunk",
-              created: Date.now(),
-              model: "deepseek-ai/DeepSeek-V2.5",
-              choices: [{ delta: {}, index: 0, finish_reason: "stop" }]
-            };
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalChunk)}\n\n`));
-            controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-            controller.close();
-          } catch (e) {
-            console.error("Stream error:", e);
-            controller.error(e);
           }
-        }
-      }),
-      { headers }
-    );
+        }),
+        { headers }
+      );
+    } else {
+      // 非流式响应
+      const response = await chatModel.invoke([
+        new SystemMessage(systemMessage),
+        new HumanMessage(lastMessage)
+      ]);
+
+      return NextResponse.json({
+        id: crypto.randomUUID(),
+        object: "chat.completion",
+        created: Date.now(),
+        stream: false,
+        message: response.content,
+      });
+    }
   } catch (e: any) {
     console.error('RAG error:', e);
     return NextResponse.json(

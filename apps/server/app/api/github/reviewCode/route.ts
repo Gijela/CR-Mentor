@@ -138,11 +138,12 @@ export async function POST(req: Request) {
               }
             ],
             kb_id: Number(kb_id), // 自定义知识库id
-            show_intermediate_steps: true,
+            stream: false,
           }),
         }
       );
-      relevantKnowledge = await relevantKnowledgeResponse.json();
+      const { message } = await relevantKnowledgeResponse.json();
+      relevantKnowledge = message;
     }
 
     console.log("🚀 ~ 查询到的背景信息 ~ relevantKnowledge:", relevantKnowledge)
@@ -201,6 +202,8 @@ export async function POST(req: Request) {
         { status: 408 }
       );
     }
+
+    console.log("🚀 ~ 正常结束代码评审:", result.output)
 
     return NextResponse.json({
       success: true,

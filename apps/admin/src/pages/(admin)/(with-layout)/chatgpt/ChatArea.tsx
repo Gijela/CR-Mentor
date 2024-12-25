@@ -57,7 +57,7 @@ const ChatArea: React.FC<{
   const handleSendMessage = async (messages: Message[]) => {
     const url = currentSelectedKbDetails.length > 0
       ? `${apiUrl}/api/supabase/rag/kb_chunks/retrievalChunk`
-      : `${apiUrl}/api/openai/chat  `
+      : `${apiUrl}/api/openai/chat`
 
     const response = await fetch(
       url,
@@ -69,6 +69,7 @@ const ChatArea: React.FC<{
             content: msg.content,
           })),
           kb_id: currentSelectedKbDetails[0]?.id ?? undefined,
+          stream: true,
         }),
       }
     );
