@@ -37,13 +37,12 @@ export async function POST(req: Request) {
 
     // smee 测试环境 payload 处理
     // const { payload } = await req.json();
-    // console.log("🚀 ~ POST ~ payload:", payload?.action)
-    // console.log("====== payload 信息======", payload)
+    // console.log("🚀 ~ POST ~ payload:", payload?.action, payload?.number)
     // const { action, pull_request }: PullRequestPayload = JSON.parse(payload);
 
     // 线上环境 payload 处理
     const payload = await req.json();
-    console.log("🚀 ~ POST ~ payload:", typeof payload, payload?.action)
+    console.log("🚀 ~ POST ~ payload:", typeof payload, payload?.action, payload?.number)
     const { action, pull_request }: PullRequestPayload = payload;
 
     // 常规逻辑
@@ -195,10 +194,8 @@ export async function POST(req: Request) {
     });
 
     // 添加更详细的结果检查
-    if (result.intermediateSteps?.length >= 5) {
-      console.error("Agent执行达到最大迭代次数:", {
-        steps: result.intermediateSteps
-      });
+    if (result.intermediateSteps?.length >= 3) {
+      console.error("==== Agent执行达到最大迭代次数 ====");
       return NextResponse.json(
         { error: "代码评审执行超时，可能是由于任务过于复杂或指令不清晰导致" },
         { status: 408 }
@@ -207,16 +204,14 @@ export async function POST(req: Request) {
 
     // 处理结果
     if (result.output === 'Agent stopped due to max iterations.') {
-      console.error("Agent执行超时:", {
-        steps: result.intermediateSteps
-      });
+      console.error("==== Agent执行超时 ====");
       return NextResponse.json(
         { error: "代码评审执行超时, 请重试" },
         { status: 408 }
       );
     }
 
-    console.log("🚀 ~ 正常结束代码评审:", result.output)
+    console.log("🚀 ~ ===== 正常结束代码评审 =====:", result.output)
 
     return NextResponse.json({
       success: true,
