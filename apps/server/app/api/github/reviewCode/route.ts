@@ -8,32 +8,42 @@ import { createBatchFileCommentsTool, createCodeReviewTool, createPrSummaryTool,
 // 添加这行来强制动态路由
 export const dynamic = 'force-dynamic';
 
-// 优化 Agent 配置
+/**
+ * 添加请求级别的状态隔离
+ * ps: 这个是全局变量，会导致每次请求都会使用上一次的 agentExecutor, 使用 resetAgent 重置
+ * */
 let agentExecutor: AgentExecutor | null = null;
 
+// 添加重置函数
+function resetAgent() {
+  agentExecutor = null;
+}
+
 async function getOrCreateAgent(tools: any[]) {
-  if (!agentExecutor) {
-    agentExecutor = await initializeAgentExecutorWithOptions(
-      tools,
-      model,
-      {
-        agentType: "structured-chat-zero-shot-react-description",
-        verbose: true,
-        maxIterations: 3,
-        returnIntermediateSteps: true,
-        handleParsingErrors: true,
-        agentArgs: {
-          prefix: AGENT_SYSTEM_TEMPLATE,
-        }
+  // 每次请求都创建新的 agent 实例
+  agentExecutor = await initializeAgentExecutorWithOptions(
+    tools,
+    model,
+    {
+      agentType: "structured-chat-zero-shot-react-description",
+      verbose: true,
+      maxIterations: 3,
+      returnIntermediateSteps: true,
+      handleParsingErrors: true,
+      agentArgs: {
+        prefix: AGENT_SYSTEM_TEMPLATE,
       }
-    );
-  }
+    }
+  );
   return agentExecutor;
 }
 
 export async function POST(req: Request) {
   try {
-    console.log("====== 开始处理 PR 评审请求 ======")
+    // 在请求开始时重置 agent
+    resetAgent();
+
+    console.log("==== 开始处理 PR 评审请求 ====")
 
     // smee 测试环境 payload 处理
     // const { payload } = await req.json();
@@ -170,7 +180,7 @@ export async function POST(req: Request) {
 
     // 使用新的 Agent 初始化方式
     const executor = await getOrCreateAgent([reviewTool, summaryTool, batch_file_comments]);
-    console.log("开始执行代码评审...");
+    console.log("==== 开始执行代码评审 ====");
 
     // 当前问题：Agent 重复执行同一个工具
     // 建议添加工具执行状态追踪
