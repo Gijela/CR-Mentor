@@ -6,7 +6,7 @@
 
 <div align="center">
   <a href="README.md"><strong>[English]</strong></a> ·
-  <a href="README-zh.md"><strong>[简体中文]</strong></a>
+  <a href="README-zh_CN.md"><strong>[简体中文]</strong></a>
 </div>
 
 <div align="center" style="margin-top: 6px;">

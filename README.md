@@ -6,10 +6,10 @@
 
 <div align="center">
   <a href="README.md"><strong>[English]</strong></a> ·
-  <a href="README-zh.md"><strong>[Chinese]</strong></a>
+  <a href="README-zh_CN.md"><strong>[Chinese]</strong></a>
 </div>
 
-<div align="center" style="margin-top: 6px;">
+<div align="center" style="margin-top: 10px;">
   <strong>A project leveraging Knowledge Base + LLM to improve development efficiency in Code Review</strong>
 </div>
 
@@ -20,16 +20,16 @@
 
 ## Highlights
 
-1. **Comprehensive Code Context Understanding**
+1. **Comprehensive Code Context Understanding**  
    Breaking through the limitations of traditional git diff CR, using [github100](https://github.com/gijela/github100) to automatically track all related files involved in code changes, including cross-file/module reference paths, achieving comprehensive understanding of code context and business logic
 
-2. **Customizable Code Standards**
+2. **Customizable Code Standards**  
    Based on best practices accumulated in the knowledge base, supports repository-level custom code review standards. Through uploading code standard files and closed-source dependency documentation, effectively solves LLM's hallucination issues when dealing with closed-source dependencies/code
 
-3. **Global Code Analysis**
+3. **Global Code Analysis**  
    Using LLM based on complete chain code context and changes to generate comprehensive review reports including **Code Walkthrough**, **Change Description** and **Sequence Diagrams**
 
-4. **Risk Code Identification**
+4. **Risk Code Identification**  
    Customized Agent Tools to identify potentially risky changes, provide improvement suggestions and separate comment feedback
 
 ## Feature Preview
