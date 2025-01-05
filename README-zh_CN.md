@@ -1,71 +1,70 @@
-<p align="center">
+<div style="width: 100%; height: 420px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+  <img alt="landing_page" src="https://pub-dddb5f1064884f6498b3ec0a1c031c0d.r2.dev/landing_cr_mentor.png">
+</div>
 
-<a href="https://github.com/TinsFox/shadcnui-boilerplate">
-  <img src="https://shadcnui-boilerplate.pages.dev/index.png" alt="Cover image" width="700px">
-  <h3 align="center">shadcn/ui boilerplate</h3>
-</a>
+<h1 align="center">基于知识库 + LLM 的 Code Review 导师</h1>
 
+<div align="center">
+  <a href="README.md"><strong>[English]</strong></a> ·
+  <a href="README-zh.md"><strong>[简体中文]</strong></a>
+</div>
 
-<p align="center">
-  <a href="README.md">English</a> | <a href="README-zh_CN.md">中文</a>
-</p>
-</p>
+<div align="center" style="margin-top: 6px;">
+  <strong>一个利用知识库 + LLM 帮助我们在 Code Review 提升研发效能的项目</strong>
+</div>
 
+## 在线体验
 
-## 关于这个项目
+- 主页：[CR-Mentor](https://cr-mentor.top/)
+- 代码审查演示：[Code Review Demo](https://github.com/Gijela/Auth-Github-App/pull/46)
 
-一个现代化的、可扩展的样板项目，用于使用 React、Tailwind CSS 和 Radix UI 构建美丽的、响应式的网络应用程序。
+## 亮点
 
-## 特性
+1. 全面理解代码上下文  
+   突破传统对 git diff 信息 CR 的局限, 通过 [github100](https://github.com/gijela/github100) 自动追踪代码变更涉及的所有相关文件，包括跨文件/模块的引用链路，实现对代码上下文与业务逻辑的全面理解
 
-- [**shadcn/ui**](https://github.com/shadcn-ui/ui)：提供一套可定制的 UI 组件，帮助快速构建具有一致设计模式的精美用户界面。
-- [**Tailwind CSS**](https://tailwindcss.com)：实用优先的 CSS 框架，用于快速样式设计和响应式布局。
-- [**Radix UI**](https://www.radix-ui.com/): 提供可访问的未样式组件，作为项目中自定义 UI 组件的构建块。
-- [**React**](https://reactjs.org)：基于组件的架构，用于构建和渲染用户界面。
-- [**TypeScript**](https://www.typescriptlang.org/): 为 JavaScript 添加静态类型，提高代码质量和开发体验。
-- [**Vite**](https://vitejs.dev)：快速构建工具和开发服务器，提供优化构建以实现流畅的开发工作流。
-- [**Storybook**](https://storybook.js.org/): 在隔离环境中开发和测试 UI 组件。
-- [**ESLint**](https://eslint.org/): 通过 linting 进行代码质量保证。
-  - [**Lint-staged**](https://github.com/okonet/lint-staged)：在提交时对暂存文件运行 linter。
-  - [**simple-git-hooks**](https://github.com/toplenboren/simple-git-hooks)：在提交前自动执行任务，如 linting。
-- [**React Hook Form**](https://react-hook-form.com)：通过最小化重新渲染简化表单处理。
-- [**Zod**](https://github.com/colinhacks/zod)：用于表单数据的模式验证。
-- [**Jotai**](https://github.com/pmndrs/jotai)：用于细粒度控制的原子状态管理。
-- [**@tanstack/react-query**](https://tanstack.com/query/latest)：用于获取和缓存数据的服务器状态管理。
-- [**Framer Motion**](https://www.framer.com/motion/): 提供动画和过渡效果以增强用户体验。
-- [**Vitest**](https://vitest.dev)：用于单元测试的测试框架。
-- [**i18next**](https://www.i18next.com) 和 [**react-i18next**](https://react.i18next.com)：本地化和翻译支持。
-- [**MSW (Mock Service Worker)**](https://mswjs.io)：用于测试和开发的 API 请求模拟。
-- [**Embla Carousel**](https://www.embla-carousel.com/): 轻量级轮播组件。
-- [**Recharts**](https://recharts.org/): 交互式和可定制的图表。
-- [**Lucide React**](https://lucide.dev/docs/lucide-react)：一致视觉提示的图标集合。
-- [**React Markdown**](https://github.com/remarkjs/react-markdown)：在 React 组件中渲染 Markdown 内容。
-- [**clsx**](https://github.com/lukeed/clsx)：条件类名管理。
-- [**Date-fns**](https://date-fns.org/): 日期和时间操作。
-- [**Tailwind CSS Animate**](https://github.com/tailwindlabs/tailwindcss-animate)：Tailwind CSS 的预定义动画类。
+2. 代码规范自定义  
+   基于知识库沉淀的最佳实践，支持自定义仓库级别的代码审查规范, 通过上传代码规范文件和闭源依赖详解文件, 有效解决 LLM 在处理闭源依赖/代码时的幻觉问题
 
-## 文档
+3. 全局代码分析  
+   通过 LLM 基于完整的链路代码上下文和代码变更，生成包含**代码演练**、**变更说明**和**时序图**的综合审查报告
 
-访问 [文档](https://shadcnui-boilerplate.pages.dev) 获取详细使用说明。
+4. 风险代码识别抛出  
+   定制 Agent Tools, 识别存在潜在风险的变更，提供改进建议并且单独评论反馈
 
-## 贡献
+## 功能预览
 
-请阅读 [贡献指南](/CONTRIBUTING.md) 以了解如何为本项目贡献。
+1. 知识自动入库
+   ![knowledgeBase](https://pub-dddb5f1064884f6498b3ec0a1c031c0d.r2.dev/knowledgeBase.png)
 
-## 许可证
+2. 代码审查
+   ![summary](./apps/admin/public/cr/summary.png)
+   ![comment](./apps/admin/public/cr/comment.png)
 
-根据 [MIT 许可证](./LICENSE) 授权。
+## 本地开发
 
-## 赞赏
+```bash
+cd apps/admin
 
-如果您觉得这个项目对您有帮助，欢迎给我们一个 star ⭐️
+pnpm install
+pnpm admin:dev
+```
 
-## 致谢
+## 未来计划
 
-- [**shadcn/ui**](https://github.com/shadcn-ui/ui): 一套可定制的 UI 组件，用于构建具有一致设计模式的精美用户界面。
-- [**Tailwind CSS**](https://tailwindcss.com): 实用优先的 CSS 框架，用于快速样式设计和响应式布局。
-- [**Radix UI**](https://www.radix-ui.com/): 提供可访问的未样式组件，作为项目中自定义 UI 组件的构建块。
-- [**Innei**](https://github.com/innei): [vite-react-tailwind-template](https://github.com/innei-template/vite-react-tailwind-template) 的作者。
-- [**Epic Stack**](https://github.com/epicweb-dev/epic-stack), 基于 `Remix` 的全栈项目模板。
+- [ ] 制定人工干预机制，回收反馈，优化代码审查流程
+- [ ] 专注开发者成长，分析优缺点，制定成长计划
+- [ ] 支持 Gitlab 等其他平台
 
-以及许多其他开源项目。
+## Star History
+
+![Star History Chart](https://api.star-history.com/svg?repos=Gijela/CR-Mentor&type=Date)
+
+## License
+
+本仓库遵循 CR-Mentor Open Source License 开源协议。
+
+允许作为后台服务直接商用，但不允许提供 SaaS 服务。  
+未经商业授权，任何形式的商用服务均需保留相关版权信息。  
+完整请查看 [Apache License 2.0](./LICENSE)  
+联系方式：frontendgijela@gmail.com

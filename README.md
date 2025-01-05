@@ -1,72 +1,71 @@
-<p align="center">
+<div style="width: 100%; height: 420px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
+  <img alt="landing_page" src="https://pub-dddb5f1064884f6498b3ec0a1c031c0d.r2.dev/landing_cr_mentor.png">
+</div>
 
-<a href="https://github.com/TinsFox/shadcnui-boilerplate">
-  <img src="https://shadcnui-boilerplate.pages.dev/index.png" alt="Cover image" width="700px">
-<h3 align="center">shadcn/ui boilerplate</h3>
-</a>
+<h1 align="center">Knowledge Base + LLM Based Code Review Mentor</h1>
 
+<div align="center">
+  <a href="README.md"><strong>[English]</strong></a> ·
+  <a href="README-zh.md"><strong>[Chinese]</strong></a>
+</div>
 
-<p align="center">
-  <a href="README.md">English</a> | <a href="README-zh_CN.md">中文</a>
-</p>
+<div align="center" style="margin-top: 6px;">
+  <strong>A project leveraging Knowledge Base + LLM to improve development efficiency in Code Review</strong>
+</div>
 
-</p>
+## Online Demo
 
-## About this project
+- Homepage: [CR-Mentor](https://cr-mentor.top/)
+- Code Review Demo: [Code Review Demo](https://github.com/Gijela/Auth-Github-App/pull/46)
 
-A boilerplate built with [**shadcn/ui**](https://github.com/shadcn-ui/ui) for rapid development of modern web applications.
+## Highlights
 
-## Features
+1. **Comprehensive Code Context Understanding**
+   Breaking through the limitations of traditional git diff CR, using [github100](https://github.com/gijela/github100) to automatically track all related files involved in code changes, including cross-file/module reference paths, achieving comprehensive understanding of code context and business logic
 
-- [**shadcn/ui**](https://github.com/shadcn-ui/ui): A set of customizable UI components for building polished user interfaces with consistent design patterns.
-- [**Tailwind CSS**](https://tailwindcss.com): Utility-first CSS framework for rapid styling and responsive design.
-- [**Radix UI**](https://www.radix-ui.com/): Accessible and unstyled components for creating custom UI elements.
-- [**React**](https://reactjs.org): Component-based architecture for building user interfaces.
-- [**TypeScript**](https://www.typescriptlang.org/): Static typing for enhanced code quality and developer experience.
-- [**Vite**](https://vitejs.dev): Fast build tool and development server with optimized builds.
-- [**Storybook**](https://storybook.js.org/): Develop and test UI components in isolation.
-- [**ESLint**](https://eslint.org/): Code quality assurance through linting.
-  - [**Lint-staged**](https://github.com/okonet/lint-staged): Runs linters on staged files during commits.
-  - [**simple-git-hooks**](https://github.com/toplenboren/simple-git-hooks): Automates tasks like linting before commits.
-- [**React Hook Form**](https://react-hook-form.com): Simplifies form handling with minimal re-renders.
-- [**Zod**](https://github.com/colinhacks/zod): Schema validation for form data.
-- [**Jotai**](https://github.com/pmndrs/jotai): Atomic state management for fine-grained control.
-- [**@tanstack/react-query**](https://tanstack.com/query/latest): Server-state management for fetching and caching data.
-- [**Framer Motion**](https://www.framer.com/motion/): Animations and transitions for enhanced user experience.
-- [**Vitest**](https://vitest.dev): Testing framework for unit tests.
-- [**i18next**](https://www.i18next.com) and [**react-i18next**](https://react.i18next.com): Localization and translation support.
-- [**MSW (Mock Service Worker)**](https://mswjs.io): Mocks API requests for testing and development.
-- [**Embla Carousel**](https://www.embla-carousel.com/): Lightweight carousel component.
-- [**Recharts**](https://recharts.org/): Interactive and customizable charts.
-- [**Lucide React**](https://lucide.dev/docs/lucide-react): Collection of icons for consistent visual cues.
-- [**React Markdown**](https://github.com/remarkjs/react-markdown): Renders Markdown content in React components.
-- [**clsx**](https://github.com/lukeed/clsx): Conditional class name management.
-- [**Date-fns**](https://date-fns.org/): Date and time operations.
-- [**Tailwind CSS Animate**](https://github.com/tailwindlabs/tailwindcss-animate): Pre-defined animation classes for Tailwind CSS.
+2. **Customizable Code Standards**
+   Based on best practices accumulated in the knowledge base, supports repository-level custom code review standards. Through uploading code standard files and closed-source dependency documentation, effectively solves LLM's hallucination issues when dealing with closed-source dependencies/code
 
-## Documentation
+3. **Global Code Analysis**
+   Using LLM based on complete chain code context and changes to generate comprehensive review reports including **Code Walkthrough**, **Change Description** and **Sequence Diagrams**
 
-Visit [Documentation](https://shadcnui-boilerplate.pages.dev) for detailed usage instructions.
-Mock data server is here https://github.com/TinsFox/mock-service
+4. **Risk Code Identification**
+   Customized Agent Tools to identify potentially risky changes, provide improvement suggestions and separate comment feedback
 
-## Contributing
+## Feature Preview
 
-Please read the [contributing guide](/CONTRIBUTING.md) for guidelines on contributing to this project.
+1. Automatic Knowledge Base Integration
+   ![knowledgeBase](https://pub-dddb5f1064884f6498b3ec0a1c031c0d.r2.dev/knowledgeBase.png)
+
+2. Code Review
+   ![summary](./apps/admin/public/cr/summary.png)
+   ![comment](./apps/admin/public/cr/comment.png)
+
+## Local Development
+
+```bash
+cd apps/admin
+
+pnpm install
+pnpm admin:dev
+```
+
+## 未来计划
+
+- [ ] Establish human intervention mechanisms, collect feedback, and optimize code review processes
+- [ ] Focus on developer growth, analyze strengths and weaknesses, create growth plans
+- [ ] Support for Gitlab and other platforms
+- [ ] Support for more LLMs
+
+## Star History
+
+![Star History Chart](https://api.star-history.com/svg?repos=Gijela/CR-Mentor&type=Date)
 
 ## License
 
-Licensed under the [MIT license](./LICENSE).
+This repository follows the CR-Mentor Open Source License.
 
-## Donate
-
-If you find this project helpful, please consider giving us a star ⭐️
-
-## Acknowledgements
-
-- [**shadcn/ui**](https://github.com/shadcn-ui/ui): A set of customizable UI components for building polished user interfaces with consistent design patterns.
-- [**Tailwind CSS**](https://tailwindcss.com): Utility-first CSS framework for rapid styling and responsive design.
-- [**Radix UI**](https://www.radix-ui.com/): Accessible and unstyled components for creating custom UI elements.
-- [**Innei**](https://github.com/innei): The author of the [vite-react-tailwind-template](https://github.com/innei-template/vite-react-tailwind-template).
-- [**Epic Stack**](https://github.com/epicweb-dev/epic-stack), A full-stack project template based on `Remix`.
-
-And many other open-source projects.
+Commercial use as a backend service is allowed, but providing SaaS services is not permitted.  
+Without commercial authorization, copyright information must be retained for any form of commercial service.  
+For complete details, please see [Apache License 2.0](./LICENSE)  
+Contact: frontendgijela@gmail.com
