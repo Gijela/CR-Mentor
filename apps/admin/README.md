@@ -31,8 +31,8 @@
    ![knowledgeBase](https://pub-dddb5f1064884f6498b3ec0a1c031c0d.r2.dev/knowledgeBase.png)
 
 2. 代码审查
-   ![summary](./apps/admin/public/cr/summary.png)
-   ![comment](./apps/admin/public/cr/comment.png)
+   ![summary](./public/cr/summary.png)
+   ![comment](./public/cr/comment.png)
 
 ## 本地开发
 
@@ -52,12 +52,3 @@ pnpm admin:dev
 ## Star History
 
 ![Star History Chart](https://api.star-history.com/svg?repos=Gijela/CR-Mentor&type=Date)
-
-## License
-
-本仓库遵循 CR-Mentor Open Source License 开源协议。
-
-允许作为后台服务直接商用，但不允许提供 SaaS 服务。  
-未经商业授权，任何形式的商用服务均需保留相关版权信息。  
-完整请查看 [Apache License 2.0](./LICENSE)  
-联系方式：frontendgijela@gmail.com
