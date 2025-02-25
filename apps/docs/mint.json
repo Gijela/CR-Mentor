@@ -33,11 +33,6 @@
   ],
   "anchors": [
     {
-      "name": "GitHub",
-      "icon": "github",
-      "url": "https://github.com/TinsFox/vite-boilerplate"
-    },
-    {
       "name": "Frequently Asked Questions",
       "icon": "question-mark",
       "url": "./faq"
@@ -120,9 +115,5 @@
         "api-reference/endpoint/delete"
       ]
     }
-  ],
-  "footerSocials": {
-    "x": "https://x.com/TinsFox",
-    "github": "https://github.com/TinsFox/vite-boilerplate"
-  }
+  ]
 }
