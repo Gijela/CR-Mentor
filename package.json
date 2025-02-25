@@ -1,18 +1,19 @@
 {
-  "name": "shadcnui-boilerplate",
+  "name": "cr-mentor",
   "type": "module",
   "version": "1.1.0",
   "private": true,
   "packageManager": "pnpm@9.12.3",
-  "homepage": "https://github.com/TinsFox/shadcnui-boilerplate",
+  "homepage": "https://cr-mentor.com",
   "repository": {
-    "url": "https://github.com/TinsFox/shadcnui-boilerplate",
+    "url": "https://github.com/Gijela/CR-Mentor",
     "type": "git"
   },
   "scripts": {
     "admin:build": "turbo --filter admin build",
     "admin:dev": "turbo --filter admin dev",
-    "server:dev": "pnpm --filter server dev",
+    "agent_server:build": "pnpm --filter agent_server build",
+    "agent_server:dev": "pnpm --filter agent_server dev",
     "api:deploy": "pnpm --filter api workers:deploy",
     "api:dev": "turbo --filter api dev",
     "coverage": "vitest run --coverage",
@@ -25,6 +26,7 @@
     "lint:fix": "eslint --fix --quiet --no-warn-ignored",
     "prepare": "pnpm exec simple-git-hooks",
     "release": "release-it",
+    "server:dev": "pnpm --filter server dev",
     "tauri:build": "turbo build --filter tauri",
     "tauri:dev": "turbo dev --filter tauri",
     "test": "vitest",

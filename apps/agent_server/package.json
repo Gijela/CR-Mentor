@@ -1,0 +1,26 @@
+{
+  "name": "agent_server",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "main": "index.js",
+  "scripts": {
+    "dev": "mastra dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.1.14",
+    "@mastra/core": "^0.4.0",
+    "mastra": "^0.2.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
