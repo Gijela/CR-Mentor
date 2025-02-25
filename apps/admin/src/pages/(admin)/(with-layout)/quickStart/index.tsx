@@ -7,61 +7,117 @@ import {
   CardTitle,
 } from "@repo/ui/card"
 import { Progress } from "@repo/ui/progress"
-import { Github, CheckCircle2, Circle, FileText, MessageSquare } from "lucide-react"
+import { Github, CheckCircle2, Circle, FileText, MessageSquare, Loader2, } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { apiUrl } from "@/lib/constants"
 
 interface Step {
+  key: string
   title: string
   description: string
   action: string
   icon?: typeof Github | typeof FileText | typeof MessageSquare
+  href?: string
 }
 
 const requiredSteps: Step[] = [
   {
-    title: "注册并登录",
-    description: "创建您的账号或使用现有账号登录系统",
-    action: "前往注册/登录",
+    key: "register",
+    title: "Register and Login",
+    description: "Create your account or login with an existing account",
+    action: "Go to Register/Login",
   },
   {
-    title: "授权 GitHub",
-    description: "授权 CR-Mentor GitHub App 访问您的 GitHub 账户，以便进行代码审查",
-    action: "授权 GitHub",
-    icon: Github,
+    key: "auth-github",
+    title: "Authorize GitHub",
+    description: "Authorize CR-Mentor GitHub App to access your GitHub account for code review",
+    action: "Authorize GitHub",
+    href: "https://github.com/apps/cr-mentor/installations/select_target"
   },
 ]
 
 const optionalSteps: Step[] = [
   {
-    title: "创建知识库 PR",
-    description: "体验如何创建一个携带知识库的 Pull Request",
-    action: "查看演示",
+    key: "create-pr",
+    title: "Create Knowledge Base PR",
+    description: "Experience how to create a Pull Request with knowledge base",
+    action: "Try Now",
     icon: FileText,
   },
   {
-    title: "文档对话",
-    description: "创建知识库并上传文档，体验与文档对话的功能",
-    action: "开始体验",
+    key: "doc-chat",
+    title: "Document Chat",
+    description: "Create a knowledge base and upload documents to experience document chat functionality",
+    action: "Try Now",
     icon: MessageSquare,
   },
 ]
 
 export function Component() {
+  const location = useLocation()
   const [progress, setProgress] = useState(0)
   const [currentStep, setCurrentStep] = useState(0)
   const [showOptional, setShowOptional] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isSavingGithubName, setIsSavingGithubName] = useState(false)
+
+  const { isLoaded, isSignedIn, user } = useUser()
+  const navigate = useNavigate()
 
   useEffect(() => {
+    if (isLoaded) {
+      setIsLoggedIn(isSignedIn)
+    }
+  }, [isLoaded, isSignedIn])
+
+  useEffect(() => {
+    const initialProgress = isLoggedIn ? 50 : 0
+    const initialStep = isLoggedIn ? 1 : 0
+
     const timer = setTimeout(() => {
-      setProgress(50)
+      setProgress(progress === 100 ? 100 : initialProgress)
+      setCurrentStep(currentStep === 2 ? 2 : initialStep)
     }, 500)
     return () => clearTimeout(timer)
-  }, [])
+  }, [isLoggedIn])
+
+  useEffect(() => {
+    if (user?.publicMetadata && user?.publicMetadata?.githubName) {
+      setCurrentStep(2)
+      setProgress(100)
+      setShowOptional(true)
+    }
+  }, [user?.publicMetadata?.githubName])
+
+  const handleSaveGithubName = async (userId: string, code: string) => {
+    try {
+      setIsSavingGithubName(true)
+      await fetch(`${apiUrl}/api/clerk/setMetadata`, {
+        method: "POST",
+        body: JSON.stringify({ userId, code })
+      })
+      setCurrentStep(2)
+      setProgress(100)
+      setShowOptional(true)
+      setIsSavingGithubName(false)
+    } catch (error) {
+      setIsSavingGithubName(false)
+      console.error("Failed to save GitHub name:", error)
+    }
+  }
+
+  useEffect(() => {
+    const code = new URLSearchParams(location.search).get("code")
+    if (!code || !user?.id) return
+    handleSaveGithubName(user?.id, code)
+  }, [location, user?.id])
 
   return (
-    <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-6">快速开始</h1>
+    <div className="container mx-auto py-4">
+      <h1 className="text-3xl font-bold mb-6">Quick Start</h1>
 
       <div className="mb-8">
         <Progress value={progress} className="h-2" />
@@ -79,7 +135,7 @@ export function Component() {
               ) : (
                 <Circle className="w-4 h-4 mr-1" />
               )}
-              必选步骤 {index + 1}
+              Step {index + 1}
             </div>
           ))}
         </div>
@@ -87,35 +143,51 @@ export function Component() {
 
       <div className="space-y-6">
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold">必选步骤</h2>
           {requiredSteps.map((step, index) => (
             <Card
-              key={index}
+              key={step.key}
               className={cn(
                 "transition-all duration-300",
-                index === currentStep
-                  ? "border-primary shadow-lg scale-100"
-                  : "scale-95 opacity-70"
+                currentStep > index
+                  ? "scale-95 opacity-70"
+                  : "border-primary shadow-lg scale-100"
               )}
             >
               <CardHeader>
-                <CardTitle>第 {index + 1} 步：{step.title}</CardTitle>
+                <CardTitle>Step {index + 1}: {step.title}</CardTitle>
                 <CardDescription>{step.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  className={cn(
+                    "w-full sm:w-auto",
+                    index === 0 && !isLoggedIn && "border-[blue]"
+                  )}
+                  disabled={index === 1 && !isLoggedIn}
                   onClick={() => {
-                    setCurrentStep(index + 1)
-                    setProgress((index + 1) * 50)
-                    if (index === requiredSteps.length - 1) {
-                      setShowOptional(true)
+                    if (step.key === "auth-github") {
+                      window.open(step.href, "_blank")
                     }
                   }}
                 >
-                  {step.icon && <step.icon className="mr-2 h-4 w-4" />}
-                  {step.action}
+                  {index === 0 ? (
+                    <div className="text-[blue] ">
+                      <SignedOut>
+                        <SignInButton />
+                      </SignedOut>
+                      <SignedIn>
+                        <div className="mt-[6px]">
+                          <UserButton />
+                        </div>
+                      </SignedIn>
+                    </div>
+                  ) : (
+                    <>
+                      {isSavingGithubName ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
+                      {step.action}
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -124,10 +196,17 @@ export function Component() {
 
         {showOptional && (
           <div className="space-y-4 pt-6">
-            <h2 className="text-xl font-semibold">可选功能体验</h2>
+            <h2 className="text-xl font-semibold">Feature Experience</h2>
             <div className="grid md:grid-cols-2 gap-4">
               {optionalSteps.map((step, index) => (
-                <Card key={index} className="transition-all duration-300 hover:shadow-lg">
+                <Card key={index} className="transition-all duration-300 hover:shadow-lg" onClick={() => {
+                  if (step.key === "create-pr") {
+                    navigate('/repository')
+                  }
+                  if (step.key === "doc-chat") {
+                    navigate('/knowledgeBase')
+                  }
+                }}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       {step.icon && <step.icon className="h-5 w-5" />}
@@ -146,6 +225,6 @@ export function Component() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   )
 }

@@ -8,35 +8,55 @@ import { createBatchFileCommentsTool, createCodeReviewTool, createPrSummaryTool,
 // 添加这行来强制动态路由
 export const dynamic = 'force-dynamic';
 
-// 优化 Agent 配置
+/**
+ * 添加请求级别的状态隔离
+ * ps: 这个是全局变量，会导致每次请求都会使用上一次的 agentExecutor, 使用 resetAgent 重置
+ * */
 let agentExecutor: AgentExecutor | null = null;
 
+// 添加重置函数
+function resetAgent() {
+  agentExecutor = null;
+}
+
 async function getOrCreateAgent(tools: any[]) {
-  if (!agentExecutor) {
-    agentExecutor = await initializeAgentExecutorWithOptions(
-      tools,
-      model,
-      {
-        agentType: "structured-chat-zero-shot-react-description",
-        verbose: true,
-        maxIterations: 5,
-        returnIntermediateSteps: true,
-        handleParsingErrors: true,
-        agentArgs: {
-          prefix: AGENT_SYSTEM_TEMPLATE,
-        }
+  // 每次请求都创建新的 agent 实例
+  agentExecutor = await initializeAgentExecutorWithOptions(
+    tools,
+    model,
+    {
+      agentType: "structured-chat-zero-shot-react-description",
+      verbose: true,
+      maxIterations: 3,
+      returnIntermediateSteps: true,
+      handleParsingErrors: true,
+      agentArgs: {
+        prefix: AGENT_SYSTEM_TEMPLATE,
       }
-    );
-  }
+    }
+  );
   return agentExecutor;
 }
 
 export async function POST(req: Request) {
   try {
-    const { payload } = await req.json();
-    const { action, pull_request }: PullRequestPayload = JSON.parse(payload);
-    const { _links, title, body, user, head, base } = pull_request;
+    // 在请求开始时重置 agent
+    resetAgent();
 
+    console.log("==== 开始处理 PR 评审请求 ====")
+
+    // smee 测试环境 payload 处理
+    // const { payload } = await req.json();
+    // console.log("🚀 ~ POST ~ payload:", payload?.action, payload?.number)
+    // const { action, pull_request }: PullRequestPayload = JSON.parse(payload);
+
+    // 线上环境 payload 处理
+    const payload = await req.json();
+    console.log("🚀 ~ POST ~ payload:", typeof payload, payload?.action, payload?.number)
+    const { action, pull_request }: PullRequestPayload = payload;
+
+    // 常规逻辑
+    const { _links, title, body, user, head, base } = pull_request;
     if (action !== 'opened') {
       return NextResponse.json({ success: false, message: `only support pr opened, ${action} is not opened` }, { status: 200 });
     }
@@ -107,7 +127,6 @@ export async function POST(req: Request) {
           - 最少列出 3 个, 最多不要超过 6 个
           - 知识列表中的每一项要具体
           - 列出列表，不要对工具库、模块做解释
-          - 输出中文
         `
       }
     ]);
@@ -115,8 +134,9 @@ export async function POST(req: Request) {
 
     let relevantKnowledge = '';
     if (isCreatedByBot) {
+      console.log("🚀 ~ 审查代码 ~ isCreatedByBot:", isCreatedByBot)
       const relevantKnowledgeResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/supabase/rag/kb_chunks/retrieval_agents`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/supabase/rag/kb_chunks/retrievalChunk`,
         {
           method: "POST",
           body: JSON.stringify({
@@ -127,14 +147,15 @@ export async function POST(req: Request) {
               }
             ],
             kb_id: Number(kb_id), // 自定义知识库id
-            show_intermediate_steps: true,
+            stream: false,
           }),
         }
       );
-      relevantKnowledge = await relevantKnowledgeResponse.json();
+      const { message } = await relevantKnowledgeResponse.json();
+      relevantKnowledge = message;
     }
 
-    console.log("🚀 ~ POST ~ relevantKnowledge:", relevantKnowledge)
+    console.log("🚀 ~ 查询到的背景信息 ~ relevantKnowledge:", relevantKnowledge)
 
     // 将知识整合到 PR 内容中
     const prContent = `
@@ -159,21 +180,32 @@ export async function POST(req: Request) {
 
     // 使用新的 Agent 初始化方式
     const executor = await getOrCreateAgent([reviewTool, summaryTool, batch_file_comments]);
-    console.log("开始执行代码评审...");
+    console.log("==== 开始执行代码评审 ====");
 
+    // 当前问题：Agent 重复执行同一个工具
+    // 建议添加工具执行状态追踪
+    const toolExecutionStatus = {
+      code_review: false,
+      create_pr_summary: false,
+      batch_file_comments: false
+    };
+
+    // 修改工具执行逻辑
     const result = await executor.invoke({
-      input: `请严格按照以下顺序执行且每个工具仅执行一次：
-      1. 使用 code_review 工具分析代码并保存结果
-      2. 使用 create_pr_summary 工具将保存的分析结果发布为总结评论
-      3. 使用 batch_file_comments 工具将保存的建议发布为行级评论
-      注意：每个工具只能执行一次，执行完一个工具后必须继续执行下一个工具。`
+      input: `请按顺序执行以下工具，每个工具仅执行一次：
+        1. code_review - 分析代码
+        2. create_pr_summary - 发布总结评论
+        3. batch_file_comments - 发布行级评论
+        
+        当前工具执行状态:
+        - code_review: ${toolExecutionStatus.code_review ? '已完成' : '未执行'}
+        - create_pr_summary: ${toolExecutionStatus.create_pr_summary ? '已完成' : '未执行'}
+        - batch_file_comments: ${toolExecutionStatus.batch_file_comments ? '已完成' : '未执行'}`
     });
 
     // 添加更详细的结果检查
-    if (result.intermediateSteps?.length >= 5) {
-      console.error("Agent执行达到最大迭代次数:", {
-        steps: result.intermediateSteps
-      });
+    if (result.intermediateSteps?.length >= 3) {
+      console.error("==== Agent执行达到最大迭代次数 ====");
       return NextResponse.json(
         { error: "代码评审执行超时，可能是由于任务过于复杂或指令不清晰导致" },
         { status: 408 }
@@ -182,14 +214,14 @@ export async function POST(req: Request) {
 
     // 处理结果
     if (result.output === 'Agent stopped due to max iterations.') {
-      console.error("Agent执行超时:", {
-        steps: result.intermediateSteps
-      });
+      console.error("==== Agent执行超时 ====");
       return NextResponse.json(
         { error: "代码评审执行超时, 请重试" },
         { status: 408 }
       );
     }
+
+    console.log("🚀 ~ ===== 正常结束代码评审 =====:", result.output)
 
     return NextResponse.json({
       success: true,

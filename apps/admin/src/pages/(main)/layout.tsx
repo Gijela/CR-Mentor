@@ -1,16 +1,11 @@
-import { Button } from "@repo/ui/button"
-import { Link, Outlet } from "react-router-dom"
-
-import { Logo } from "@/components/icons/logo"
-import { Search } from "@/components/search"
-
 export function Component() {
   return (
     <div className="flex h-screen flex-col justify-between">
-      <header className="container py-6">
+      {/* <header className="container py-6">
         <nav className="xs:flex-nowrap flex flex-nowrap items-center justify-between gap-4 md:gap-8">
-          <div>
-            <Logo className="size-12" />
+          <div className="flex items-center gap-2">
+            <img src="/logo.gif" alt="logo" className="size-12" />
+            <p className="text-xl font-bold">CR-Mentor</p>
           </div>
           <div className="flex items-center gap-4">
             <div className="mr-auto hidden w-full flex-1 sm:block">
@@ -23,10 +18,11 @@ export function Component() {
             </div>
           </div>
         </nav>
-      </header>
+      </header> */}
 
       <div className="flex-1">
-        <Outlet />
+        {/* <Outlet /> */}
+        <iframe src="https://landing.cr-mentor.top/" className="w-full h-full" />
       </div>
     </div>
   )

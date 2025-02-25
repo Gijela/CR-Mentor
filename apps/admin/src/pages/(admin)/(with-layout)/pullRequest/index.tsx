@@ -37,6 +37,8 @@ import { usePullRequests } from "@/hooks/query/use-pull-request"
 import { RepositorySearch } from "@/components/repository-search"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { LoadingSpinner } from "@/components/loading-spinner"
+import { useUser } from "@clerk/clerk-react"
+import EmptyCard from "./components/emptyCard"
 
 interface PullRequest {
   id: number
@@ -70,8 +72,6 @@ const getStatusBadge = (status: PullRequest["status"]) => {
   )
 }
 
-const owner = import.meta.env.VITE_GITHUB_NAME
-
 export function Component() {
   const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState("")
@@ -83,6 +83,7 @@ export function Component() {
   const [isLoadingRepos, setIsLoadingRepos] = useState(false)
   const itemsPerPage = 20
   const navigate = useNavigate()
+  const { user } = useUser()
 
   useEffect(() => {
     const repoFromUrl = searchParams.get("repo")
@@ -98,7 +99,7 @@ export function Component() {
   }, [statusFilter, sortOrder, selectedRepo, searchQuery])
 
   const { data: pullResponse = { items: [], totalCount: 0 }, isLoading: isLoadingPRs } = usePullRequests({
-    owner,
+    owner: user?.publicMetadata?.githubName as string,
     repo: selectedRepo === "all" ? "" : selectedRepo,
     state: statusFilter === "all" ? "all" : statusFilter,
     sort: "created",
@@ -178,7 +179,7 @@ export function Component() {
         <div className="flex justify-between gap-4 w-full">
           <div className="flex gap-4">
             <RepositorySearch
-              owner={owner}
+              owner={user?.publicMetadata?.githubName as string}
               value={searchRepo}
               onChange={(value) => {
                 setSearchRepo(value)
@@ -237,20 +238,7 @@ export function Component() {
       {(isLoadingRepos || isLoadingPRs) && <LoadingSpinner />}
 
       {!isLoadingPRs && filteredPRs.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 rounded-lg">
-          <GitBranch className="h-12 w-12 mb-4 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Pull Requests</h3>
-          <p className="text-sm text-gray-500">
-            {searchQuery
-              ? `No Pull Requests found containing "${searchQuery}"`
-              : selectedRepo !== "all"
-                ? `${selectedRepo} repository has no${statusFilter === "all" ? "" : statusFilter === "open" ? " open" : statusFilter === "closed" ? " closed" : " merged"} Pull Requests`
-                : statusFilter === "all"
-                  ? "No Pull Requests found"
-                  : `No ${statusFilter === "open" ? "open" : statusFilter === "closed" ? "closed" : "merged"} Pull Requests found`
-            }
-          </p>
-        </div>
+        <EmptyCard icon={<GitBranch className="h-12 w-12 text-gray-400 mx-auto" />} title="No Pull Requests" description="Please login to create and manage your pull requests" />
       )}
 
       {!isLoadingPRs && filteredPRs.length > 0 && (

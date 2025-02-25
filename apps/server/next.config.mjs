@@ -16,7 +16,7 @@ const nextConfig = {
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: "*.cr-mentor.top",
+            value: "https://dash.cr-mentor.top",
           },
           {
             key: "Access-Control-Allow-Methods",

@@ -19,6 +19,7 @@ import { NavMain } from "@/components/nav-sidebar/nav-main"
 import { NavSecondary } from "@/components/nav-sidebar/nav-secondary"
 import { NavUser } from "@/components/nav-sidebar/nav-user"
 import { useNavMenu } from "@/hooks/query/user-menu"
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react"
 
 const navSecondary = [
   {
@@ -41,16 +42,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <SidebarMenuButton size="lg" asChild>
                 <Link to="/quickStart">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Command className="size-4" />
+                    {/* <Command className="size-4" /> */}
+                    <img src="/logo.gif" alt="logo" className="size-8" />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">{env.VITE_APP_NAME}</span>
+                    <span className="truncate font-semibold">CR-Mentor</span>
                     <span className="truncate text-xs">Enterprise</span>
                   </div>
                 </Link>
               </SidebarMenuButton>
 
-              <div className="flex-shrink-0 text-primary"></div>
+              <div className="flex-shrink-0 text-[blue]">
+                <SignedOut>
+                  <SignInButton />
+                </SignedOut>
+                <SignedIn>
+                  <div className="mt-[6px]">
+                    <UserButton />
+                  </div>
+                </SignedIn>
+              </div>
             </div>
           </SidebarMenuItem>
         </SidebarMenu>

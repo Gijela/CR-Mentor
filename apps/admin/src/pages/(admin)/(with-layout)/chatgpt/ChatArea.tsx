@@ -3,6 +3,7 @@ import type { KnowledgeBase, ChatSessionDetail } from "../chatgpt/index";
 import HideLeftArea from "./icons/HideLeftArea";
 import HideRightArea from "./icons/HideRightArea";
 import { ProChat } from "@ant-design/pro-chat";
+import type { Message } from "@ant-design/pro-chat";
 
 const ChatArea: React.FC<{
   isSidebarOpen: boolean;
@@ -51,6 +52,81 @@ const ChatArea: React.FC<{
       handleCancelEdit();
     }
   };
+
+  // 发送消息。根据是否选择知识库, 自动切换检索知识库接口和普通 openai chat 接口
+  const handleSendMessage = async (messages: Message[]) => {
+    const url = currentSelectedKbDetails.length > 0
+      ? `${apiUrl}/api/supabase/rag/kb_chunks/retrievalChunk`
+      : `${apiUrl}/api/openai/chat`
+
+    const response = await fetch(
+      url,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          messages: messages.map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+          kb_id: currentSelectedKbDetails[0]?.id ?? undefined,
+          stream: true,
+        }),
+      }
+    );
+
+    if (!response.ok || !response.body) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    const encoder = new TextEncoder();
+
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        function push() {
+          reader
+            .read()
+            .then(({ done, value }) => {
+              if (done) {
+                controller.close();
+                return;
+              }
+
+              const chunk = decoder.decode(value, { stream: true });
+              const lines = (chunk.split("\n") || []).filter(
+                (line) => line.trim() !== ""
+              );
+
+              for (const line of lines) {
+                try {
+                  if (line.startsWith("data: ")) {
+                    const jsonStr = line.replace("data: ", "");
+                    const parsed = JSON.parse(jsonStr);
+                    controller.enqueue(
+                      encoder.encode(
+                        parsed.choices[0].delta.content
+                      )
+                    );
+                  }
+                } catch (err) {
+                  console.warn("解析消息时出错:", line);
+                  continue;
+                }
+              }
+
+              push();
+            })
+            .catch((err) => {
+              console.error("读取流中的数据时发生错误", err);
+              controller.error(err);
+            });
+        }
+        push();
+      },
+    });
+    return new Response(readableStream);
+  }
 
   return (
     <div className="flex-1 flex flex-col relative min-w-[400px]">
@@ -158,75 +234,7 @@ const ChatArea: React.FC<{
           >
             <ProChat
               key="chat-area"
-              sendMessageRequest={async (messages) => {
-                const response = await fetch(
-                  `${apiUrl}/api/supabase/rag/kb_chunks/retrieval_agents`,
-                  {
-                    method: "POST",
-                    body: JSON.stringify({
-                      messages: messages.map((msg) => ({
-                        role: msg.role,
-                        content: msg.content,
-                      })),
-                      kb_id: currentSelectedKbDetails[0]?.id ?? undefined,
-                      show_intermediate_steps: false,
-                    }),
-                  }
-                );
-
-                if (!response.ok || !response.body) {
-                  throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder("utf-8");
-                const encoder = new TextEncoder();
-
-                const readableStream = new ReadableStream({
-                  async start(controller) {
-                    function push() {
-                      reader
-                        .read()
-                        .then(({ done, value }) => {
-                          if (done) {
-                            controller.close();
-                            return;
-                          }
-
-                          const chunk = decoder.decode(value, { stream: true });
-                          const lines = (chunk.split("\n") || []).filter(
-                            (line) => line.trim() !== ""
-                          );
-
-                          for (const line of lines) {
-                            try {
-                              if (line.startsWith("data: ")) {
-                                const jsonStr = line.replace("data: ", "");
-                                const parsed = JSON.parse(jsonStr);
-                                controller.enqueue(
-                                  encoder.encode(
-                                    parsed.choices[0].delta.content
-                                  )
-                                );
-                              }
-                            } catch (err) {
-                              console.warn("解析消息时出错:", line);
-                              continue;
-                            }
-                          }
-
-                          push();
-                        })
-                        .catch((err) => {
-                          console.error("读取流中的数据时发生错误", err);
-                          controller.error(err);
-                        });
-                    }
-                    push();
-                  },
-                });
-                return new Response(readableStream);
-              }}
+              sendMessageRequest={handleSendMessage}
               styles={{
                 chatListItemContent: {
                   width: "fit-content",

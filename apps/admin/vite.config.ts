@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
         template: "index.html",
         inject: {
           data: {
-            title: viteEnv.VITE_APP_NAME,
+            title: "CR-Mentor",
           },
         },
       }),
@@ -48,10 +48,10 @@ export default defineConfig(({ mode }) => {
         //   target: "https://server-cr.zeabur.app/",
         //   changeOrigin: true,
         // },
-        "/api/": {
-          target: viteEnv.VITE_API_URL,
-          changeOrigin: true,
-        },
+        // "/api/": {
+        //   target: viteEnv.VITE_API_URL,
+        //   changeOrigin: true,
+        // },
       },
     },
   }
