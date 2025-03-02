@@ -1,5 +1,5 @@
 import Router from "@koa/router"
-import { GitIngest } from "git-analysts"
+import { GitIngest } from "git-analyze"
 
 const router = new Router({
   prefix: "/git", // 添加路由前缀，避免可能的路由冲突
@@ -63,7 +63,7 @@ router.post("/analyze", async (ctx) => {
 // });
 
 router.post("/test", async (ctx) => {
-  ctx.body = { success: true, data: "He22llo World2222" }
+  ctx.body = { success: true, data: "Hi~" }
 })
 
 // 修改默认导出为 module.exports

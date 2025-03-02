@@ -461,6 +461,46 @@ importers:
         specifier: ^5.7.3
         version: 5.7.3
 
+  apps/koa_server:
+    dependencies:
+      '@koa/cors':
+        specifier: ^5.0.0
+        version: 5.0.0
+      '@koa/router':
+        specifier: ^13.1.0
+        version: 13.1.0
+      git-analyze:
+        specifier: ^1.0.1
+        version: 1.0.1
+      koa:
+        specifier: ^2.16.0
+        version: 2.16.0
+      koa-bodyparser:
+        specifier: ^4.4.1
+        version: 4.4.1
+    devDependencies:
+      '@types/koa':
+        specifier: ^2.15.0
+        version: 2.15.0
+      '@types/koa-bodyparser':
+        specifier: ^4.3.12
+        version: 4.3.12
+      '@types/koa__cors':
+        specifier: ^5.0.0
+        version: 5.0.0
+      '@types/koa__router':
+        specifier: ^12.0.4
+        version: 12.0.4
+      '@types/node':
+        specifier: ^22.13.5
+        version: 22.13.5
+      ts-node:
+        specifier: ^10.9.2
+        version: 10.9.2(@swc/core@1.11.1(@swc/helpers@0.5.13))(@types/node@22.13.5)(typescript@5.7.3)
+      typescript:
+        specifier: ^5.7.3
+        version: 5.7.3
+
   apps/server:
     dependencies:
       '@ant-design/icons':
@@ -9425,6 +9465,9 @@ packages:
 
   git-analysts@1.0.8:
     resolution: {integrity: sha512-qEMk2fcU54JZo/2hk9cAAmjKYbkWaTqVo9VtGf4itBpy+nWISu7z+UGRFbj6g9+xk1Bes4EK33/jKFX1NzlaVQ==}
+
+  git-analyze@1.0.1:
+    resolution: {integrity: sha512-pMkcng1ibeaQ8MXJ41boalt6TNnnPLdiTp/2R5YpwQvEhLzKeS99KgFA972zPViTFOKEnRsRnxzyhR8hh7wIEQ==}
 
   git-hooks-list@1.0.3:
     resolution: {integrity: sha512-Y7wLWcrLUXwk2noSka166byGCvhMtDRpgHdzCno1UQv/n/Hegp++a2xBWJL1lJarnKD3SWaljD+0z1ztqxuKyQ==}
@@ -23864,6 +23907,19 @@ snapshots:
       - '@swc/wasm'
       - encoding
       - rollup
+      - supports-color
+
+  git-analyze@1.0.1:
+    dependencies:
+      crypto: 1.0.1
+      glob: 11.0.1
+      simple-git: 3.27.0
+      tree-sitter: 0.22.4
+      tree-sitter-javascript: 0.23.1(tree-sitter@0.22.4)
+      tree-sitter-python: 0.23.6(tree-sitter@0.22.4)
+      tree-sitter-typescript: 0.23.2(tree-sitter@0.22.4)
+      typescript: 5.7.3
+    transitivePeerDependencies:
       - supports-color
 
   git-hooks-list@1.0.3: {}
