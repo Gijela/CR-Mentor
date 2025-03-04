@@ -17,7 +17,7 @@
     "@koa/cors": "^5.0.0",
     "@koa/router": "^13.1.0",
     "dotenv": "^16.4.5",
-    "git-analyze": "^1.0.1",
+    "git-analyze": "^1.0.4",
     "koa": "^2.16.0",
     "koa-bodyparser": "^4.4.1",
     "openai": "^4.86.1"

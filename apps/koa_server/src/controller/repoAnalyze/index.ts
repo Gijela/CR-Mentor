@@ -44,13 +44,14 @@ export const analyzeDiff = async (ctx: Koa.Context) => {
  */
 export const analyzeRepo = async (ctx: Koa.Context) => {
   try {
-    const { url, branch, targetPaths, maxFileSize = 1000000, entities = [], exclude = [] } = ctx.request.body as {
+    const { url, branch, targetPaths, maxFileSize = 1000000, entities = [], exclude = [], miniCommonRoot = "/src" } = ctx.request.body as {
       url: string
       branch: string
       targetPaths: string[]
       entities: string[]
       maxFileSize: number
       exclude: string[]
+      miniCommonRoot: string
     }
 
     const ingest = new GitIngest()
@@ -61,6 +62,7 @@ export const analyzeRepo = async (ctx: Koa.Context) => {
       targetPaths,
       maxFileSize,
       excludePatterns: exclude,
+      miniCommonRoot,
     })
 
     // 从图谱检索实体相关上下文

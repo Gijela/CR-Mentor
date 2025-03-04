@@ -9,7 +9,7 @@ const router = new Router({ prefix: "/repo" })
 router.post("/analyzeDiff", analyzeDiff)
 
 // 分析仓库
-router.post("/analyze", analyzeRepo)
+router.post("/analyzeRepo", analyzeRepo)
 
 // 测试路由
 router.post("/test", async (ctx) => {
