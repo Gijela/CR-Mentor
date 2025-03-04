@@ -1,5 +1,5 @@
-// 简单的日志工具
-export const logger = {
+// 日志工具
+const logger = {
   info: (message: string, ...args: any[]) => {
     // eslint-disable-next-line no-console
     console.log(message, ...args)
@@ -9,3 +9,5 @@ export const logger = {
     console.error(message, ...args)
   },
 }
+
+export default logger
