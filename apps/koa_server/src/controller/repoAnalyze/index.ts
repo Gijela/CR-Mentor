@@ -1,7 +1,9 @@
 import { GitIngest, searchKnowledgeGraph } from "git-analyze"
 import type Koa from "koa"
 
-import { diffAnalyzeSystemPrompt } from "../../app/prompt/repo/diffAnalyze"
+import { diffAnalyzeSystemPrompt } from "@/app/prompt/repo/diffAnalyze"
+import { getCommonRoot } from "@/utils/index"
+import logger from "@/utils/logger"
 
 /**
  * 分析 diff 内容。
@@ -16,29 +18,21 @@ export const analyzeDiff = async (ctx: Koa.Context) => {
     // 调用大模型
     const response = await fetch(`${process.env.SERVER_HOST}/openai/json`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: [
-          {
-            role: "system",
-            content: diffAnalyzeSystemPrompt,
-          },
-          {
-            role: "user",
-            content: diffTotal,
-          },
+          { role: "system", content: diffAnalyzeSystemPrompt },
+          { role: "user", content: diffTotal },
         ],
       }),
     })
 
     const result = await response.json()
+    const miniCommonRoot = getCommonRoot(result?.entityList || [])
 
-    // todo 最小根目录提取
-
-    ctx.body = { success: true, data: { ...result } }
+    ctx.body = { success: true, data: { miniCommonRoot, ...result } }
   } catch (error) {
+    logger.error("🚀 ~ analyzeDiff ~ error:", error)
     ctx.status = 500
     ctx.body = { success: false, error }
   }

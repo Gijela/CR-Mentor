@@ -3,8 +3,8 @@ import dotenv from "dotenv"
 import Koa from "koa"
 import bodyParser from "koa-bodyparser"
 
-import logger from "../utils/logger/index"
 import useRouters from "./router/index"
+import logger from "./utils/logger/index"
 
 // 创建主应用
 const app = new Koa()
