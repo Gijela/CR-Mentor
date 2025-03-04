@@ -13,5 +13,4 @@ router.post("/test", async (ctx) => {
   ctx.body = { success: true, data: "Hi~" }
 })
 
-// 修改默认导出为 module.exports
 export default router
