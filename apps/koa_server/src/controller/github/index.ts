@@ -180,3 +180,62 @@ export const createPullRequest = async (ctx: Koa.Context) => {
     }
   }
 }
+
+// 获取 diffs 详情
+export const getDiffsDetails = async (ctx: Koa.Context) => {
+  const { githubName, compareUrl, baseLabel, headLabel } = ctx.request.body as any
+
+  try {
+    // 1. 创建token
+    const tokenResponse = await fetch(`${process.env.SERVER_HOST}/github/createToken`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ githubName }),
+    })
+    const { success, token, msg, error } = await tokenResponse.json()
+    if (!success) {
+      ctx.status = 500
+      ctx.body = { success: false, message: msg, error }
+      return
+    }
+
+    // 2. 获取全量 PR 差异
+    // const diffResponse = await fetch(
+    //   diffLink,
+    //   {
+    //     headers: {
+    //       'Authorization': `Bearer ${token}`,
+    //       'Accept': 'application/vnd.github.v3.diff',
+    //       'X-GitHub-Api-Version': '2022-11-28',
+    //     }
+    //   }
+    // );
+    // const diffTotal = await diffResponse.text();
+
+    const response = await fetch(`${compareUrl.replace("{base}", baseLabel).replace("{head}", headLabel)}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/vnd.github.v3+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    })
+
+    if (!response.ok) {
+      ctx.status = 500
+      ctx.body = { success: false, message: `Failed to fetch compare data` }
+      return
+    }
+    const { files, commits } = await response.json()
+
+    ctx.status = 200
+    ctx.body = { success: true, data: { files, commits } }
+  } catch (error) {
+    logger.error("🚀 ~ getDiffsDetails ~ error:", error)
+    ctx.status = 500
+    ctx.body = { success: false, message: "get diffs details failed", error }
+  }
+}

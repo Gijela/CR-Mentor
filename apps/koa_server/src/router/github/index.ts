@@ -1,6 +1,6 @@
 import Router from "@koa/router"
 
-import { createPullRequest, createToken, fetchRepoBranches } from "../../controller/github"
+import { createPullRequest, createToken, fetchRepoBranches, getDiffsDetails } from "../../controller/github"
 
 const router = new Router({ prefix: "/github" })
 
@@ -12,5 +12,8 @@ router.post("/fetchRepoBranches", fetchRepoBranches)
 
 // 创建 PR
 router.post("/createPullRequest", createPullRequest)
+
+// 获取 diffs 详情
+router.post("/getDiffsDetails", getDiffsDetails)
 
 export default router

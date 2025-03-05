@@ -26,6 +26,13 @@ import { toast } from "sonner"
 import { RepositorySearch } from "@/components/repository-search"
 import { useKnowledgeBases } from "@/hooks/query/use-knowledge-base"
 
+interface DiffInfo {
+  githubName: string
+  compareUrl: string
+  headLabel: string
+  baseLabel: string
+}
+
 export function CreatePRDialog({ githubName }: { githubName: string }) {
   const { t } = useTranslation()
   const [title, setTitle] = useState("")
@@ -60,13 +67,23 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
           "Content-Type": "application/json",
         },
       })
-      const { success, msg } = await response.json()
+      const { success, msg, data } = await response.json()
       if (!success) {
         toast.error(msg)
         console.error(msg)
         return
       }
       toast.success(msg)
+
+      // 保存必要的 diff 信息
+      const diffInfo: DiffInfo = {
+        githubName: data?.head?.user?.login,
+        compareUrl: data?.head?.repo?.compare_url,
+        headLabel: data?.head?.label,
+        baseLabel: data?.base?.label,
+      }
+
+      handleGetDiffInfo(diffInfo)
 
       resetForm()
       setOpen(false)
@@ -90,6 +107,26 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
       return
     }
     setBranches(branches.map((branch: { name: string }) => ({ value: branch.name, label: branch.name })))
+  }
+
+  const handleGetDiffInfo = async (diffInfo: DiffInfo) => {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_HOST}/github/getDiffsDetails`, {
+      method: "POST",
+      body: JSON.stringify(diffInfo),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    const { success, data, msg } = await response.json()
+    if (!success) {
+      toast.error(msg)
+      console.error(msg)
+      return
+    }
+
+    const { files, commits } = data
+    // eslint-disable-next-line no-console
+    console.log("🚀 ~ handleGetDiffInfo ~ files:", files, "commits:", commits)
   }
 
   return (
