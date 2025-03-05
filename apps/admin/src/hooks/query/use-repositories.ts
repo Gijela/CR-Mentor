@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+
 import { createToken } from "@/lib/github/createToken"
 
 interface Repository {
@@ -32,10 +33,10 @@ interface RepositoryResponse {
 
 function useGithubToken(githubName: string) {
   return useQuery({
-    queryKey: ['githubToken', githubName],
+    queryKey: ["githubToken", githubName],
     queryFn: () => createToken(githubName),
     staleTime: 10 * 60 * 1000, // 10分钟的缓存时间
-    gcTime: 15 * 60 * 1000,    // 15分钟的垃圾回收时间
+    gcTime: 15 * 60 * 1000, // 15分钟的垃圾回收时间
     retry: 2, // 失败时重试2次
   })
 }
@@ -43,11 +44,11 @@ function useGithubToken(githubName: string) {
 export function useRepositories(options: UseRepositoriesOptions) {
   const [page, setPage] = useState(1)
   const { githubName, search = "", sort = "updated", order = "desc", pageSize = 20 } = options
-  
+
   const tokenQuery = useGithubToken(githubName)
-  
+
   const query = useQuery<RepositoryResponse>({
-    queryKey: ['repositories', { githubName, search, sort, order, page, pageSize }],
+    queryKey: ["repositories", { githubName, search, sort, order, page, pageSize }],
     queryFn: async () => {
       const token = tokenQuery.data
       if (!token) {

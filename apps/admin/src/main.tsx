@@ -2,9 +2,6 @@ import "@repo/ui/globals.css"
 import "@repo/tiptap/tiptap.css"
 import "./i18n"
 
-import { env } from "@env"
-// @ts-expect-error
-import { ClickToComponent } from "click-to-react-component"
 import * as React from "react"
 import ReactDOM from "react-dom/client"
 import { RouterProvider } from "react-router-dom"
@@ -22,6 +19,5 @@ ReactDOM.createRoot(document.querySelector("#root")!).render(
         fallbackElement={<Fallback />}
       />
     </RootProviders>
-    <ClickToComponent editor={env.VITE_EDITOR} />
   </React.StrictMode>,
 )

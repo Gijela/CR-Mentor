@@ -5,6 +5,9 @@ export const createToken = async (githubName: string) => {
     const tokenResponse = await fetch(`${apiUrl}/github/createToken`, {
       method: "POST",
       body: JSON.stringify({ githubName }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
 
     const { token, success } = await tokenResponse.json()
