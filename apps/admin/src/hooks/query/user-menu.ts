@@ -1,29 +1,11 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query"
 import {
-  Archive,
-  ArchiveX,
   BookMinus,
   BookOpen,
-  ChartArea,
-  ChartBar,
-  ChartLine,
+  Bot,
   ChartNoAxesCombined,
-  ChartPie,
-  CircleDot,
   Gauge,
   GitPullRequest,
-  Info,
-  List,
-  ListTree,
-  MessagesSquare,
-  Orbit,
-  Radar,
-  Radical,
-  Settings,
-  Table,
-  TableProperties,
-  Trash2,
-  Bot,
   TrendingUp,
 } from "lucide-react"
 
@@ -194,6 +176,11 @@ export const menus: IMenu[] = [
     title: "Repository",
     icon: BookMinus,
     to: "/repository",
+  },
+  {
+    title: "Agents",
+    icon: Bot,
+    to: "/agents",
   },
   {
     title: "Knowledge Base",
