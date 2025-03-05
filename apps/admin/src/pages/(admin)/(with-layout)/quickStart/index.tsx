@@ -1,3 +1,4 @@
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react"
 import { Button } from "@repo/ui/button"
 import {
   Card,
@@ -7,12 +8,12 @@ import {
   CardTitle,
 } from "@repo/ui/card"
 import { Progress } from "@repo/ui/progress"
-import { Github, CheckCircle2, Circle, FileText, MessageSquare, Loader2, } from "lucide-react"
-import { useState, useEffect } from "react"
-import { cn } from "@/lib/utils"
-import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/clerk-react"
+import { CheckCircle2, Circle, FileText, Github, Loader2, MessageSquare } from "lucide-react"
+import { useEffect, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
+
 import { apiUrl } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 
 interface Step {
   key: string
@@ -35,7 +36,7 @@ const requiredSteps: Step[] = [
     title: "Authorize GitHub",
     description: "Authorize CR-Mentor GitHub App to access your GitHub account for code review",
     action: "Authorize GitHub",
-    href: "https://github.com/apps/cr-mentor/installations/select_target"
+    href: "https://github.com/apps/cr-mentor/installations/select_target",
   },
 ]
 
@@ -97,7 +98,7 @@ export function Component() {
       setIsSavingGithubName(true)
       await fetch(`${apiUrl}/api/clerk/setMetadata`, {
         method: "POST",
-        body: JSON.stringify({ userId, code })
+        body: JSON.stringify({ userId, code }),
       })
       setCurrentStep(2)
       setProgress(100)
@@ -127,7 +128,7 @@ export function Component() {
               key={index}
               className={cn(
                 "flex items-center text-sm",
-                index <= currentStep ? "text-primary" : "text-muted-foreground"
+                index <= currentStep ? "text-primary" : "text-muted-foreground",
               )}
             >
               {index <= currentStep ? (
@@ -135,7 +136,9 @@ export function Component() {
               ) : (
                 <Circle className="w-4 h-4 mr-1" />
               )}
-              Step {index + 1}
+              Step
+              {" "}
+              {index + 1}
             </div>
           ))}
         </div>
@@ -148,9 +151,9 @@ export function Component() {
               key={step.key}
               className={cn(
                 "transition-all duration-300",
-                currentStep > index
-                  ? "scale-95 opacity-70"
-                  : "border-primary shadow-lg scale-100"
+                currentStep > index ?
+                  "scale-95 opacity-70" :
+                  "shadow-lg scale-100",
               )}
             >
               <CardHeader>
@@ -162,7 +165,7 @@ export function Component() {
                   variant="outline"
                   className={cn(
                     "w-full sm:w-auto",
-                    index === 0 && !isLoggedIn && "border-[blue]"
+                    index === 0 && !isLoggedIn && "border-[blue]",
                   )}
                   disabled={index === 1 && !isLoggedIn}
                   onClick={() => {
@@ -199,14 +202,18 @@ export function Component() {
             <h2 className="text-xl font-semibold">Feature Experience</h2>
             <div className="grid md:grid-cols-2 gap-4">
               {optionalSteps.map((step, index) => (
-                <Card key={index} className="transition-all duration-300 hover:shadow-lg" onClick={() => {
-                  if (step.key === "create-pr") {
-                    navigate('/repository')
-                  }
-                  if (step.key === "doc-chat") {
-                    navigate('/knowledgeBase')
-                  }
-                }}>
+                <Card
+                  key={index}
+                  className="transition-all duration-300 hover:shadow-lg"
+                  onClick={() => {
+                    if (step.key === "create-pr") {
+                      navigate("/repository")
+                    }
+                    if (step.key === "doc-chat") {
+                      navigate("/knowledgeBase")
+                    }
+                  }}
+                >
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       {step.icon && <step.icon className="h-5 w-5" />}
@@ -225,6 +232,6 @@ export function Component() {
           </div>
         )}
       </div>
-    </div >
+    </div>
   )
 }

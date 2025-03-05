@@ -18,11 +18,13 @@
     "@koa/router": "^13.1.0",
     "dotenv": "^16.4.5",
     "git-analyze": "^1.0.4",
+    "jsonwebtoken": "^9.0.2",
     "koa": "^2.16.0",
     "koa-bodyparser": "^4.4.1",
     "openai": "^4.86.1"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/koa": "^2.15.0",
     "@types/koa-bodyparser": "^4.3.12",
     "@types/koa__cors": "^5.0.0",

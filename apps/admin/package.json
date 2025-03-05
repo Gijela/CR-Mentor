@@ -4,6 +4,10 @@
   "version": "1.1.0",
   "private": true,
   "packageManager": "pnpm@9.12.3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gijela/CR-Mentor.git"
+  },
   "scripts": {
     "build": "tsc && vite build",
     "build-storybook": "storybook build",
