@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { createToken } from "@/lib/github/createToken"
+
+import { createToken } from "@/lib/github"
 
 export interface PullRequest {
   id: string
@@ -55,19 +56,19 @@ interface GitHubPullRequest {
 }
 
 interface GitHubSearchResponse {
-  total_count: number;
-  items: any[];
+  total_count: number
+  items: any[]
 }
 
 const GITHUB_API_BASE_URL = "https://api.github.com"
 
 interface TokenData {
-  token: string;
-  expiresAt: number;
+  token: string
+  expiresAt: number
 }
 
 // 使用单个tokenRef即可
-let tokenCache: TokenData | null = null;
+let tokenCache: TokenData | null = null
 
 const fetchPullRequests = async ({
   owner,
@@ -80,21 +81,20 @@ const fetchPullRequests = async ({
   query = "",
 }: UsePullRequestsOptions) => {
   // 获取或创建token的逻辑
-  let currentToken = tokenCache?.token;
+  let currentToken = tokenCache?.token
 
   // 如果需要新token，先获取并等待
   if (!tokenCache || tokenCache.expiresAt < Date.now() + 30000) {
-    console.log("需要新 token");
-    const newToken = await createToken(owner);
-    currentToken = newToken;
+    const newToken = await createToken(owner)
+    currentToken = newToken
     tokenCache = {
       token: newToken,
-      expiresAt: Date.now() + 10 * 60 * 1000 // 10分钟过期
-    };
+      expiresAt: Date.now() + 10 * 60 * 1000, // 10分钟过期
+    }
   }
 
   if (!currentToken) {
-    throw new Error("Failed to get GitHub token");
+    throw new Error("Failed to get GitHub token")
   }
 
   let url: string
@@ -105,20 +105,20 @@ const fetchPullRequests = async ({
     if (query) {
       // 如果有搜索词，使用 search API
       url = `${GITHUB_API_BASE_URL}/search/issues`
-      const stateQuery = state !== 'all' ? `+state:${state}` : ''
+      const stateQuery = state !== "all" ? `+state:${state}` : ""
       const searchQuery = `+in:title+${query}`
       queryString = `?q=is:pr+repo:${owner}/${repo}${stateQuery}${searchQuery}&sort=${sort}&order=${direction}&per_page=${per_page}&page=${page}`
     } else {
       // 如果没有搜索词，使用普通的 pulls API
       url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/pulls`
-      const apiState = state === 'merged' ? 'closed' : state
+      const apiState = state === "merged" ? "closed" : state
       queryString = `?state=${apiState}&sort=${sort}&direction=${direction}&per_page=${per_page}&page=${page}`
     }
   } else {
     // 全局搜索：使用 search API
     url = `${GITHUB_API_BASE_URL}/search/issues`
-    const stateQuery = state !== 'all' ? `+state:${state}` : ''
-    const searchQuery = query ? `+in:title+${query}` : ''
+    const stateQuery = state !== "all" ? `+state:${state}` : ""
+    const searchQuery = query ? `+in:title+${query}` : ""
     queryString = `?q=is:pr+author:${owner}${stateQuery}${searchQuery}&sort=${sort}&order=${direction}&per_page=${per_page}&page=${page}`
   }
 
@@ -132,12 +132,12 @@ const fetchPullRequests = async ({
 
     // 处理token过期的情况
     if (response.status === 401) {
-      const newToken = await createToken(owner);
+      const newToken = await createToken(owner)
       tokenCache = {
         token: newToken,
-        expiresAt: Date.now() + 10 * 60 * 1000
-      };
-      fetchPullRequests({ owner, repo, state, sort, direction, per_page, page, query });
+        expiresAt: Date.now() + 10 * 60 * 1000,
+      }
+      fetchPullRequests({ owner, repo, state, sort, direction, per_page, page, query })
       return
     }
 
@@ -152,12 +152,12 @@ const fetchPullRequests = async ({
       // 只有在使用 pulls API 时才需要这个处理
       data = await response.json()
       // 从响应头获取总数
-      const linkHeader = response.headers.get('Link')
+      const linkHeader = response.headers.get("Link")
       if (linkHeader) {
-        const lastLink = linkHeader.split(',').find(link => link.includes('rel="last"'))
+        const lastLink = linkHeader.split(",").find((link) => link.includes('rel="last"'))
         if (lastLink) {
           const match = /&page=(\d+)/.exec(lastLink as string)
-          totalCount = match ? parseInt(match[1] as string, 10) * per_page : per_page
+          totalCount = match ? Number.parseInt(match[1] as string, 10) * per_page : per_page
         } else {
           totalCount = per_page
         }
@@ -169,9 +169,9 @@ const fetchPullRequests = async ({
       const searchResult: GitHubSearchResponse = await response.json()
       totalCount = searchResult.total_count
       data = searchResult.items.map((item) => {
-        const urlParts = item.html_url.split('/')
+        const urlParts = item.html_url.split("/")
         const repoName = urlParts[4]
-        const prNumber = parseInt(urlParts[6], 10)
+        const prNumber = Number.parseInt(urlParts[6], 10)
 
         return {
           number: prNumber,
@@ -182,16 +182,16 @@ const fetchPullRequests = async ({
           html_url: item.html_url,
           merged_at: item.merged_at,
           head: {
-            ref: item.head?.ref || 'unknown',
+            ref: item.head?.ref || "unknown",
             repo: {
               name: repoName,
               full_name: `${owner}/${repoName}`,
-              html_url: `https://github.com/${owner}/${repoName}`
-            }
+              html_url: `https://github.com/${owner}/${repoName}`,
+            },
           },
           base: {
-            ref: item.base?.ref || 'unknown'
-          }
+            ref: item.base?.ref || "unknown",
+          },
         }
       })
     }
@@ -205,24 +205,24 @@ const fetchPullRequests = async ({
           name: pr.user?.login || "Unknown",
           avatar: pr.user?.avatar_url || "",
         },
-        createdAt: new Date(pr.created_at).toISOString().replace('T', ' ').slice(0, 19),
+        createdAt: new Date(pr.created_at).toISOString().replace("T", " ").slice(0, 19),
         sourceBranch: pr.head?.ref ?? "unknown",
         targetBranch: pr.base?.ref ?? "unknown",
         repository: {
           name: repo || (pr.head?.repo?.name ?? "unknown"),
-          url: repo
-            ? `https://github.com/${owner}/${repo}`
-            : (pr.head?.repo?.html_url ?? "#"),
+          url: repo ?
+            `https://github.com/${owner}/${repo}` :
+              (pr.head?.repo?.html_url ?? "#"),
         },
         prUrl: pr.html_url,
       })),
-      totalCount
+      totalCount,
     }
   } catch (error) {
     console.error("Error fetching pull requests:", error)
     return {
       items: [],
-      totalCount: 0
+      totalCount: 0,
     }
   }
 }

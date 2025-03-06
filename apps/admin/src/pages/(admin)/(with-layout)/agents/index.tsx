@@ -6,6 +6,8 @@ import { ScrollArea } from "@repo/ui/scroll-area"
 import { Send } from "lucide-react"
 import { useState } from "react"
 
+import useAgents from "@/hooks/useAgents"
+
 export function Component() {
   const [selectedMember, setSelectedMember] = useState<string>("Mike")
   const [message, setMessage] = useState("")
@@ -42,6 +44,14 @@ export function Component() {
       contentImage: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80", // 数据分析场景
     },
   ]
+
+  const { data, isLoading, error } = useAgents({
+    githubName: "Gijela",
+    compareUrl: "https://api.github.com/repos/Gijela/git-analyze/compare/{base}...{head}",
+    baseLabel: "Gijela:faeture/v1",
+    headLabel: "Gijela:main",
+  })
+  console.info("🚀 ~ Component ~ data:", data, isLoading, error)
 
   const mockMessages = [
     { id: 1, type: "user", content: "Hi, I need help with the project." },
@@ -131,8 +141,8 @@ export function Component() {
                 <div className="text-left">
                   <div className="text-sm font-medium leading-none mb-1">{member.name}</div>
                   <div className={`text-xs ${selectedMember === member.name ?
-                      "text-primary-foreground/80" :
-                      "text-muted-foreground"
+                    "text-primary-foreground/80" :
+                    "text-muted-foreground"
                     }`}
                   >
                     {member.role}

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
-import { createToken } from "@/lib/github/createToken"
+import { createToken } from "@/lib/github"
 
 interface Repository {
   id: number
