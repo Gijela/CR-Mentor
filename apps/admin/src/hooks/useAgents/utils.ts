@@ -4,16 +4,51 @@ import { searchKnowledgeGraph } from "@/lib/repo/codeKnowledgeGraphSearch"
 
 import type { Diff, Entity } from "."
 
+const IGNORE_FILE_EXTENSIONS = new Set([
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".gif",
+  ".bmp",
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".zip",
+  ".rar",
+  ".7z",
+  ".tar",
+  ".gz",
+  ".exe",
+  ".dll",
+  ".so",
+  ".dylib",
+  ".svg",
+  ".ico",
+  ".webp",
+  ".mp4",
+  ".mp3",
+  ".lock",
+  ".yaml",
+  ".md",
+])
+
 /**
  * 将 diffs 按 maxContext 分组
  * @param diffs
  * @param maxContext
  * @returns
  */
-export const dividedDiffGroups = (diffs: Diff[], maxContext = 2000) => {
+export const dividedDiffGroups = (diffs: Diff[], maxContext = 500) => {
   const dividedDiffs: Diff[][] = []
   let currentSum = 0, currentDiffs: Diff[] = []
   diffs.forEach((diff) => {
+    // 忽略图片、视频、音频、压缩包、锁等文件
+    if (IGNORE_FILE_EXTENSIONS.has(`.${diff.filename.split(".").pop()}`)) {
+      return
+    }
+
     if (currentSum + diff.changes >= maxContext) {
       dividedDiffs.push(currentDiffs)
       currentDiffs = []
