@@ -28,8 +28,21 @@ interface GetDiffInfoParams {
   headLabel: string // 头部标签 => Gijela:main
 }
 
-interface DiffInfo {
-  files: any[]
+export interface Diff {
+  sha: string
+  filename: string
+  status: string
+  additions: number
+  deletions: number
+  changes: number
+  blob_url: string
+  raw_url: string
+  contents_url: string
+  patch: string
+}
+
+export interface DiffInfo {
+  files: Diff[]
   commits: any[]
 }
 

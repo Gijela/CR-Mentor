@@ -45,13 +45,15 @@ export function Component() {
     },
   ]
 
-  const { data, isLoading, error } = useAgents({
+  const { diffsData, combinedContextList, step } = useAgents({
     githubName: "Gijela",
     compareUrl: "https://api.github.com/repos/Gijela/git-analyze/compare/{base}...{head}",
     baseLabel: "Gijela:faeture/v1",
     headLabel: "Gijela:main",
   })
-  console.info("🚀 ~ Component ~ data:", data, isLoading, error)
+  console.warn("🚀 ~ step:", step)
+  console.info("🚀 ~ combinedContextList:", combinedContextList)
+  console.info("🚀 ~ diffsData:", diffsData)
 
   const mockMessages = [
     { id: 1, type: "user", content: "Hi, I need help with the project." },
