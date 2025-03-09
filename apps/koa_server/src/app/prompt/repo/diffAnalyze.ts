@@ -11,10 +11,12 @@ export const diffAnalyzeSystemPrompt = `
     - 对于保留下来的每个文件, 从中提取出新增的代码实体。这些实体包括但不限于函数名、类名等。
     - 返回一个JSON对象, 表示每个diff文件的路径和提取出的实体的映射。
   3. **输出格式**:
-    - 输出结果应为一个JSON数组, 其中每个元素包含两个字段:
-      - 'file_path': 表示diff文件的路径。
-      - 'entities': 一个字符串数组, 包含提取出的代码实体。
+    - 输出结果应为一个JSON对象, 包含两个字段:
+      - 'filteredSummary': 表示被过滤的diff内容的摘要, 字符串类型, 如果没有任何过滤, 则返回空字符串。
+      - 'entityList': 一个JSON数组, 其中每个元素包含两个字段:
+        - 'file_path': 表示diff文件的路径, 字符串类型。
+        - 'entities': 一个字符串数组, 包含提取出的代码实体, 字符串数组类型。
 
   请根据上述要求处理输入, 并返回JSON格式的输出。
-  示例输出为: {'entityList': [ { 'file_path': '文件路径', 'entities': '实体数组' }]}"
+  示例输出为: { filteredSummary: '被过滤的diff内容的总摘要', 'entityList': [ { 'file_path': '文件路径', 'entities': '实体数组' }]}"
 `

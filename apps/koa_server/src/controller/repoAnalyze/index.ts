@@ -5,6 +5,8 @@ import { diffAnalyzeSystemPrompt } from "@/app/prompt/repo/diffAnalyze"
 import { getCommonRoot } from "@/utils/index"
 import logger from "@/utils/logger"
 
+import type { Diff } from "./interface"
+
 /**
  * 分析 diff 内容。
  * 1. 过滤简单diff
@@ -77,5 +79,41 @@ export const analyzeRepo = async (ctx: Koa.Context) => {
       success: false,
       error,
     }
+  }
+}
+
+/**
+ * 过滤简单变更，复杂变更提取实体
+ * @param {Koa.Context} ctx
+ * @returns {Promise<Object>}
+ */
+export const filterDiffEntity = async (ctx: Koa.Context) => {
+  const { diffs } = ctx.request.body as { diffs: Diff[] }
+
+  try {
+    const response = await fetch(`${process.env.SERVER_HOST}/openai/json`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: diffAnalyzeSystemPrompt },
+          { role: "user", content: JSON.stringify(diffs) },
+        ],
+      }),
+    })
+
+    if (!response.ok) {
+      ctx.status = 500
+      logger.info("🚀 ~ response:", response)
+      ctx.body = { success: false, error: "Failed to filter diff entity" }
+      return
+    }
+
+    const result = await response.json()
+    // ctx.body = { success: true, data: mockFilterDiffEntity.data }
+    ctx.body = { success: true, data: result }
+  } catch (error) {
+    ctx.status = 500
+    ctx.body = { success: false, error }
   }
 }

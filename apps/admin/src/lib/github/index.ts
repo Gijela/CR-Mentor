@@ -49,6 +49,7 @@ export const getDiffInfo = async (params: GetDiffInfoParams): Promise<DiffInfo> 
       throw new Error("Get diff info failed")
     }
 
+    // {files: any[], commits: any[]}
     return data
   } catch (error) {
     console.error("Get diff info failed:", error)
