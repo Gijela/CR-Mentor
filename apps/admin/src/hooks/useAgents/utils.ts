@@ -4,35 +4,7 @@ import { searchKnowledgeGraph } from "@/lib/repo/codeKnowledgeGraphSearch"
 
 import type { Diff, Entity } from "."
 
-const IGNORE_FILE_EXTENSIONS = new Set([
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".gif",
-  ".bmp",
-  ".pdf",
-  ".doc",
-  ".docx",
-  ".xls",
-  ".xlsx",
-  ".zip",
-  ".rar",
-  ".7z",
-  ".tar",
-  ".gz",
-  ".exe",
-  ".dll",
-  ".so",
-  ".dylib",
-  ".svg",
-  ".ico",
-  ".webp",
-  ".mp4",
-  ".mp3",
-  ".lock",
-  ".yaml",
-  ".md",
-])
+const ANALYZE_FILE_EXTENSIONS = new Set(["ts", "tsx", "js", "jsx", "vue"])
 
 /**
  * 将 diffs 按 maxContext 分组
@@ -40,22 +12,22 @@ const IGNORE_FILE_EXTENSIONS = new Set([
  * @param maxContext
  * @returns
  */
-export const dividedDiffGroups = (diffs: Diff[], maxContext = 500) => {
+export const dividedDiffGroups = (diffs: Diff[], maxContext = 10000) => {
   const dividedDiffs: Diff[][] = []
   let currentSum = 0, currentDiffs: Diff[] = []
   diffs.forEach((diff) => {
-    // 忽略图片、视频、音频、压缩包、锁等文件
-    if (IGNORE_FILE_EXTENSIONS.has(`.${diff.filename.split(".").pop()}`)) {
+    // 非目标文件直接跳过
+    if (!ANALYZE_FILE_EXTENSIONS.has(diff.filename.split(".").pop() || "")) {
       return
     }
 
-    if (currentSum + diff.changes >= maxContext) {
+    if (currentSum + diff.patch.length >= maxContext) {
       dividedDiffs.push(currentDiffs)
       currentDiffs = []
       currentSum = 0
     }
     currentDiffs.push(diff)
-    currentSum += diff.changes
+    currentSum += diff.patch.length
   })
 
   if (dividedDiffs.length === 0 && currentDiffs.length > 0) {

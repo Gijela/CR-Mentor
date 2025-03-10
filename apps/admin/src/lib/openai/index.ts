@@ -20,3 +20,24 @@ export const filterEntity = async (diffs: Diff[]) => {
     console.error(error)
   }
 }
+
+/**
+ * 总结 commits Msg 信息
+ * @param {string[]} commitsMsgList
+ * @returns {Promise<string>}
+ */
+export const summaryCommitMsg = async (commitsMsgList: string[]) => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_SERVER_HOST}/repo/summaryCommitMsg`, {
+      method: "POST",
+      body: JSON.stringify({ commits: commitsMsgList }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error(error)
+  }
+}

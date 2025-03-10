@@ -2,12 +2,13 @@ import { GitIngest, searchKnowledgeGraph } from "git-analyze"
 import type Koa from "koa"
 import serialize from "serialize-javascript"
 
+// import { mockFilterDiffEntity } from "../mock/filterDiffEntity"
+import { summaryCommitMsgPrompt } from "@/app/prompt/repo/commitSummary"
 import { diffAnalyzeSystemPrompt } from "@/app/prompt/repo/diffAnalyze"
 import { getCommonRoot } from "@/utils/index"
 import logger from "@/utils/logger"
 
 import type { Diff } from "./interface"
-// import { mockFilterDiffEntity } from "../mock/filterDiffEntity"
 
 /**
  * 分析 diff 内容。
@@ -115,6 +116,33 @@ export const filterDiffEntity = async (ctx: Koa.Context) => {
     ctx.body = { success: true, data: result }
 
     // ctx.body = { success: true, data: mockFilterDiffEntity.data }
+  } catch (error) {
+    ctx.status = 500
+    ctx.body = { success: false, error }
+  }
+}
+
+/**
+ * 总结 commits Msg 信息
+ * @param {Koa.Context} ctx
+ */
+export const summaryCommitMsg = async (ctx: Koa.Context) => {
+  const { commits } = ctx.request.body as { commits: string[] }
+
+  try {
+    const response = await fetch(`${process.env.SERVER_HOST}/openai/json`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: summaryCommitMsgPrompt },
+          { role: "user", content: serialize(commits.map((item) => item.replace("\n", " "))) },
+        ],
+      }),
+    })
+
+    const result = await response.json()
+    ctx.body = { success: true, data: result }
   } catch (error) {
     ctx.status = 500
     ctx.body = { success: false, error }

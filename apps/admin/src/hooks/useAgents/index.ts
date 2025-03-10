@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 
 import { getDiffInfo } from "@/lib/github"
 import { getCommonRoot } from "@/lib/github/utils"
-import { filterEntity } from "@/lib/openai"
+import { filterEntity, summaryCommitMsg } from "@/lib/openai"
 import { getRepoCodeGraph } from "@/lib/repo"
 import type { KnowledgeGraph } from "@/lib/repo/codeKnowledgeGraphSearch"
 import { groupModulesByDependency } from "@/lib/repo/groupModulesByDependency"
@@ -45,7 +45,7 @@ export interface DiffEntity {
   // 所有实体的文件路径
   targetPaths: string[]
   // 所有 commits message 信息
-  commitsMsgList: string[]
+  commitsMsg: string
   // 是否被赋值
   hasValuation: boolean
 }
@@ -73,7 +73,7 @@ const useAgents = (options: UseAgentsOptions) => {
     filteredSummary: "",
     miniCommonRoot: "",
     targetPaths: [],
-    commitsMsgList: [],
+    commitsMsg: "",
   })
   // 2. 处理 diff 信息
   useEffect(() => {
@@ -84,21 +84,28 @@ const useAgents = (options: UseAgentsOptions) => {
         const blocksDiffs = dividedDiffGroups(files)
         if (blocksDiffs.length === 0) return
 
+        // 获取所有 commits 的 message 信息
+        const commitsMsgList: string[] = (diffsData?.commits || []).map((item) => item.commit.message)
+
         // 使用大模型处理每一组的内容, 小变更变更直接过滤, 复杂变更提取实体
-        const results = await Promise.all(blocksDiffs.map((diff) => filterEntity(diff)))
+        const results = await Promise.all([
+          ...blocksDiffs.map((diff) => filterEntity(diff)),
+          summaryCommitMsg(commitsMsgList),
+        ])
+
+        const entityListResult = results.slice(0, -1)
+        const summaryResult = results.at(-1)
+
         // 获取过滤后的实体列表, 并且拍平，因为不需要再去分组
-        const entityList: { file_path: string, entities: string[] }[] = results
+        const entityList: { file_path: string, entities: string[] }[] = entityListResult
           .filter((item) => item.success)
           .flatMap((item) => item.data?.entityList)
 
         // 获取被过滤的diff内容的总摘要
-        const filteredSummary = results
-          .filter((item) => item.success)
-          .map((item) => item.data?.filteredSummary)
+        const filteredSummary = summaryResult
+          .filter((item: any) => item.success)
+          .map((item: any) => item.data?.filteredSummary)
           .join("\n")
-
-        // 获取所有 commits 的 message 信息
-        const commitsMsgList: string[] = (diffsData?.commits || []).map((item) => item.commit.message)
 
         setDiffEntityObj({
           hasValuation: true,
@@ -106,7 +113,7 @@ const useAgents = (options: UseAgentsOptions) => {
           filteredSummary,
           miniCommonRoot: `/${getCommonRoot(entityList)}`,
           targetPaths: entityList.map((item) => item.file_path),
-          commitsMsgList,
+          commitsMsg: summaryResult?.data?.summary || "",
         })
       }
 
@@ -159,7 +166,7 @@ const useAgents = (options: UseAgentsOptions) => {
         ## 所有 commits message 信息
         可用于理解代码的变更历史、变更原因、变更动机、变更目的等, 是代码评审的重要参考信息。后续的 diff patch 可以基于这些信息进行更准确的评审, 
         但是需要注意的是, diff patch 是基于当前的代码, 而 commits message 是基于历史提交, 所以 commits messages 可能说明了一些功能，但是 diff patch 中不存在, 这些是合理的。
-        ${diffEntityObj.commitsMsgList.join("\n\n")}
+        ${diffEntityObj.commitsMsg}
 
         ## diff patch 信息
         ${(item.allDiffPatch || [])
