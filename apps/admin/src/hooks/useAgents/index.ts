@@ -55,6 +55,7 @@ enum Step {
   DiffEntity = 1, // 处理 diff 信息(过滤小变更、大变更提取实体)
   CodeKnowledgeGraph = 2, // 获取代码知识图谱, 并且基于依赖关系图划分功能模块
   CombinedContextList = 3, // 构建每一个模块的上下文, 得到可用于直接提供给大模型的 prompt
+  CodeReview = 4, // code review
 }
 
 const useAgents = (options: UseAgentsOptions) => {
@@ -102,7 +103,7 @@ const useAgents = (options: UseAgentsOptions) => {
           .flatMap((item) => item.data?.entityList)
 
         // 获取被过滤的diff内容的总摘要
-        const filteredSummary = summaryResult
+        const filteredSummary = entityListResult
           .filter((item: any) => item.success)
           .map((item: any) => item.data?.filteredSummary)
           .join("\n")
@@ -163,23 +164,37 @@ const useAgents = (options: UseAgentsOptions) => {
 
       // 将diff patch 和 相关实体上下文整合成一个字符串, 作为用户 prompt 提供大模型
       const combinedContextList: string[] = moduleContextList.map((item, index) => `
-        ## 所有 commits message 信息
-        可用于理解代码的变更历史、变更原因、变更动机、变更目的等, 是代码评审的重要参考信息。后续的 diff patch 可以基于这些信息进行更准确的评审, 
-        但是需要注意的是, diff patch 是基于当前的代码, 而 commits message 是基于历史提交, 所以 commits messages 可能说明了一些功能，但是 diff patch 中不存在, 这些是合理的。
-        ${diffEntityObj.commitsMsg}
+## 所有 commits message 信息
+可用于理解代码的变更历史、变更原因、变更动机、变更目的等, 是代码评审的重要参考信息。后续的 diff patch 可以基于这些信息进行更准确的评审, 
+但是需要注意的是, diff patch 是基于当前的代码, 而 commits message 是基于历史提交, 所以 commits messages 可能说明了一些功能，但是 diff patch 中不存在, 这些是合理的。
+${diffEntityObj.commitsMsg}
 
-        ## diff patch 信息
-        ${(item.allDiffPatch || [])
+## diff patch 信息
+${(item.allDiffPatch || [])
           .map((diffItem) => `## [diff ${index + 1}] \n filepath: ${diffItem.filePath} \n patch content: \n ${diffItem.diffPatch}`)
           .join("\n\n")}
-        
-        ## Some additional information to help understand the patch code
-        ${item.searchedEntityContext.join("\n\n")}
-      `)
+
+## Some additional information to help understand the patch code
+${item.searchedEntityContext.join("\n\n")}
+`)
 
       setCombinedContextList(combinedContextList)
     }
   }, [moduleList])
+
+  // 5. code review
+  useEffect(() => {
+    if (combinedContextList.length > 0) {
+      setStep(Step.CodeReview)
+
+      // const codeReview = async (combinedContextList: string[]) => {
+      //   // const codeReviewResults = await Promise.all(combinedContextList.map((userPrompt) => codeReview(userPrompt)))
+
+      // }
+      // // 使用大模型进行 code review
+      // codeReview(combinedContextList)
+    }
+  }, [combinedContextList])
 
   return {
     diffsData,

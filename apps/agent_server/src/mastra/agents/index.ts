@@ -21,7 +21,7 @@ export const weatherAgent = new Agent({
       - Keep responses concise but informative
 
       Use the weatherTool to fetch current weather data.
-`,
+  `,
   model: openaiProvider(process.env.OPENAI_MODEL as OpenAIChatModelId),
   tools: { weatherTool },
 })
