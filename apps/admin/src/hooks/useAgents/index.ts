@@ -8,13 +8,24 @@ import { getRepoCodeGraph } from "@/lib/repo"
 import type { KnowledgeGraph } from "@/lib/repo/codeKnowledgeGraphSearch"
 import { groupModulesByDependency } from "@/lib/repo/groupModulesByDependency"
 
+import { callCodeReviewAgent } from "./agentServer"
 import { buildModuleContext, dividedDiffGroups } from "./utils"
 
 interface UseAgentsOptions {
+  /* 用户名 */
   githubName: string
+  /* 对比的 url */
   compareUrl: string
+  /* 基础分支 */
   baseLabel: string
+  /* 头部分支 */
   headLabel: string
+  /* 发布总结的 url */
+  commentUrl: string
+  /* 发布行级评论的 url */
+  reviewCommentsUrl: string
+  /* 最后一个 commit 的 sha */
+  lastCommitSha: string
 }
 
 export interface Diff {
@@ -164,12 +175,16 @@ const useAgents = (options: UseAgentsOptions) => {
 
       // 将diff patch 和 相关实体上下文整合成一个字符串, 作为用户 prompt 提供大模型
       const combinedContextList: string[] = moduleContextList.map((item, index) => `
-## 所有 commits message 信息
-可用于理解代码的变更历史、变更原因、变更动机、变更目的等, 是代码评审的重要参考信息。后续的 diff patch 可以基于这些信息进行更准确的评审, 
-但是需要注意的是, diff patch 是基于当前的代码, 而 commits message 是基于历史提交, 所以 commits messages 可能说明了一些功能，但是 diff patch 中不存在, 这些是合理的。
+## Tool parameters
+- githubName: ${options.githubName}
+- commentUrl: ${options.commentUrl}
+- reviewCommentsUrl: ${options.reviewCommentsUrl}
+- lastCommitSha: ${options.lastCommitSha}
+
+## 本次 PR 的所有 commits message 信息
 ${diffEntityObj.commitsMsg}
 
-## diff patch 信息
+## 本模块的所有 diff patch 信息
 ${(item.allDiffPatch || [])
           .map((diffItem) => `## [diff ${index + 1}] \n filepath: ${diffItem.filePath} \n patch content: \n ${diffItem.diffPatch}`)
           .join("\n\n")}
@@ -186,13 +201,15 @@ ${item.searchedEntityContext.join("\n\n")}
   useEffect(() => {
     if (combinedContextList.length > 0) {
       setStep(Step.CodeReview)
-
-      // const codeReview = async (combinedContextList: string[]) => {
-      //   // const codeReviewResults = await Promise.all(combinedContextList.map((userPrompt) => codeReview(userPrompt)))
-
-      // }
-      // // 使用大模型进行 code review
-      // codeReview(combinedContextList)
+      const handleCodeReview = async (userPrompts: string[]) => {
+        try {
+          const codeReviewResults = await Promise.all(userPrompts.map((userPrompt) => callCodeReviewAgent(userPrompt)))
+          console.info("🚀 ~ codeReviewResults:", codeReviewResults)
+        } catch (error) {
+          console.error("code review 失败", error)
+        }
+      }
+      handleCodeReview(combinedContextList)
     }
   }, [combinedContextList])
 
@@ -204,16 +221,3 @@ ${item.searchedEntityContext.join("\n\n")}
 }
 
 export default useAgents
-
-// 评论
-
-// 发布总结
-// token 是 github 的 token
-// _links.comments.href 是发布评论的接口
-
-// 发布行级评论
-// token 是 github 的 token
-// _links.review_comments.href 是发布行级评论的接口
-// 最后一个 commit 的 sha 作为统一 commit_id
-// 文件路径 file_path
-// 行号 position: patch ? patch.split('\n').length - 1 : 1,

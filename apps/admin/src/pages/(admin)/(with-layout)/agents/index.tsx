@@ -50,6 +50,9 @@ export function Component() {
     compareUrl: "https://api.github.com/repos/Gijela/git-analyze/compare/{base}...{head}",
     baseLabel: "Gijela:faeture/v1",
     headLabel: "Gijela:main",
+    commentUrl: "https://api.github.com/repos/Gijela/git-analyze/issues/2/comments", // 从 _links.comments.href 中获取
+    reviewCommentsUrl: "https://api.github.com/repos/Gijela/git-analyze/pulls/2/comments", // 从 _links.review_comments.href 中获取
+    lastCommitSha: "758077d717ff0ab82ad40ef37b7790c60b22cc70", // commits[commits.length - 1].sha
   })
   console.warn("🚀 ~ step:", step)
   console.info("🚀 ~ combinedContextList:", combinedContextList)
