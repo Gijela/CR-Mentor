@@ -1,6 +1,6 @@
 import Router from "@koa/router"
 
-import { analyzeDiff, analyzeRepo, filterDiffEntity, summaryCommitMsg } from "../../controller/repoAnalyze"
+import { analyzeCodeModule, analyzeDiff, analyzeRepo, filterDiffEntity, summaryCommitMsg, summaryPr } from "../../controller/repoAnalyze"
 
 // 添加路由前缀，避免可能的路由冲突
 const router = new Router({ prefix: "/repo" })
@@ -16,6 +16,12 @@ router.post("/analyzeDiff", analyzeDiff)
 
 // 分析仓库
 router.post("/analyzeRepo", analyzeRepo)
+
+// 分模块分析代码
+router.post("/analyzeCodeModule", analyzeCodeModule)
+
+// 总结 PR 的变更
+router.post("/summaryPr", summaryPr)
 
 // 测试路由
 router.post("/test", async (ctx) => {

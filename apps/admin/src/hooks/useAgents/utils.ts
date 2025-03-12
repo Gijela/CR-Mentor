@@ -12,7 +12,7 @@ const ANALYZE_FILE_EXTENSIONS = new Set(["ts", "tsx", "js", "jsx", "vue"])
  * @param maxContext
  * @returns
  */
-export const dividedDiffGroups = (diffs: Diff[], maxContext = 10000) => {
+export const dividedDiffGroups = (diffs: Diff[], maxContext = 30000) => {
   const dividedDiffs: Diff[][] = []
   let currentSum = 0, currentDiffs: Diff[] = []
   diffs.forEach((diff) => {

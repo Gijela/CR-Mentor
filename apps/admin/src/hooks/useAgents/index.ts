@@ -8,10 +8,10 @@ import { getRepoCodeGraph } from "@/lib/repo"
 import type { KnowledgeGraph } from "@/lib/repo/codeKnowledgeGraphSearch"
 import { groupModulesByDependency } from "@/lib/repo/groupModulesByDependency"
 
-import { callCodeReviewAgent } from "./agentServer"
+import { callCodeReviewAgent, createPrSummary, summaryPr } from "./agentServer"
 import { buildModuleContext, dividedDiffGroups } from "./utils"
 
-interface UseAgentsOptions {
+export interface UseAgentsOptions {
   /* 用户名 */
   githubName: string
   /* 对比的 url */
@@ -61,6 +61,12 @@ export interface DiffEntity {
   hasValuation: boolean
 }
 
+export interface SummaryPr {
+  walkThrough: string
+  changes: string
+  sequenceDiagram: string
+}
+
 enum Step {
   Diff = 0, // 获取 diff 信息
   DiffEntity = 1, // 处理 diff 信息(过滤小变更、大变更提取实体)
@@ -72,7 +78,7 @@ enum Step {
 const useAgents = (options: UseAgentsOptions) => {
   const [step, setStep] = useState<Step>(Step.Diff)
 
-  // 1. 获取 diff 信息 {files: any[], commits: any[]}
+  // 1. 获取 diff 信息 {files: Diff[], commits: any[]}
   const { data: diffsData } = useQuery({
     queryKey: ["agents", options],
     queryFn: () => getDiffInfo(options),
@@ -175,13 +181,7 @@ const useAgents = (options: UseAgentsOptions) => {
 
       // 将diff patch 和 相关实体上下文整合成一个字符串, 作为用户 prompt 提供大模型
       const combinedContextList: string[] = moduleContextList.map((item, index) => `
-## Tool parameters
-- githubName: ${options.githubName}
-- commentUrl: ${options.commentUrl}
-- reviewCommentsUrl: ${options.reviewCommentsUrl}
-- lastCommitSha: ${options.lastCommitSha}
-
-## 本次 PR 的所有 commits message 信息
+## 本次 PR 的所有模块的 commits message 信息
 ${diffEntityObj.commitsMsg}
 
 ## 本模块的所有 diff patch 信息
@@ -189,7 +189,7 @@ ${(item.allDiffPatch || [])
           .map((diffItem) => `## [diff ${index + 1}] \n filepath: ${diffItem.filePath} \n patch content: \n ${diffItem.diffPatch}`)
           .join("\n\n")}
 
-## Some additional information to help understand the patch code
+## 本模块使用到的关键信息
 ${item.searchedEntityContext.join("\n\n")}
 `)
 
@@ -203,8 +203,25 @@ ${item.searchedEntityContext.join("\n\n")}
       setStep(Step.CodeReview)
       const handleCodeReview = async (userPrompts: string[]) => {
         try {
-          const codeReviewResults = await Promise.all(userPrompts.map((userPrompt) => callCodeReviewAgent(userPrompt)))
-          console.info("🚀 ~ codeReviewResults:", codeReviewResults)
+          const codeReviewResults = await Promise.all(userPrompts.map((userPrompt) => callCodeReviewAgent(userPrompt, options, diffsData)))
+          const summaryParams: SummaryPr = {
+            walkThrough: "",
+            changes: "",
+            sequenceDiagram: "",
+          }
+
+          codeReviewResults.forEach((item) => {
+            summaryParams.walkThrough += (`这是一个模块级别的总结\n\n${item.data?.walkThrough}\n\n`)
+            summaryParams.changes += (`这是一个模块级别的变更\n\n${item.data?.changes}\n\n`)
+            summaryParams.sequenceDiagram += (`这是一个模块级别的时序图\n\n${item.data?.sequenceDiagram}\n\n`)
+          })
+
+          const { success, data } = await summaryPr(summaryParams)
+          if (success) {
+            // 发布总结到 github
+            await createPrSummary(options.githubName, options.commentUrl, data?.summary || "")
+            console.info("创建整个 PR 总结成功")
+          }
         } catch (error) {
           console.error("code review 失败", error)
         }

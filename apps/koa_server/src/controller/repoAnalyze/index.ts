@@ -2,9 +2,11 @@ import { GitIngest, searchKnowledgeGraph } from "git-analyze"
 import type Koa from "koa"
 import serialize from "serialize-javascript"
 
+import { analyzeCodeModulePrompt } from "@/app/prompt/repo/analyzeCodeModule"
 // import { mockFilterDiffEntity } from "../mock/filterDiffEntity"
 import { summaryCommitMsgPrompt } from "@/app/prompt/repo/commitSummary"
 import { diffAnalyzeSystemPrompt } from "@/app/prompt/repo/diffAnalyze"
+import { summaryPrPrompt } from "@/app/prompt/repo/summaryPr"
 import { getCommonRoot } from "@/utils/index"
 import logger from "@/utils/logger"
 
@@ -142,6 +144,68 @@ export const summaryCommitMsg = async (ctx: Koa.Context) => {
     })
 
     const result = await response.json()
+    ctx.body = { success: true, data: result }
+  } catch (error) {
+    ctx.status = 500
+    ctx.body = { success: false, error }
+  }
+}
+
+/**
+ * 分模块分析代码
+ * @param {Koa.Context} ctx
+ */
+export const analyzeCodeModule = async (ctx: Koa.Context) => {
+  const { moduleContext } = ctx.request.body as { moduleContext: string }
+
+  try {
+    const response = await fetch(`${process.env.SERVER_HOST}/openai/json`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: analyzeCodeModulePrompt },
+          { role: "user", content: moduleContext },
+        ],
+      }),
+    })
+
+    const result = await response.json()
+    ctx.body = { success: true, data: result }
+  } catch (error) {
+    ctx.status = 500
+    ctx.body = { success: false, error }
+  }
+}
+
+interface SummaryPr {
+  walkThrough: string
+  changes: string
+  sequenceDiagram: string
+}
+
+/**
+ * 总结 PR 的变更
+ * @param {Koa.Context} ctx
+ */
+export const summaryPr = async (ctx: Koa.Context) => {
+  const { summaryParams } = ctx.request.body as { summaryParams: SummaryPr }
+  console.info("🚀 ~ summaryPr ~ summaryParams:", summaryParams)
+
+  try {
+    const response = await fetch(`${process.env.SERVER_HOST}/openai/json`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: summaryPrPrompt },
+          { role: "user", content: `${summaryParams.walkThrough}\n\n${summaryParams.changes}\n\n${summaryParams.sequenceDiagram}` },
+        ],
+      }),
+    })
+
+    const result = await response.json()
+    console.info("🚀 ~ summaryPr ~ result:", result)
     ctx.body = { success: true, data: result }
   } catch (error) {
     ctx.status = 500
