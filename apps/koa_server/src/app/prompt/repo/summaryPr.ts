@@ -17,7 +17,7 @@ export const summaryPrPrompt = `
 # 输出
 - 请以 json 格式输出, 并且必须严格按照下面的数据格式输出, 不要输出其他数据格式:
 {
-  summary: "总结所有模块的 walkThrough、changes、sequenceDiagram, 得到整个 pr 的 walkThrough、changes、sequenceDiagram, 值必须为 markdown 格式",
+  summary: "总结所有模块的 walkThrough、changes、sequenceDiagram 三部分, 得到这次 pr 的 walkThrough、changes、sequenceDiagram 三部分，并且将其合并到一起作为 summary 的值，值必须为 markdown 格式",
 }
 
 # 约束

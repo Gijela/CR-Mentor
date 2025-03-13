@@ -6,7 +6,9 @@
 export function getCommonRoot(entityList: { file_path: string, entities: string[] }[]): string {
   if (entityList.length === 0) return ""
 
-  const paths = entityList.map((item) => item.file_path)
+  const paths = entityList
+    .filter((item) => typeof item === "object" && item.file_path)
+    .map((item) => item.file_path)
   const splitPaths = paths.map((path) => path.split("/"))
   const minLength = Math.min(...splitPaths.map((parts) => parts.length))
 

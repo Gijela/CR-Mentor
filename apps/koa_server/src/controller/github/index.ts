@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken"
 import type Koa from "koa"
 
 import logger from "@/utils/logger"
+import { diffsDetails } from "@/mock/getDiffsDetails"
 
 // 根据 githubName 创建 token
 export const createToken = async (ctx: Koa.Context) => {
@@ -187,52 +188,53 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
 
   try {
     // 1. 创建token
-    const tokenResponse = await fetch(`${process.env.SERVER_HOST}/github/createToken`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ githubName }),
-    })
-    const { success, token, msg, error } = await tokenResponse.json()
-    if (!success) {
-      ctx.status = 500
-      ctx.body = { success: false, message: msg, error }
-      return
-    }
+    // const tokenResponse = await fetch(`${process.env.SERVER_HOST}/github/createToken`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({ githubName }),
+    // })
+    // const { success, token, msg, error } = await tokenResponse.json()
+    // if (!success) {
+    //   ctx.status = 500
+    //   ctx.body = { success: false, message: msg, error }
+    //   return
+    // }
 
-    // 2. 获取全量 PR 差异
-    // const diffResponse = await fetch(
-    //   diffLink,
-    //   {
-    //     headers: {
-    //       'Authorization': `Bearer ${token}`,
-    //       'Accept': 'application/vnd.github.v3.diff',
-    //       'X-GitHub-Api-Version': '2022-11-28',
-    //     }
-    //   }
-    // );
-    // const diffTotal = await diffResponse.text();
+    // // 2. 获取全量 PR 差异
+    // // const diffResponse = await fetch(
+    // //   diffLink,
+    // //   {
+    // //     headers: {
+    // //       'Authorization': `Bearer ${token}`,
+    // //       'Accept': 'application/vnd.github.v3.diff',
+    // //       'X-GitHub-Api-Version': '2022-11-28',
+    // //     }
+    // //   }
+    // // );
+    // // const diffTotal = await diffResponse.text();
 
-    const response = await fetch(`${compareUrl.replace("{base}", baseLabel).replace("{head}", headLabel)}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-        "Accept": "application/vnd.github.v3+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    })
+    // const response = await fetch(`${compareUrl.replace("{base}", baseLabel).replace("{head}", headLabel)}`, {
+    //   method: "GET",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     "Authorization": `Bearer ${token}`,
+    //     "Accept": "application/vnd.github.v3+json",
+    //     "X-GitHub-Api-Version": "2022-11-28",
+    //   },
+    // })
 
-    if (!response.ok) {
-      ctx.status = 500
-      ctx.body = { success: false, message: `Failed to fetch compare data` }
-      return
-    }
-    const { files, commits } = await response.json()
+    // if (!response.ok) {
+    //   ctx.status = 500
+    //   ctx.body = { success: false, message: `Failed to fetch compare data` }
+    //   return
+    // }
+    // const { files, commits } = await response.json()
 
     ctx.status = 200
-    ctx.body = { success: true, data: { files, commits } }
+    // ctx.body = { success: true, data: { files, commits } }
+    ctx.body = diffsDetails
   } catch (error) {
     logger.error("🚀 ~ getDiffsDetails ~ error:", error)
     ctx.status = 500

@@ -130,7 +130,7 @@ const useAgents = (options: UseAgentsOptions) => {
           entityList,
           filteredSummary,
           miniCommonRoot: `/${getCommonRoot(entityList)}`,
-          targetPaths: entityList.map((item) => item.file_path),
+          targetPaths: entityList.filter((item) => typeof item === "object" && item.file_path).map((item) => item?.file_path),
           commitsMsg: summaryResult?.data?.summary || "",
         })
       }
@@ -219,7 +219,7 @@ ${item.searchedEntityContext.join("\n\n")}
           const { success, data } = await summaryPr(summaryParams)
           if (success) {
             // 发布总结到 github
-            await createPrSummary(options.githubName, options.commentUrl, data?.summary || "")
+            await createPrSummary(options.githubName, options.commentUrl, data || {})
             console.info("创建整个 PR 总结成功")
           }
         } catch (error) {

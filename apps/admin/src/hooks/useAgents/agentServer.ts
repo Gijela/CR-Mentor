@@ -139,7 +139,7 @@ export const summaryPr = async (summaryParams: SummaryPr) => {
  * @param commentUrl 评论 url
  * @param summary 总结
  */
-export const createPrSummary = async (githubName: string, commentUrl: string, summary: string) => {
+export const createPrSummary = async (githubName: string, commentUrl: string, summary: Record<string, string>) => {
   try {
     // 获取 token
     const tokenResponse = await fetch(`${import.meta.env.VITE_SERVER_HOST}/github/createToken`, {
@@ -160,7 +160,7 @@ export const createPrSummary = async (githubName: string, commentUrl: string, su
           "X-GitHub-Api-Version": "2022-11-28",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ body: summary }),
+        body: JSON.stringify({ body: Object.entries(summary).map(([key, value]) => value).join("\n\n") }),
       },
     )
 
