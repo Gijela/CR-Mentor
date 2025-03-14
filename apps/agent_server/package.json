@@ -10,11 +10,15 @@
   "main": "index.js",
   "scripts": {
     "dev": "mastra dev",
+    "rag": "pnpx tsx src/mastra/hybridRag/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.1.14",
     "@mastra/core": "^0.4.0",
+    "@mastra/pg": "^0.2.1",
+    "@mastra/rag": "^0.1.9",
+    "ai": "3.1.12",
     "mastra": "^0.2.4",
     "zod": "^3.23.8"
   },

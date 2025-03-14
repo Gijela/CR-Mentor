@@ -32,6 +32,7 @@ export default defineConfig(
     rules: {
       "react-refresh/only-export-components": "off",
       "tailwindcss/no-custom-classname": "off",
+      "no-console": "off",
     },
   },
 )
