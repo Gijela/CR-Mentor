@@ -205,7 +205,7 @@ interface SummaryPr {
  */
 export const summaryPr = async (ctx: Koa.Context) => {
   const { summaryParams } = ctx.request.body as { summaryParams: SummaryPr }
-  console.info("🚀 ~ summaryPr ~ summaryParams:", summaryParams)
+  // console.info("🚀 ~ summaryPr ~ summaryParams:", summaryParams)
 
   try {
     // const response = await fetch(`${process.env.SERVER_HOST}/openai/json`, {

@@ -5,7 +5,7 @@ import { MDocument } from "@mastra/rag"
 import { embedMany } from "ai"
 
 // 使用明确的连接字符串
-const pgVector = new PgVector("postgresql://root:u6ra90It4mQ8ynbseE5XGV371xNMPKl2@ovh1.clusters.zeabur.com:30104/zeabur")
+const pgVector = new PgVector("postgresql://root:876I2e1O4G5dqBKbr9J0AmRluisQT3wP@fra1.clusters.zeabur.com:31464/zeabur")
 
 const openaiProvider = createOpenAI({
   apiKey: "sk-BaC53hheKtE2yL7w2OLjq8BfwwMVFdwzp2cDsFLKlrqFBVyo",
