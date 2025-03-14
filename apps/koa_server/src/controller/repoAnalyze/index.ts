@@ -84,6 +84,7 @@ export const analyzeRepo = async (ctx: Koa.Context) => {
 
     // ctx.body = { success: true, data: { ...result, searchEntityResults } }
     ctx.status = 200
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     ctx.body = mockAnalyzeRepo
   } catch (error) {
     ctx.status = 500
@@ -126,6 +127,7 @@ export const filterDiffEntity = async (ctx: Koa.Context) => {
 
     // ctx.body = { success: true, data: mockFilterDiffEntity.data }
     ctx.status = 200
+    await new Promise((resolve) => setTimeout(resolve, 2000))
     ctx.body = mockFilterDiffEntity
   } catch (error) {
     ctx.status = 500

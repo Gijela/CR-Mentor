@@ -197,6 +197,8 @@ ${item.searchedEntityContext.join("\n\n")}
     }
   }, [moduleList])
 
+  const [reviewData, setReviewData] = useState<any>(null);
+
   // 5. code review
   useEffect(() => {
     if (combinedContextList.length > 0) {
@@ -221,6 +223,7 @@ ${item.searchedEntityContext.join("\n\n")}
             // 发布总结到 github
             await createPrSummary(options.githubName, options.commentUrl, data || {})
             console.info("创建整个 PR 总结成功")
+            setReviewData(data); // 假设 data 包含评论和总结信息
           }
         } catch (error) {
           console.error("code review 失败", error)
@@ -234,6 +237,9 @@ ${item.searchedEntityContext.join("\n\n")}
     diffsData,
     combinedContextList,
     step,
+    diffEntityObj,
+    codeKnowledgeGraph,
+    reviewData, // 返回 reviewData
   }
 }
 

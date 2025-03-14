@@ -58,6 +58,7 @@
     "react-markdown": "^9.0.1",
     "react-resizable-panels": "^2.1.6",
     "react-router-dom": "^6.27.0",
+    "reactflow": "^11.11.4",
     "recharts": "2.13.0-alpha.4",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.0",
