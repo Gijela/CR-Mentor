@@ -94,13 +94,17 @@ export function Component() {
       };
       setMockMessages((prevMessages) => [...prevMessages, completionMessage, userMessage] as Message[]);
 
-      // 自动选择与当前步骤对应的团队成员
-      const currentMember = teamMembers.find(m => m.step === step);
-      if (currentMember) {
-        setSelectedMember(currentMember.name);
+      // 没有手动选择过角色，则自动选择与当前步骤对应的团队成员
+      if (!hasSelectedRole) {
+        const currentMember = teamMembers.find(m => m.step === step);
+        if (currentMember) {
+          setSelectedMember(currentMember.name);
+        }
       }
     }
   }, [step]);
+
+  const [hasSelectedRole, setHasSelectRole] = useState(false); // 是否手动选择过角色
 
   // 监听步骤变化后，添加AI消息
   useEffect(() => {
@@ -184,6 +188,7 @@ export function Component() {
             selectedMember={selectedMember}
             setSelectedMember={setSelectedMember}
             step={step}
+            setHasSelectedRole={setHasSelectRole}
           />
         </div>
 

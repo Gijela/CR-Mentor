@@ -14,12 +14,14 @@ export const TeamMembersList = ({
   teamMembers,
   selectedMember,
   setSelectedMember,
-  step
+  step,
+  setHasSelectedRole
 }: {
   teamMembers: TeamMember[];
   selectedMember: string;
   setSelectedMember: (name: string) => void;
   step: number;
+  setHasSelectedRole: (hasSelected: boolean) => void;
 }) => {
   return (
     <div className="border-b bg-card">
@@ -47,7 +49,10 @@ export const TeamMembersList = ({
         {teamMembers.map((member) => (
           <button
             key={member.name}
-            onClick={() => setSelectedMember(member.name)}
+            onClick={() => {
+              setSelectedMember(member.name);
+              setHasSelectedRole(true);
+            }}
             className={`
               flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
               ${selectedMember === member.name ?
