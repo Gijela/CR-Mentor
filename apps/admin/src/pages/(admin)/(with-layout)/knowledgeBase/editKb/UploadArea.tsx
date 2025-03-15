@@ -1,58 +1,73 @@
-import { useState } from "react";
-import { Button } from "@repo/ui/button";
-import { Upload } from "lucide-react";
-import { useCreateChunk } from "@/hooks/query/use-knowledge-chunks";
-import { toast } from "sonner";
+import { Button } from "@repo/ui/button"
+import { Upload } from "lucide-react"
+import { useState } from "react"
+import { toast } from "sonner"
+
+import { uploadFile } from "@/hooks/query/use-knowledge-chunks"
 
 interface UploadAreaProps {
-  kb_id: number;
+  kbName: string
+  onUploadSuccess: () => void
 }
 
-const UploadArea = ({ kb_id }: UploadAreaProps) => {
-  const { mutate: createChunk, isPending } = useCreateChunk();
+const UploadArea = ({ kbName, onUploadSuccess }: UploadAreaProps) => {
+  const [isUploading, setIsUploading] = useState(false)
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    setIsUploading(true)
+    const file = e.target.files?.[0]
+    if (!file) return
 
     if (!file.name.toLowerCase().endsWith(".md")) {
-      toast.error("Only markdown files are supported");
-      return;
+      toast.error("Only markdown files are supported")
+      return
     }
 
     try {
-      const content = await file.text();
-      await createChunk({
-        kb_id,
-        content,
-        metadata: {
-          source: file.name,
-          title: file.name.replace(".md", ""),
-        },
-      });
+      const content = await file.text()
+      const fileExtension = (file.name || "").split(".").pop() || "md"
+      const params = {
+        knowledgeBaseName: kbName,
+        documents: [
+          {
+            content,
+            fileName: file.name.replace(`.${fileExtension}`, ""),
+            fileExtension,
+          },
+        ],
+      }
 
-      toast.success("Document uploaded successfully");
-      e.target.value = "";
+      const { success } = await uploadFile(params)
+      if (!success) {
+        toast.error("Upload failed")
+        return
+      }
+      setIsUploading(false)
+
+      onUploadSuccess()
+      toast.success("Document uploaded successfully")
+      e.target.value = ""
     } catch (error) {
-      toast.error("Upload failed");
-      console.error("Upload error:", error);
+      setIsUploading(false)
+      toast.error("Upload failed")
+      console.error("Upload error:", error)
     }
-  };
+  }
 
   return (
     <label
       className={`w-fit flex items-center justify-center gap-2 border border-dashed rounded-lg
           hover:bg-accent transition-colors duration-200 cursor-pointer
-          ${isPending ? "opacity-50 cursor-not-allowed" : ""}`}
+          ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       <input
         type="file"
         accept=".md"
         onChange={handleFileUpload}
         className="hidden"
-        disabled={isPending}
+        disabled={isUploading}
       />
-      {isPending ? (
+      {isUploading ? (
         <div className="flex items-center gap-2">
           <svg
             className="animate-spin h-5 w-5"
@@ -79,9 +94,9 @@ const UploadArea = ({ kb_id }: UploadAreaProps) => {
       ) : (
         <Button
           onClick={(e) => {
-            e.preventDefault();
-            const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-            input?.click();
+            e.preventDefault()
+            const input = document.querySelector('input[type="file"]') as HTMLInputElement
+            input?.click()
           }}
           className="flex items-center justify-center gap-2"
         >
@@ -90,7 +105,7 @@ const UploadArea = ({ kb_id }: UploadAreaProps) => {
         </Button>
       )}
     </label>
-  );
-};
+  )
+}
 
-export default UploadArea;
+export default UploadArea

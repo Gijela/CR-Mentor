@@ -8,7 +8,7 @@ export interface DocumentMetadata {
   category?: string
   author?: string
   source?: string
-  timestamp?: string
+  createdAt?: string
   fileName?: string
   fileType?: string
   [key: string]: any

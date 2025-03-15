@@ -30,12 +30,83 @@ import { deleteKnowledgeBase, getKnowledgeBases } from "@/hooks/query/use-knowle
 import EmptyCard from "../../pullRequest/components/emptyCard"
 import { CreateKnowledgeBaseDialog } from "./components/create-knowledge-base-dialog"
 
+const mockList = [
+  {
+    id: "0.3707233267391723",
+    name: "iii",
+    documentCount: 0,
+    createdAt: "2025-03-15T15:06:27.373Z",
+    lastUpdated: "2025-03-15T15:06:27.373Z",
+  },
+  {
+    id: "0.6623661205259233",
+    name: "kkkk",
+    documentCount: 0,
+    createdAt: "2025-03-15T15:06:31.745Z",
+    lastUpdated: "2025-03-15T15:06:31.745Z",
+  },
+  {
+    id: "0.7251505026732099",
+    name: "mmmmmm",
+    documentCount: 0,
+    createdAt: "2025-03-15T15:06:37.052Z",
+    lastUpdated: "2025-03-15T15:06:37.052Z",
+  },
+  {
+    id: "0.007102974636253645",
+    name: "test",
+    documentCount: 0,
+    createdAt: "2025-03-15T15:06:41.980Z",
+    lastUpdated: "2025-03-15T15:06:41.980Z",
+  },
+  {
+    id: "0.4709387724248799",
+    name: "test2",
+    documentCount: 0,
+    createdAt: "2025-03-15T15:06:47.038Z",
+    lastUpdated: "2025-03-15T15:06:47.038Z",
+  },
+  {
+    id: "a0efd818-8189-47fe-82a4-57f0ba38a0ba",
+    name: "test_doc",
+    documentCount: 1,
+    createdAt: "2025-03-15T15:06:51.383Z",
+    lastUpdated: "2025-03-15T15:06:51.383Z",
+  },
+  {
+    id: "0.9874392177846125",
+    name: "test_doc2",
+    documentCount: 0,
+    createdAt: "2025-03-15T15:06:56.908Z",
+    lastUpdated: "2025-03-15T15:06:56.908Z",
+  },
+  {
+    id: "bd71873d-7eee-46e1-bb54-fffdac4bf400",
+    name: "test_index",
+    description: "这是一个测试知识库2",
+    documentCount: 1,
+    createdAt: "2025-03-15T15:07:00.173Z",
+    lastUpdated: "2025-03-15T11:03:48.722Z",
+    tags: [
+      "测试",
+      "示例",
+    ],
+  },
+  {
+    id: "0.5705734595375753",
+    name: "uu",
+    documentCount: 0,
+    createdAt: "2025-03-15T15:07:03.134Z",
+    lastUpdated: "2025-03-15T15:07:03.135Z",
+  },
+]
+
 export function Component() {
   const [searchQuery, setSearchQuery] = useState("")
   const [deleteKbId, setDeleteKbId] = useState("")
   const navigate = useNavigate()
   const { user } = useUser()
-  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([])
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>(mockList as KnowledgeBase[])
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -47,7 +118,7 @@ export function Component() {
   }
 
   useEffect(() => {
-    fetchKnowledgeBases()
+    // fetchKnowledgeBases()
   }, [])
 
   const handleDelete = async (kbId: string) => {
@@ -78,13 +149,13 @@ export function Component() {
   return (
     <div className="container px-0">
       {/* 头部操作区 */}
-      <div className="flex items-center justify-between mb-8 pt-[2px]">
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4 w-full max-w-md">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search knowledge base..."
-              className="pl-10"
+              className="pl-10 ml-[2px] mt-[2px]"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -126,12 +197,19 @@ export function Component() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
+                              className="focus:text-blue-500"
                               onClick={() => setDeleteKbId(kb.name)}
                             >
                               <Trash className="w-4 h-4 mr-2" />
                               Delete
                             </DropdownMenuItem>
+                            {/* <DropdownMenuItem
+                              className="focus:text-blue-500"
+                              onClick={() => alert("Setting")}
+                            >
+                              <Settings className="w-4 h-4 mr-2" />
+                              Setting
+                            </DropdownMenuItem> */}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>

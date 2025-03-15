@@ -1,8 +1,4 @@
-import { useState } from "react"
-import { useSearchParams, useNavigate } from "react-router-dom"
-import { ChevronLeft, BookOpen } from "lucide-react"
 import { Button } from "@repo/ui/button"
-import { Textarea } from "@repo/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -10,26 +6,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/ui/dialog"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@repo/ui/card"
+import { Textarea } from "@repo/ui/textarea"
+import { BookOpen, ChevronLeft } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
-import { useKnowledgeChunks, useUpdateChunk, type DocumentChunk } from "@/hooks/query/use-knowledge-chunks"
+
+import type { FileItem } from "@/hooks/query/use-knowledge-chunks"
+import { getFileList, updateFile } from "@/hooks/query/use-knowledge-chunks"
+
+import EmptyCard from "../../pullRequest/components/emptyCard"
 import ChunkCard from "./ChunkCard"
 import UploadArea from "./UploadArea"
-import EmptyCard from "../../pullRequest/components/emptyCard"
 
 export function Component() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const kbId = searchParams.get('id')
-  const kbName = searchParams.get('name')
+  const kbId = searchParams.get("id")
+  const kbName = searchParams.get("name")
 
   // 如果没有知识库 ID 或名称，显示引导页面
   if (!kbId || !kbName) {
@@ -39,48 +34,50 @@ export function Component() {
   }
 
   // 验证 kbId 是否为有效数字
-  const numericKbId = Number(kbId)
-  if (isNaN(numericKbId)) {
-    toast.error("Invalid knowledge base ID")
-    navigate('/knowledgeBase/kbList')
-    return null
+  // const numericKbId = Number(kbId)
+  // if (isNaN(numericKbId)) {
+  //   toast.error("Invalid knowledge base ID")
+  //   navigate('/knowledgeBase/kbList')
+  //   return null
+  // }
+
+  const [fileList, setFileList] = useState<FileItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const fetchFileList = async () => {
+    setIsLoading(true)
+    const result = await getFileList({ knowledgeBaseName: kbName, options: { page: 1, pageSize: 10 } })
+    setFileList(result)
+    setIsLoading(false)
   }
 
-  const { data: documentChunks = [], isLoading } = useKnowledgeChunks(numericKbId)
-  const { mutate: updateChunk, isPending: isUpdating } = useUpdateChunk()
+  useEffect(() => {
+    fetchFileList()
+  }, [])
 
   const [isChunkModalOpen, setIsChunkModalOpen] = useState(false)
-  const [selectedChunk, setSelectedChunk] = useState<DocumentChunk | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [selectedChunk, setSelectedChunk] = useState<FileItem>({} as FileItem)
   const [editingContent, setEditingContent] = useState("")
 
-  const handleChunkClick = (chunk: DocumentChunk) => {
+  const handleChunkClick = (chunk: FileItem) => {
     setSelectedChunk(chunk)
-    setEditingContent(chunk.content)
+    setEditingContent(chunk.text)
     setIsChunkModalOpen(true)
   }
 
-  const handleSaveContent = async () => {
-    // 临时处理：显示开发中提示
-    toast.error("Updating feature is under development, please stay tuned")
-    setIsChunkModalOpen(false)
-    return
-
-    // 实际的更新逻辑暂时注释
-    /*
-    if (!selectedChunk) return
-
-    try {
-      await updateChunk({
-        id: selectedChunk.id,
-        kb_id: kbId,
-        content: editingContent,
-      })
-      toast.success("Content updated")
-      setIsChunkModalOpen(false)
-    } catch (error) {
-      toast.error("Update failed")
+  const handleUpdateDocument = async () => {
+    setIsUpdating(true)
+    const result = await updateFile(kbName, selectedChunk.id, editingContent)
+    if (result.success) {
+      toast.success("Document updated successfully")
+      setFileList(fileList.map((file) => file.id === selectedChunk.id ? { ...file, text: editingContent } : file))
+    } else {
+      toast.error("Failed to update document")
     }
-    */
+    setSelectedChunk({} as FileItem)
+    setEditingContent("")
+    setIsChunkModalOpen(false)
+    setIsUpdating(false)
   }
 
   return (
@@ -89,13 +86,13 @@ export function Component() {
         <div className="flex justify-between items-center pr-2">
           <Button
             variant="ghost"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/knowledgeBase/kbList")}
             className="flex items-center gap-2 px-0"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>Back to {kbName || 'Unnamed knowledge base'} </span>
+            <span>Back to {kbName || "Unnamed knowledge base"} </span>
           </Button>
-          <UploadArea kb_id={Number(kbId)} />
+          <UploadArea kbName={kbName} onUploadSuccess={fetchFileList} />
         </div>
       </div>
 
@@ -106,35 +103,40 @@ export function Component() {
               <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
               <p className="mt-4 text-muted-foreground">Loading...</p>
             </div>
-          ) : documentChunks.length > 0 ? (
-            documentChunks.map((chunk) => (
-              <ChunkCard
-                key={chunk.id}
-                chunk={chunk}
-                onEdit={handleChunkClick}
-              />
-            ))
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <svg
-                className="w-16 h-16 mb-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <p className="text-lg mb-2">No documents</p>
-              <p className="text-sm">
-                Please upload a markdown file to add documents
-              </p>
-            </div>
-          )}
+          ) : fileList.length > 0 ?
+              (
+                fileList.map((file) => (
+                  <ChunkCard
+                    key={file.id}
+                    chunk={file}
+                    onEdit={handleChunkClick}
+                    onDelete={(docId) => {
+                      setFileList(fileList.filter((file) => file.id !== docId))
+                    }}
+                  />
+                ))
+              ) :
+              (
+                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                  <svg
+                    className="w-16 h-16 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <p className="text-lg mb-2">No documents</p>
+                  <p className="text-sm">
+                    Please upload a markdown file to add documents
+                  </p>
+                </div>
+              )}
         </div>
       </div>
 
@@ -158,7 +160,7 @@ export function Component() {
                 Characters: {editingContent.length}
               </span>
               <Button
-                onClick={handleSaveContent}
+                onClick={handleUpdateDocument}
                 disabled={isUpdating}
               >
                 {isUpdating ? "Updating..." : "Update"}

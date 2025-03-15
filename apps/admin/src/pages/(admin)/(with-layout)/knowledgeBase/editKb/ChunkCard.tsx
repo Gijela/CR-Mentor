@@ -1,8 +1,3 @@
-import { useState } from "react"
-import { Button } from "@repo/ui/button"
-import { Card, CardContent, CardHeader } from "@repo/ui/card"
-import { Pencil, Trash2, FileText, ArrowUpDown, Clock } from "lucide-react"
-import { toast } from "sonner"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,45 +8,51 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@repo/ui/alert-dialog"
-import { useDeleteChunk } from "@/hooks/query/use-knowledge-chunks"
-import type { DocumentChunk } from "@/hooks/query/use-knowledge-chunks"
+import { Button } from "@repo/ui/button"
+import { Card, CardContent, CardHeader } from "@repo/ui/card"
+import { ArrowUpDown, Clock, FileText, Pencil, Trash2 } from "lucide-react"
+import React, { useState } from "react"
+import { useSearchParams } from "react-router-dom"
+import { toast } from "sonner"
+
+import type { FileItem } from "@/hooks/query/use-knowledge-chunks"
+import { deleteFile } from "@/hooks/query/use-knowledge-chunks"
 
 interface ChunkCardProps {
-  chunk: DocumentChunk
-  onEdit: (chunk: DocumentChunk) => void
+  chunk: FileItem
+  onEdit: (chunk: FileItem) => void
+  onDelete: (docId: string) => void
 }
 
-const ChunkCard = ({ chunk, onEdit }: ChunkCardProps) => {
-  const { mutate: deleteChunk, isPending } = useDeleteChunk()
+const ChunkCard = ({ chunk, onEdit, onDelete }: ChunkCardProps) => {
+  const [isPending, setIsPending] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [searchParams] = useSearchParams()
+  const kbName = searchParams.get("name") as string
 
   const handleDeleteChunk = async () => {
-    toast.error("Deleting feature is under development, please stay tuned")
-    setShowDeleteDialog(false)
-    return
-
-    /*
-    try {
-      await deleteChunk({ id: chunk.id, kb_id: chunk.kb_id })
-      toast.success("文档块删除成功")
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "删除失败")
-    } finally {
-      setShowDeleteDialog(false)
+    setIsPending(true)
+    const result = await deleteFile(kbName, chunk.id)
+    if (result.success) {
+      toast.success("Document deleted successfully")
+      onDelete(chunk.id)
+    } else {
+      toast.error("Failed to delete document chunk")
     }
-    */
+    setShowDeleteDialog(false)
+    setIsPending(false)
   }
 
   return (
     <>
       <Card
         key={chunk.id}
-        className="hover:border-primary transition-all duration-200 cursor-pointer"
+        className="hover:shadow-md transition-all duration-200 cursor-pointer"
         onClick={() => onEdit(chunk)}
       >
         <CardHeader className="pb-2">
           <div className="flex justify-between items-start">
-            <h3 className="text-lg font-medium">{chunk.metadata.title}</h3>
+            <h3 className="text-lg font-medium">{chunk.fileName}</h3>
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -81,22 +82,22 @@ const ChunkCard = ({ chunk, onEdit }: ChunkCardProps) => {
         </CardHeader>
 
         <CardContent>
-          <p className="text-muted-foreground mb-4 line-clamp-2">{chunk.content}</p>
+          <p className="text-muted-foreground mb-4 line-clamp-2">{chunk.text}</p>
 
           <div className="flex items-center justify-between text-sm text-muted-foreground border-t pt-3">
             <div className="flex items-center gap-6">
               <div className="flex items-center">
                 <FileText className="w-4 h-4 mr-2" />
-                <span className="truncate">{chunk.metadata.source}</span>
+                <span className="truncate">{chunk.fileExtension}</span>
               </div>
               <div className="flex items-center">
                 <ArrowUpDown className="w-4 h-4 mr-2" />
-                <span>{chunk.content.length} characters</span>
+                <span>{(chunk?.text || "").length} characters</span>
               </div>
             </div>
             <div className="flex items-center">
               <Clock className="w-4 h-4 mr-2" />
-              <span>{new Date(chunk.created_at).toLocaleString()}</span>
+              <span>{new Date(chunk.lastUpdated || chunk.createdAt || new Date().toISOString()).toLocaleString()}</span>
             </div>
           </div>
         </CardContent>

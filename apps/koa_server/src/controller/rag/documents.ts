@@ -18,6 +18,7 @@ export const addDocuments = async (ctx: Koa.Context): Promise<void> => {
 
   try {
     for (const doc of documents) {
+      const { content, ...rest } = doc
       const mDoc = MDocument.fromText(doc.content)
       const chunks = await mDoc.chunk()
 
@@ -33,8 +34,8 @@ export const addDocuments = async (ctx: Koa.Context): Promise<void> => {
         vectors: validEmbeddings,
         metadata: chunks.map((chunk) => ({
           text: chunk.text,
-          ...doc.metadata,
-          timestamp: new Date().toISOString(),
+          ...rest,
+          createdAt: new Date().toISOString(),
         })),
       })
       console.log(`成功添加 ${documents.length} 个文档到知识库 "${knowledgeBaseName}"`)

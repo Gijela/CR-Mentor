@@ -1,140 +1,119 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-
-export interface DocumentChunk {
-  id: number
-  kb_id: number
-  content: string
-  embedding: string
-  created_at: string
-  metadata: {
-    source: string
-    title: string
+export interface FileListParams {
+  knowledgeBaseName: string
+  options: {
+    page: number
+    pageSize: number
+    // 过滤条件
+    filter?: Record<string, any>
   }
 }
 
-interface CreateChunkParams {
-  kb_id: number
-  content: string
-  metadata: {
-    source: string
-    title: string
-  }
+export interface FileItem {
+  id: string
+  fileName: string
+  fileExtension: string
+  text: string
+  createdAt?: string
+  lastUpdated?: string
 }
 
-const apiUrl = import.meta.env.VITE_GITHUB_SERVER_API
-// 获取知识库的所有文档块
-export function useKnowledgeChunks(kb_id: number) {
-  return useQuery({
-    queryKey: ["knowledge-chunks", kb_id],
-    queryFn: async () => {
-      const res = await fetch(`${apiUrl}/api/supabase/rag/kb_chunks/getOneKBTotalChunks`, {
-        method: "POST",
-        body: JSON.stringify({ kb_id }),
-      })
-      const { success, data } = await res.json()
-      if (!success) throw new Error("Failed to fetch chunks")
-      return data as DocumentChunk[]
-    },
-  })
-}
-
-// 创建新的文档块
-export function useCreateChunk() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (params: CreateChunkParams) => {
-      const res = await fetch(`${apiUrl}/api/supabase/rag/kb_chunks/insertChunk`, {
-        method: "POST",
-        body: JSON.stringify(params),
-      })
-      const { ok, data } = await res.json()
-      if (!ok) throw new Error("Failed to create chunk")
-      return data
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["knowledge-chunks", variables.kb_id] })
-    },
-  })
-}
-
-// 删除文档块
-export function useDeleteChunk() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async ({ id, kb_id }: { id: number; kb_id: number }) => {
-      const res = await fetch(`${apiUrl}/api/supabase/rag/kb_chunks/deleteChunk`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id,
-          // 可能需要添加其他必要的参数，比如 user_id 等
-        }),
-      })
-      const { success, error, data } = await res.json()
-      if (!success) {
-        throw new Error(
-          error?.message ||
-          error?.details ||
-          "删除文档块失败"
-        )
-      }
-      return data
-    },
-    onSuccess: (_, variables) => {
-      // 删除成功后刷新列表
-      queryClient.invalidateQueries({
-        queryKey: ["knowledge-chunks", variables.kb_id]
-      })
-    },
-    onError: (error) => {
-      console.error("Delete chunk error:", error)
+// 获取知识库的文档列表
+export const getFileList = async (params: FileListParams): Promise<FileItem[]> => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_HOST}/rag/listDocuments`, {
+      method: "POST",
+      body: JSON.stringify(params),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    const { success, data } = await res.json()
+    if (!success) {
+      throw new Error("Failed to fetch chunks")
     }
-  })
+
+    return (data?.documents || []).reverse()
+  } catch (error) {
+    console.error("Failed to fetch chunks:", error)
+    return []
+  }
 }
 
-// 更新文档块
-export function useUpdateChunk() {
-  const queryClient = useQueryClient()
+// 删除文档
+export const deleteFile = async (kbName: string, docId: string) => {
+  try {
+    const result = await fetch(`${import.meta.env.VITE_SERVER_HOST}/rag/deleteDocument`, {
+      method: "POST",
+      body: JSON.stringify({ knowledgeBaseName: kbName, documentId: docId }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    const { success, data } = await result.json()
+    if (!success) {
+      throw new Error("Failed to delete chunk")
+    }
 
-  return useMutation({
-    mutationFn: async ({ id, kb_id, content }: { id: number; kb_id: number; content: string }) => {
-      if (!content.trim()) {
-        throw new Error("文档内容不能为空")
-      }
+    return { success, data }
+  } catch (error) {
+    console.error("Failed to delete chunk:", error)
+    return { success: false, data: null }
+  }
+}
 
-      const res = await fetch(`${apiUrl}/api/supabase/rag/kb_chunks/updateChunk`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id,
+// 更新文档
+export const updateFile = async (kbName: string, docId: string, content: string) => {
+  try {
+    const result = await fetch(`${import.meta.env.VITE_SERVER_HOST}/rag/updateDocument`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        knowledgeBaseName: kbName,
+        documentId: docId,
+        updates: {
           content,
-          // 可能需要添加其他必要的参数
-        }),
-      })
-      const { success, error, data } = await res.json()
-      if (!success) {
-        throw new Error(
-          error?.message ||
-          error?.details ||
-          "更新文档块失败"
-        )
-      }
-      return data
-    },
-    onSuccess: (_, variables) => {
-      // 更新成功后刷新列表
-      queryClient.invalidateQueries({
-        queryKey: ["knowledge-chunks", variables.kb_id]
-      })
-    },
-    onError: (error) => {
-      console.error("Update chunk error:", error)
+        },
+      }),
+    })
+    const { success, data } = await result.json()
+    if (!success) {
+      throw new Error("Failed to update document")
     }
-  })
-} 
+    return { success, data }
+  } catch (error) {
+    console.error("Failed to update document:", error)
+    return { success: false, data: null }
+  }
+}
+
+export interface UploadFileParams {
+  knowledgeBaseName: string
+  documents: {
+    content: string
+    fileName: string
+    fileExtension: string
+  }[]
+}
+
+// 上传文件
+export const uploadFile = async (params: UploadFileParams) => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_HOST}/rag/addDocuments`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params),
+    })
+    const { success, data } = await res.json()
+    if (!success) {
+      throw new Error("Failed to upload file")
+    }
+    return { success, data }
+  } catch (error) {
+    console.error("Failed to upload file:", error)
+    return { success: false, data: null }
+  }
+}
