@@ -10,12 +10,16 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
-    "start": "node dist/src/server.js",
+    "rag": "tsx watch src/router/rag/test/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.1.14",
     "@koa/cors": "^5.0.0",
     "@koa/router": "^13.1.0",
+    "@mastra/pg": "^0.2.1",
+    "@mastra/rag": "^0.1.9",
+    "ai": "3.1.12",
     "dotenv": "^16.4.5",
     "git-analyze": "^1.0.4",
     "jsonwebtoken": "^9.0.2",
