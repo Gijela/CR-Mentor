@@ -129,13 +129,10 @@ export const listDocuments = async (ctx: Koa.Context): Promise<void> => {
 export const deleteDocument = async (ctx: Koa.Context): Promise<void> => {
   const { knowledgeBaseName, documentId } = ctx.request.body as { knowledgeBaseName: string, documentId: string }
   const { pgVector } = createClients(ctx.state.config)
+
   try {
-    const result = await pgVector.upsert({
-      indexName: knowledgeBaseName,
-      vectors: [],
-      metadata: [],
-      ids: [documentId],
-    })
+    const result = await pgVector.deleteIndexById(knowledgeBaseName, documentId)
+
     console.log(`文档 "${documentId}" 已从知识库 "${knowledgeBaseName}" 中删除`)
     ctx.body = { success: true, message: "删除文档成功", data: result }
   } catch (error: any) {
@@ -166,6 +163,9 @@ export const updateDocument = async (ctx: Koa.Context): Promise<void> => {
         model: openaiProvider.embedding(process.env.OPENAI_EMBEDDING_MODEL!),
       })
       const validEmbeddings = embeddings.filter((v): v is number[] => Array.isArray(v))
+
+      await pgVector.deleteIndexById(knowledgeBaseName, documentId)
+
       await pgVector.upsert({
         indexName: knowledgeBaseName,
         vectors: validEmbeddings,
@@ -174,27 +174,15 @@ export const updateDocument = async (ctx: Koa.Context): Promise<void> => {
           ...updates.metadata,
           lastUpdated: new Date().toISOString(),
         })),
-        ids: [documentId],
+        ids: Array.from({ length: validEmbeddings.length }).fill(documentId).map((id, index) => `${id}_${index}`),
       })
     } else if (updates.metadata) {
-      const results = await pgVector.query({
-        indexName: knowledgeBaseName,
-        queryVector: Array.from({ length: 1536 }).fill(0),
-        filter: { id: documentId },
-        topK: 1,
+      await pgVector.updateIndexById(knowledgeBaseName, documentId, {
+        metadata: {
+          ...updates.metadata,
+          lastUpdated: new Date().toISOString(),
+        },
       })
-      if (results.length > 0) {
-        await pgVector.upsert({
-          indexName: knowledgeBaseName,
-          vectors: [results[0].vector],
-          metadata: [{
-            ...results[0].metadata,
-            ...updates.metadata,
-            lastUpdated: new Date().toISOString(),
-          }],
-          ids: [documentId],
-        })
-      }
     }
     console.log(`文档 "${documentId}" 已更新`)
     ctx.body = { success: true, message: "更新文档成功" }
