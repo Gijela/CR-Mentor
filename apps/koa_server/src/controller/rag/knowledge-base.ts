@@ -100,6 +100,7 @@ export const listKnowledgeBases = async (ctx: Koa.Context): Promise<void> => {
       const metadata = await getKnowledgeBaseMetadata(ctx.state.config, name)
 
       knowledgeBases.push({
+        id: results[0]?.id || Math.random().toString(),
         name,
         description: metadata.description,
         documentCount: results.length,

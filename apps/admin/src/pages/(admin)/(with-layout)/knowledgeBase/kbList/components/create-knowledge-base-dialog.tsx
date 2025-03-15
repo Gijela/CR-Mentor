@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { Button } from "@repo/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -6,47 +6,40 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/ui/dialog"
-import { Button } from "@repo/ui/button"
 import { Input } from "@repo/ui/input"
 import { Textarea } from "@repo/ui/textarea"
 import { Plus } from "lucide-react"
+import { useState } from "react"
 import { toast } from "sonner"
-import { useCreateKnowledgeBase } from "@/hooks/query/use-knowledge-base"
+
+import { createKnowledgeBase } from "@/hooks/query/use-knowledge-base"
 
 interface CreateKnowledgeBaseProps {
   user_id: string
   onSuccess?: () => void
 }
 
-interface CreateKnowledgeBaseData {
-  title: string
-  description: string
-}
-
 export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledgeBaseProps) {
   const [open, setOpen] = useState(false)
-  const { mutate: createKB, isPending } = useCreateKnowledgeBase()
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-  })
+  const [isPending, setIsPending] = useState(false)
+  const [formData, setFormData] = useState({ name: "", description: "" })
+
+  console.log("user_id ==>", user_id)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    setIsPending(true)
     try {
-      await createKB({
-        user_id,
-        title: formData.title,
-        description: formData.description,
-      })
+      await createKnowledgeBase({ name: formData.name })
 
       toast.success("Knowledge base created successfully")
       setOpen(false)
-      setFormData({ title: "", description: "" })
+      setFormData({ name: "", description: "" })
+      setIsPending(false)
       onSuccess?.()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create knowledge base")
+      setIsPending(false)
     }
   }
 
@@ -54,8 +47,8 @@ export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledg
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="w-4 h-4 mr-2" />
-          Create knowledge base
+          <Plus className="w-4 h-4 mr-1" />
+          Create
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -70,8 +63,8 @@ export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledg
             </label>
             <Input
               placeholder="Enter knowledge base name"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              value={formData.name}
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               disabled={isPending}
               required
             />
@@ -81,7 +74,7 @@ export function CreateKnowledgeBaseDialog({ user_id, onSuccess }: CreateKnowledg
             <Textarea
               placeholder="Enter knowledge base description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               disabled={isPending}
               rows={4}
             />

@@ -1,14 +1,4 @@
-import { useState, useMemo } from 'react'
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@repo/ui/card"
-import { Button } from "@repo/ui/button"
-import { Input } from "@repo/ui/input"
-import { MessageSquare, Edit, Plus, Search, MoreHorizontal, UserIcon } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@repo/ui/dropdown-menu"
+import { useUser } from "@clerk/clerk-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,39 +9,59 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@repo/ui/alert-dialog"
-import { Trash } from "lucide-react"
-import { toast } from "sonner"
-import { CreateKnowledgeBaseDialog } from "./components/create-knowledge-base-dialog"
+import { Button } from "@repo/ui/button"
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@repo/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@repo/ui/dropdown-menu"
+import { Input } from "@repo/ui/input"
+import { Edit, MessageSquare, MoreHorizontal, Search, Trash } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useKnowledgeBases, useDeleteKnowledgeBase } from "@/hooks/query/use-knowledge-base"
-import { LoadingSpinner } from '@/components/loading-spinner'
-import { SignedOut, SignInButton, useUser } from '@clerk/clerk-react'
-import EmptyCard from '../../pullRequest/components/emptyCard'
+import { toast } from "sonner"
 
-interface KnowledgeBase {
-  id: number
-  title: string
-  description: string
-  created_at: string
-  updated_at: string
-}
+import { LoadingSpinner } from "@/components/loading-spinner"
+import type { KnowledgeBase } from "@/hooks/query/use-knowledge-base"
+import { deleteKnowledgeBase, getKnowledgeBases } from "@/hooks/query/use-knowledge-base"
+
+import EmptyCard from "../../pullRequest/components/emptyCard"
+import { CreateKnowledgeBaseDialog } from "./components/create-knowledge-base-dialog"
 
 export function Component() {
-  const { mutate: deleteKB, isPending: isDeleting } = useDeleteKnowledgeBase()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [deleteKbId, setDeleteKbId] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [deleteKbId, setDeleteKbId] = useState("")
   const navigate = useNavigate()
   const { user } = useUser()
-  const { data: knowledgeBases = [], isLoading } = useKnowledgeBases(user?.id as string)
+  const [knowledgeBases, setKnowledgeBases] = useState<KnowledgeBase[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleDelete = async (kbId: number) => {
+  const fetchKnowledgeBases = async () => {
+    setIsLoading(true)
+    const knowledgeBases = await getKnowledgeBases(user?.id as string)
+    setKnowledgeBases(knowledgeBases)
+    setIsLoading(false)
+  }
+
+  useEffect(() => {
+    fetchKnowledgeBases()
+  }, [])
+
+  const handleDelete = async (kbId: string) => {
+    setIsDeleting(true)
     try {
-      await deleteKB({ id: kbId, user_id: user?.id as string })
+      await deleteKnowledgeBase({ name: kbId, user_id: user?.id as string })
       toast.success("Knowledge base deleted successfully")
+      setDeleteKbId("")
+      setIsDeleting(false)
+      fetchKnowledgeBases()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete knowledge base")
-    } finally {
-      setDeleteKbId(null)
+      setDeleteKbId("")
+      setIsDeleting(false)
     }
   }
 
@@ -59,16 +69,16 @@ export function Component() {
     if (!searchQuery.trim()) return knowledgeBases
 
     const query = searchQuery.toLowerCase()
-    return knowledgeBases.filter(kb =>
-      kb.title.toLowerCase().includes(query) ||
-      kb.description.toLowerCase().includes(query)
+    return knowledgeBases.filter((kb) =>
+      (kb?.name || "").toLowerCase().includes(query) ||
+      (kb?.description || "").toLowerCase().includes(query),
     )
   }, [searchQuery, knowledgeBases])
 
   return (
     <div className="container px-0">
       {/* 头部操作区 */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 pt-[2px]">
         <div className="flex items-center gap-4 w-full max-w-md">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -80,7 +90,7 @@ export function Component() {
             />
           </div>
         </div>
-        <CreateKnowledgeBaseDialog user_id={user?.id as string} onSuccess={() => { }} />
+        <CreateKnowledgeBaseDialog user_id={user?.id as string} onSuccess={fetchKnowledgeBases} />
       </div>
 
       {/* 知识库列表 */}
@@ -97,7 +107,7 @@ export function Component() {
                   key={kb.id}
                   className="group hover:shadow-lg transition-all duration-300 flex flex-col h-[180px]"
                 >
-                  <CardHeader className="pb-3 flex-1" style={{ height: 'calc(100% - 48px)' }}>
+                  <CardHeader className="pb-3 flex-1" style={{ height: "calc(100% - 48px)" }}>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -105,7 +115,7 @@ export function Component() {
                             <MessageSquare className="w-5 h-5" />
                           </div>
                           <CardTitle className="text-lg font-medium tracking-tight truncate max-w-[200px]">
-                            {kb.title || '(Unnamed knowledge base)'}
+                            {kb.name || "(Unnamed knowledge base)"}
                           </CardTitle>
                         </div>
                         <DropdownMenu>
@@ -117,16 +127,16 @@ export function Component() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
-                              onClick={() => setDeleteKbId(kb.id)}
+                              onClick={() => setDeleteKbId(kb.name)}
                             >
                               <Trash className="w-4 h-4 mr-2" />
-                              Delete knowledge base
+                              Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                       <CardDescription className="text-sm line-clamp-2">
-                        {kb.description || 'No description'}
+                        {kb.description || "No description"}
                       </CardDescription>
                     </div>
                   </CardHeader>
@@ -148,7 +158,7 @@ export function Component() {
                       size="sm"
                       className="flex-1 h-12 justify-center rounded-none border-r"
                       onClick={() => {
-                        navigate(`/knowledgeBase/editKb/?id=${kb.id}&name=${kb.title}`)
+                        navigate(`/knowledgeBase/editKb/?id=${kb.id}&name=${kb.name}`)
                       }}
                     >
                       <Edit className="w-4 h-4 mr-1.5" />
@@ -163,7 +173,7 @@ export function Component() {
       )}
 
       {/* 确认删除对话框 */}
-      <AlertDialog open={!!deleteKbId} onOpenChange={() => !isDeleting && setDeleteKbId(null)}>
+      <AlertDialog open={!!deleteKbId} onOpenChange={() => !isDeleting && setDeleteKbId("")}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Delete</AlertDialogTitle>

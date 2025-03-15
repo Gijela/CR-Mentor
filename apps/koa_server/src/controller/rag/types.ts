@@ -20,6 +20,7 @@ export interface Document {
 }
 
 export interface KnowledgeBaseInfo {
+  id: string
   name: string
   description?: string
   documentCount: number
