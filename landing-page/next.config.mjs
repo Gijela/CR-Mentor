@@ -8,10 +8,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "cr-mentor.com",
       },
-      {
-        protocol: "https",
-        hostname: "picsum.photos",
-      },
+      // {
+      //   protocol: "https",
+      //   hostname: "picsum.photos",
+      // },
     ],
   },
 };
