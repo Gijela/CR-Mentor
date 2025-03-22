@@ -1,3 +1,9 @@
 # *
 User-agent: *
 Allow: /
+
+# Host
+Host: https://cr-mentor.com
+
+# Sitemaps
+Sitemap: https://cr-mentor.com/sitemap.xml

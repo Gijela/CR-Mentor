@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import { locales, defaultLocale } from "@/lib/i18n";
 import { SiteConfig } from "@/lib/config/site";
 import Navbar from "@/components/common/navbar";
