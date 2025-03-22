@@ -1,0 +1,27 @@
+{
+  "name": "cr-mentor",
+  "version": "1.0.0",
+  "description": "A LLM mentor for your code",
+  "main": "index.js",
+  "scripts": {
+    "dev:frontend": "cd frontend && pnpm dev",
+    "dev:server": "cd koa_server && pnpm dev",
+    "dev:landing-page": "cd landing-page && pnpm dev",
+    "build:frontend": "cd frontend && pnpm build",
+    "build:server": "cd koa_server && pnpm build",
+    "build:landing-page": "cd landing-page && pnpm build",
+    "start:frontend": "cd frontend && pnpm start",
+    "start:server": "cd koa_server && pnpm start",
+    "start:landing-page": "cd landing-page && pnpm start"
+  },
+  "keywords": [
+    "Code Review",
+    "LLM",
+    "Mentor",
+    "AI Agent",
+    "AI Code Review",
+    "ChatGPT",
+    "Knowledge Base"
+  ],
+  "author": "Gijela"
+}

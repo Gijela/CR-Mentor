@@ -1,0 +1,71 @@
+{
+  "Hero": {
+    "h1": "Innovative Code Review Concept and Practice",
+    "h2": "Based on deep integration of knowledge base and LLM, creating an intelligent, precise, and efficient code review tool to eliminate code review as a development team's efficiency bottleneck."
+  },
+  "Feature": {
+    "h2": "Product Features",
+    "h3": "Core Advantages of CR-Mentor",
+    "description1": "Knowledge Base-Driven Customized Review: Supports team-defined review standards, accumulates best practices, ensures code quality consistency, and helps new members quickly adapt to team standards",
+    "description2": "LLM-Powered Intelligent Review: Supports all languages, provides deep code analysis, automatically generates code walkthroughs and sequence diagrams, helping developers deeply understand code logic",
+    "description3": "Seamless Integration and Collaboration: Deep GitHub integration, supports multi-language responses, provides risk code identification and optimization suggestions, enhancing team collaboration efficiency"
+  },
+  "Pricing": {
+    "h2": "Product Value",
+    "h3": "Why Choose CR-Mentor",
+    "description": "Solving three major pain points in code review: efficiency bottlenecks, inconsistent quality, and knowledge transfer",
+    "doYouLike": "50% faster review efficiency, 30% fewer code defects, 60% less new member training time",
+    "follow": "Join our developer community to drive code review innovation together"
+  },
+  "Testimonial": {
+    "h2": "User Feedback",
+    "h3": "Developer Voices",
+    "description1": "CR-Mentor has significantly improved our code review efficiency, reducing review time from 2-3 days to less than 1 day, greatly accelerating project progress. Especially when handling large codebases, the intelligent review feature helps us quickly identify potential issues.",
+    "description2": "Intelligent review suggestions not only improve code quality but also help team members quickly master best practices, forming a good code culture. The knowledge base feature allows team experience to be accumulated and passed on.",
+    "description3": "The knowledge base feature enables new members to quickly integrate into the team, reducing training time by 60% and significantly improving team collaboration efficiency. Custom review standards allow teams to set appropriate norms based on project characteristics."
+  },
+  "Faq": {
+    "h2": "FAQ",
+    "h3": "About CR-Mentor",
+    "description": "Answer your questions about CR-Mentor, learn more about product details and technical implementation",
+    "faq1": {
+      "question": "Which programming languages does CR-Mentor support?",
+      "answer": "CR-Mentor supports all major programming languages, including but not limited to Python, Java, C++, JavaScript, Go, etc. Through LLM technology, we can understand code logic and best practices in various languages."
+    },
+    "faq2": {
+      "question": "How to ensure the accuracy of code review?",
+      "answer": "CR-Mentor adopts a deep integration of knowledge base and LLM, combined with team-defined review standards, ensuring review results meet team specifications. We also support manual intervention mechanisms to adjust and optimize review results at any time."
+    },
+    "faq3": {
+      "question": "How to handle closed-source code review?",
+      "answer": "CR-Mentor supports uploading closed-source code documentation, ensuring accurate understanding of closed-source code through the knowledge base feature. We provide secure code processing mechanisms to ensure your code security."
+    },
+    "faq4": {
+      "question": "How to get started with CR-Mentor?",
+      "answer": "Getting started with CR-Mentor is simple. First, create an account and connect your GitHub repository. Then, customize your review standards and best practices in the knowledge base. Finally, start using the intelligent review features to improve your team's code quality."
+    }
+  },
+  "CTA": {
+    "h2": "Start Your Code Review Revolution",
+    "h3": "Join CR-Mentor today and transform your team's code review process!"
+  },
+  "CTAButton": {
+    "btn1": "Start Free Trial",
+    "btn2": "View Documentation"
+  },
+  "About": {
+    "h1": "About Us",
+    "h2": "CR-Mentor is dedicated to revolutionizing code review through AI technology. We believe that intelligent code review tools can significantly improve development efficiency and code quality.",
+    "why": "Why Choose Us",
+    "why_content": "We combine cutting-edge LLM technology with practical development experience to provide intelligent, efficient, and accurate code review solutions. Our platform helps teams maintain high code quality while improving development efficiency.",
+    "team": "Our Team",
+    "team_content": "Our team consists of experienced developers, AI researchers, and product experts who are passionate about improving the software development process. We work closely with our users to continuously improve our products and services."
+  },
+  "Blog": {
+    "title": "Blog",
+    "description": "Latest insights and discussions about CR-Mentor and code review practices",
+    "side1": "Description",
+    "side2": "Popular Posts",
+    "side3": "Recently Updated"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "Hero": {
+    "h1": "Concept et Pratique Innovants de Revue de Code",
+    "h2": "Basé sur l'intégration profonde de la base de connaissances et du LLM, créant un outil de revue de code intelligent, précis et efficace pour éliminer la revue de code comme goulot d'étranglement d'efficacité dans les équipes de développement."
+  },
+  "Feature": {
+    "h2": "Caractéristiques du Produit",
+    "h3": "Avantages Principaux de CR-Mentor",
+    "description1": "Revue Personnalisée Pilotée par Base de Connaissances : Supporte les normes de revue définies par l'équipe, accumule les meilleures pratiques, assure la cohérence de la qualité du code et aide les nouveaux membres à s'adapter rapidement aux normes de l'équipe",
+    "description2": "Revue Intelligente Pilotée par LLM : Supporte tous les langages, fournit une analyse approfondie du code, génère automatiquement des parcours de code et des diagrammes de séquence, aidant les développeurs à comprendre profondément la logique du code",
+    "description3": "Intégration et Collaboration Transparentes : Intégration profonde avec GitHub, supporte les réponses multilingues, fournit l'identification du code à risque et des suggestions d'optimisation, améliorant l'efficacité de la collaboration d'équipe"
+  },
+  "Pricing": {
+    "h2": "Valeur du Produit",
+    "h3": "Pourquoi Choisir CR-Mentor",
+    "description": "Résolution de trois points critiques dans la revue de code : goulots d'étranglement d'efficacité, qualité incohérente et transfert de connaissances",
+    "doYouLike": "50% plus rapide en efficacité de revue, 30% moins de défauts de code, 60% moins de temps de formation pour les nouveaux membres",
+    "follow": "Rejoignez notre communauté de développeurs pour propulser ensemble l'innovation dans la revue de code"
+  },
+  "Testimonial": {
+    "h2": "Retours d'Utilisateurs",
+    "h3": "Voix des Développeurs",
+    "description1": "CR-Mentor a considérablement amélioré notre efficacité en revue de code, réduisant le temps de revue de 2-3 jours à moins d'un jour, accélérant énormément l'avancement du projet. Particulièrement lors de la gestion de grandes bases de code, la fonction de revue intelligente nous aide à identifier rapidement les problèmes potentiels.",
+    "description2": "Les suggestions de revue intelligente améliorent non seulement la qualité du code mais aident aussi les membres de l'équipe à maîtriser rapidement les meilleures pratiques, formant une bonne culture du code. La fonction de base de connaissances permet à l'expérience de l'équipe de s'accumuler et de se transmettre.",
+    "description3": "La fonction de base de connaissances permet aux nouveaux membres de s'intégrer rapidement dans l'équipe, réduisant le temps de formation de 60% et améliorant significativement l'efficacité de la collaboration d'équipe. Les normes de revue personnalisées permettent aux équipes d'établir des normes appropriées selon les caractéristiques du projet."
+  },
+  "Faq": {
+    "h2": "FAQ",
+    "h3": "À Propos de CR-Mentor",
+    "description": "Répondez à vos questions sur CR-Mentor, découvrez plus de détails sur le produit et l'implémentation technique",
+    "faq1": {
+      "question": "Quels langages de programmation CR-Mentor supporte-t-il ?",
+      "answer": "CR-Mentor supporte tous les langages de programmation principaux, y compris mais sans s'y limiter Python, Java, C++, JavaScript, Go, etc. Grâce à la technologie LLM, nous pouvons comprendre la logique du code et les meilleures pratiques dans divers langages."
+    },
+    "faq2": {
+      "question": "Comment garantir la précision de la revue de code ?",
+      "answer": "CR-Mentor adopte une intégration profonde de base de connaissances et de LLM, combinée avec des normes de revue définies par l'équipe, assurant que les résultats de la revue répondent aux spécifications de l'équipe. Nous supportons également des mécanismes d'intervention manuelle pour ajuster et optimiser les résultats de la revue à tout moment."
+    },
+    "faq3": {
+      "question": "Comment gérer la revue de code propriétaire ?",
+      "answer": "CR-Mentor supporte le téléchargement de documentation de code propriétaire, assurant une compréhension précise du code propriétaire via la fonction de base de connaissances. Nous fournissons des mécanismes sécurisés de traitement du code pour garantir la sécurité de votre code."
+    },
+    "faq4": {
+      "question": "Comment commencer avec CR-Mentor ?",
+      "answer": "Commencer avec CR-Mentor est simple. D'abord, créez un compte et connectez votre dépôt GitHub. Ensuite, personnalisez vos normes de revue et meilleures pratiques dans la base de connaissances. Enfin, commencez à utiliser les fonctions de revue intelligente pour améliorer la qualité du code de votre équipe."
+    }
+  },
+  "CTA": {
+    "h2": "Commencez Votre Révolution en Revue de Code",
+    "h3": "Rejoignez CR-Mentor aujourd'hui et transformez le processus de revue de code de votre équipe !"
+  },
+  "CTAButton": {
+    "btn1": "Commencer l'Essai Gratuit",
+    "btn2": "Voir la Documentation"
+  },
+  "About": {
+    "h1": "À Propos de Nous",
+    "h2": "CR-Mentor est dédié à la révolution de la revue de code à travers la technologie d'IA. Nous croyons que les outils intelligents de revue de code peuvent améliorer significativement l'efficacité du développement et la qualité du code.",
+    "why": "Pourquoi Nous Choisir",
+    "why_content": "Nous combinons la technologie LLM de pointe avec l'expérience pratique du développement pour fournir des solutions de revue de code intelligentes, efficaces et précises. Notre plateforme aide les équipes à maintenir une haute qualité de code tout en améliorant l'efficacité du développement.",
+    "team": "Notre Équipe",
+    "team_content": "Notre équipe est composée de développeurs expérimentés, de chercheurs en IA et d'experts produits passionnés par l'amélioration du processus de développement logiciel. Nous travaillons étroitement avec nos utilisateurs pour améliorer continuellement nos produits et services."
+  },
+  "Blog": {
+    "title": "Blog",
+    "description": "Dernières perspectives et discussions sur CR-Mentor et les pratiques de revue de code",
+    "side1": "Description",
+    "side2": "Articles Populaires",
+    "side3": "Mis à Jour Récemment"
+  }
+}
