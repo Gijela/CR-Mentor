@@ -1,15 +1,15 @@
 import './globals.css';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+// import { Plus_Jakarta_Sans } from 'next/font/google';
 import ThemeScript from '@/components/common/themeScript';
 
-const jakarta = Plus_Jakarta_Sans({
-	weight: ['500', '800'],
-	subsets: ['latin'],
-});
+// const jakarta = Plus_Jakarta_Sans({
+// 	weight: ['500', '800'],
+// 	subsets: ['latin'],
+// });
 
 export default function RootLayout({ children }) {
-	const fontClass = jakarta.className || ''  // 确保有默认值
-	
+	// const fontClass = jakarta.className || ''  // 确保有默认值
+	const fontClass = ''
 	return (
 		<html lang="en" className={fontClass}>
 			<body>

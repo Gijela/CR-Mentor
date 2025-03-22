@@ -22,8 +22,8 @@ const baseSiteConfig = {
   ],
   authors: [
     {
-      name: "hugLemon",
-      url: "https://huglemon.com",
+      name: "Gijela",
+      url: "https://github.com/gijela",
     },
   ],
   icons: {
@@ -51,8 +51,8 @@ export const SiteConfig = {
     ],
     authors: [
       {
-        name: "hugLemon",
-        url: "https://huglemon.com",
+        name: "Gijela",
+        url: "https://github.com/gijela",
       },
     ],
     icons: {
@@ -139,8 +139,8 @@ export const SiteConfig = {
     ],
     authors: [
       {
-        name: "hugLemon",
-        url: "https://huglemon.com",
+        name: "CR-Mentor",
+        url: "https://CR-Mentor.com",
       },
     ],
     icons: {
@@ -183,8 +183,8 @@ export const SiteConfig = {
     ],
     authors: [
       {
-        name: "hugLemon",
-        url: "https://huglemon.com",
+        name: "CR-Mentor",
+        url: "https://CR-Mentor.com",
       },
     ],
     icons: {
@@ -227,8 +227,8 @@ export const SiteConfig = {
     ],
     authors: [
       {
-        name: "hugLemon",
-        url: "https://huglemon.com",
+        name: "CR-Mentor",
+        url: "https://CR-Mentor.com",
       },
     ],
     icons: {
@@ -271,8 +271,8 @@ export const SiteConfig = {
     ],
     authors: [
       {
-        name: "hugLemon",
-        url: "https://huglemon.com",
+        name: "CR-Mentor",
+        url: "https://CR-Mentor.com",
       },
     ],
     icons: {
@@ -315,8 +315,8 @@ export const SiteConfig = {
     ],
     authors: [
       {
-        name: "hugLemon",
-        url: "https://huglemon.com",
+        name: "CR-Mentor",
+        url: "https://CR-Mentor.com",
       },
     ],
     icons: {

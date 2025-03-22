@@ -162,7 +162,7 @@ export const FAQList = {
     {
       question: "Proposez-vous des services de personnalisation ?",
       answer:
-        "Nous acceptons les services de développement personnalisé pour les pages de renvoi. Veuillez nous contacter par e-mail à karma.zhao@gmail.com ou sur Twitter @huglemon.",
+        "Nous acceptons les services de développement personnalisé pour les pages de renvoi. Veuillez nous contacter par e-mail à karma.zhao@gmail.com ou sur Twitter.",
     },
     {
       question: "Y a-t-il des restrictions à l'utilisation de ce modèle ?",
@@ -178,7 +178,7 @@ export const FAQList = {
       question:
         "Que faire si je rencontre des problèmes lors de l'utilisation du modèle ?",
       answer:
-        "Si vous rencontrez des problèmes lors de l'utilisation du modèle, n'hésitez pas à nous contacter via Twitter @huglemon.",
+        "Si vous rencontrez des problèmes lors de l'utilisation du modèle, n'hésitez pas à nous contacter via Twitter.",
     },
   ],
 
@@ -229,7 +229,7 @@ export const FAQList = {
     {
       question: "カスタマイズサービスを提供していますか？",
       answer:
-        "有料のランディングページのカスタム開発を受け付けています。メールkarma.zhao@gmail.comまたはTwitter @huglemonでお問い合わせください。",
+        "有料のランディングページのカスタム開発を受け付けています。メールkarma.zhao@gmail.comまたはTwitter",
     },
     {
       question: "このテンプレートを使用する際に制限はありますか？",
@@ -245,7 +245,7 @@ export const FAQList = {
       question:
         "テンプレートの使用中に問題に遭遇した場合、どうすればよいですか？",
       answer:
-        "テンプレートの使用中に問題が発生した場合は、Twitter @huglemonでお問い合わせください。",
+        "テンプレートの使用中に問題が発生した場合は、Twitter",
     },
     {
       question: "CR-Mentorとは何ですか？",

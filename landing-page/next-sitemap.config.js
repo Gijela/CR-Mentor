@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://landingpage.huglemon.com',
+  siteUrl: process.env.SITE_URL || 'https://cr-mentor.com',
   generateRobotsTxt: true,
   sitemapSize: 7000,
   exclude: ['/404', '/500'],

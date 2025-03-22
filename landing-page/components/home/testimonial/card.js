@@ -12,15 +12,15 @@ export default function TestimonialCard({
         langName == "ar" ? "items-end" : "items-start"
       } gap-2 transition-all duration-100 shadow-none hover:shadow-2xl bg-base-100`}
     >
-      {/* <div className='w-12 bg-base-content rounded-full'>
-				<Image
-					alt='avatar'
-					width={200}
-					height={200}
-					className='rounded-full'
-					src={testimonialItem.avatar}
-				></Image>
-			</div> */}
+      <div className="w-12 bg-base-content rounded-full">
+        <Image
+          alt="avatar"
+          width={200}
+          height={200}
+          className="rounded-full"
+          src={testimonialItem.avatar}
+        ></Image>
+      </div>
 
       <p
         className={`text-base-content/90 line-clamp-10 hover:line-clamp-none transition-none ${
