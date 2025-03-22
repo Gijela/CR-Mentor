@@ -6,19 +6,17 @@ import { IoLogoWhatsapp } from "react-icons/io";
 import { RiWechatChannelsLine } from "react-icons/ri";
 
 const baseSiteConfig = {
-  name: "inWind Landing Page Template",
+  name: "CR-Mentor",
   description:
-    "This is a free, open-source and powerful landing page template for saas project, it will help you to make your startup faster.",
-  url: "https://landingpage.inwind.cn",
-  ogImage: "https://landingpage.inwind.cn/logo.png",
+    "The AI code review tool that helps developers improve code quality and reduce review time.",
+  url: "https://cr-mentor.com",
+  ogImage: "https://cr-mentor.com/logo.gif",
   metadataBase: "/",
   keywords: [
-    "landing page template",
-    "landing page boilerplate",
-    "opensource landing page",
-    "next.js landing page",
-    "free landing page",
-    "awesome landing page",
+    "AI code review",
+    "code review",
+    "code review tool",
+    "chatgpt code review",
   ],
   authors: [
     {
@@ -27,19 +25,19 @@ const baseSiteConfig = {
     },
   ],
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: "https://cr-mentor.com/logo.gif",
+    shortcut: "https://cr-mentor.com/logo.gif",
+    apple: "https://cr-mentor.com/logo.gif",
   },
 };
 
 export const SiteConfig = {
   en: {
-    name: "inWind Landing Page Template",
+    name: "CR-Mentor",
     description:
       "This is a free, open-source and powerful landing page template for saas project, it will help you to make your startup faster.",
     url: "https://landingpage.inwind.cn",
-    ogImage: "https://landingpage.inwind.cn/logo.png",
+    ogImage: "https://cr-mentor.com/logo.gif",
     metadataBase: "/",
     keywords: [
       "landing page template",
@@ -56,22 +54,22 @@ export const SiteConfig = {
       },
     ],
     icons: {
-      icon: "/favicon.ico",
-      shortcut: "/logo.png",
-      apple: "/logo.png",
+      icon: "https://cr-mentor.com/logo.gif",
+      shortcut: "https://cr-mentor.com/logo.gif",
+      apple: "https://cr-mentor.com/logo.gif",
     },
     openGraph: {
       type: "website",
       locale: "en_US",
       url: baseSiteConfig.url,
-      title: "inWind Landing Page Template",
+      title: "CR-Mentor",
       description:
         "This is a free, open-source and powerful landing page template for saas project, it will help you to make your startup faster.",
-      siteName: "inWind Landing Page Template",
+      siteName: "CR-Mentor",
     },
     twitter: {
       card: "summary_large_image",
-      title: "inWind Landing Page Template",
+      title: "CR-Mentor",
       description:
         "This is a free, open-source and powerful landing page template for saas project, it will help you to make your startup faster.",
       images: [`${baseSiteConfig.url}/og.png`],
@@ -127,7 +125,7 @@ export const SiteConfig = {
     description:
       "Esta es una plantilla de página de destino gratuita, de código abierto y poderosa para proyectos SaaS que le ayudará a acelerar su puesta en marcha.",
     url: "https://landingpage.inwind.cn",
-    ogImage: "https://landingpage.inwind.cn/logo.png",
+    ogImage: "https://cr-mentor.com/logo.gif",
     metadataBase: "/",
     keywords: [
       "plantilla de página de destino",
@@ -144,9 +142,9 @@ export const SiteConfig = {
       },
     ],
     icons: {
-      icon: "/favicon.ico",
-      shortcut: "/logo.png",
-      apple: "/logo.png",
+      icon: "https://cr-mentor.com/logo.gif",
+      shortcut: "https://cr-mentor.com/logo.gif",
+      apple: "https://cr-mentor.com/logo.gif",
     },
     openGraph: {
       type: "website",
@@ -171,7 +169,7 @@ export const SiteConfig = {
     description:
       "Il s'agit d'un modèle de page de destination gratuit, open source et puissant pour le projet Saas, il vous aidera à accélérer votre démarrage.",
     url: "https://landingpage.inwind.cn",
-    ogImage: "https://landingpage.inwind.cn/logo.png",
+    ogImage: "https://cr-mentor.com/logo.gif",
     metadataBase: "/",
     keywords: [
       "modèle de page de destination",
@@ -188,9 +186,9 @@ export const SiteConfig = {
       },
     ],
     icons: {
-      icon: "/favicon.ico",
-      shortcut: "/logo.png",
-      apple: "/logo.png",
+      icon: "https://cr-mentor.com/logo.gif",
+      shortcut: "https://cr-mentor.com/logo.gif",
+      apple: "https://cr-mentor.com/logo.gif",
     },
     openGraph: {
       type: "website",
@@ -215,7 +213,7 @@ export const SiteConfig = {
     description:
       "これは、SaaS プロジェクト用の無料かつオープンソースの強力なランディング ページ テンプレートであり、スタートアップの迅速化に役立ちます。",
     url: "https://landingpage.inwind.cn",
-    ogImage: "https://landingpage.inwind.cn/logo.png",
+    ogImage: "https://cr-mentor.com/logo.gif",
     metadataBase: "/",
     keywords: [
       "ランディングページテンプレート",
@@ -232,9 +230,9 @@ export const SiteConfig = {
       },
     ],
     icons: {
-      icon: "/favicon.ico",
-      shortcut: "/logo.png",
-      apple: "/logo.png",
+      icon: "https://cr-mentor.com/logo.gif",
+      shortcut: "https://cr-mentor.com/logo.gif",
+      apple: "https://cr-mentor.com/logo.gif",
     },
     openGraph: {
       type: "website",
@@ -259,7 +257,7 @@ export const SiteConfig = {
     description:
       "Это бесплатный, открытый и мощный шаблон целевой страницы для saas-проекта, он поможет вам ускорить ваш стартап.",
     url: "https://landingpage.inwind.cn",
-    ogImage: "https://landingpage.inwind.cn/logo.png",
+    ogImage: "https://cr-mentor.com/logo.gif",
     metadataBase: "/",
     keywords: [
       "шаблон целевой страницы",
@@ -276,9 +274,9 @@ export const SiteConfig = {
       },
     ],
     icons: {
-      icon: "/favicon.ico",
-      shortcut: "/logo.png",
-      apple: "/logo.png",
+      icon: "https://cr-mentor.com/logo.gif",
+      shortcut: "https://cr-mentor.com/logo.gif",
+      apple: "https://cr-mentor.com/logo.gif",
     },
     openGraph: {
       type: "website",
@@ -303,7 +301,7 @@ export const SiteConfig = {
     description:
       "هذا هو قالب صفحة الهبوط القوي والمفتوح المصدر والمجاني لمشروع SaaS، وسوف يساعدك على جعل بدء التشغيل الخاص بك أسرع.",
     url: "https://landingpage.inwind.cn",
-    ogImage: "https://landingpage.inwind.cn/logo.png",
+    ogImage: "https://cr-mentor.com/logo.gif",
     metadataBase: "/",
     keywords: [
       "قالب صفحة الهبوط",
@@ -320,9 +318,9 @@ export const SiteConfig = {
       },
     ],
     icons: {
-      icon: "/favicon.ico",
-      shortcut: "/logo.png",
-      apple: "/logo.png",
+      icon: "https://cr-mentor.com/logo.gif",
+      shortcut: "https://cr-mentor.com/logo.gif",
+      apple: "https://cr-mentor.com/logo.gif",
     },
     openGraph: {
       type: "website",
