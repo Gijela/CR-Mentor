@@ -23,5 +23,6 @@
     "ChatGPT",
     "Knowledge Base"
   ],
-  "author": "Gijela"
+  "author": "Gijela",
+  "license": "Apache 2.0"
 }
