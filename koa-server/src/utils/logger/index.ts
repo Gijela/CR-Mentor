@@ -7,6 +7,7 @@ const logger = {
   error: (message: any, ...args: any[]) => {
     // eslint-disable-next-line no-console
     console.error(message, ...args)
+	console.error(message, ...args)
   },
 }
 
