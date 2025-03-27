@@ -15,19 +15,29 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { GitlabIcon } from "@/components/icons/gitlab";
 import { useAtom } from "jotai";
-import { ChevronRight, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Github,
+} from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 
 import { navOpenItemsAtom } from "@/atoms/nav";
+import { platformAtom } from "@/atoms/platform";
+import type { PlatformType } from "@/atoms/platform";
 import type { IMenu } from "@/schema/menu";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export function NavMain({ items }: { items: IMenu[] }) {
   const { t } = useTranslation("navigation");
   const location = useLocation();
   const [openItems, setOpenItems] = useAtom(navOpenItemsAtom);
+  const [platform, setPlatform] = useAtom(platformAtom);
 
   const { isPathActive, isParentActive } = useMemo(() => {
     const isPathActive = (path: string) => {
@@ -78,10 +88,39 @@ export function NavMain({ items }: { items: IMenu[] }) {
     setOpenItems(newOpenItems);
   };
 
+  const handlePlatformChange = (value: PlatformType) => {
+    if (value) {
+      setPlatform(value);
+    }
+  };
+
   return (
     <SidebarGroup>
       <div className="flex items-center justify-between">
-        <SidebarGroupLabel>Platform</SidebarGroupLabel>
+        <div className="flex items-center gap-2">
+          <ToggleGroup
+            type="single"
+            value={platform}
+            onValueChange={handlePlatformChange}
+            className="flex"
+          >
+            <ToggleGroupItem
+              value="github"
+              aria-label="Github"
+              className="h-7 w-7 p-0"
+            >
+              <Github className="size-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="gitlab"
+              aria-label="Gitlab"
+              className="h-7 w-7 p-0"
+            >
+              <GitlabIcon className="size-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+          {/* <SidebarGroupLabel>Platform</SidebarGroupLabel> */}
+        </div>
         <Button
           type="button"
           size="icon"

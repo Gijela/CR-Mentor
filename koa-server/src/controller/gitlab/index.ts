@@ -226,3 +226,74 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
     }
   }
 }
+
+// 获取项目列表
+export const getProjectList = async (ctx: Koa.Context) => {
+  const query = ctx.request.body as {
+    page?: number
+    per_page?: number
+    search?: string
+  }
+  const { page = 1, per_page = 20, search = "" } = query
+
+  try {
+    const projectsUrl = `${process.env.GITLAB_HOST}/api/v4/projects?membership=true&page=${page}&per_page=${per_page}&search=${search}`
+    const projectsResponse = await fetch(projectsUrl, {
+      headers: {
+        Authorization: `Bearer ${process.env.GITLAB_TOKEN}`,
+        Accept: "application/json",
+      },
+    })
+
+    if (!projectsResponse.ok) {
+      const errorData = await projectsResponse.json().catch(() => ({}))
+      ctx.status = projectsResponse.status
+      ctx.body = {
+        success: false,
+        message: "获取 GitLab 项目列表失败",
+        error: errorData.message || projectsResponse.statusText,
+        status: projectsResponse.status,
+      }
+      return
+    }
+
+    const data = await projectsResponse.json()
+
+    const formattedData = data.map((project: any) => ({
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      visibility: project.visibility,
+      star_count: project.star_count || 0,
+      forks_count: project.forks_count || 0,
+      last_activity_at: project.last_activity_at,
+      web_url: project.web_url,
+      namespace: project.namespace ? {
+        name: project.namespace.name,
+        path: project.namespace.path,
+        kind: project.namespace.kind
+      } : {
+        name: "",
+        path: "",
+        kind: ""
+      }
+    }))
+
+    ctx.status = 200
+    ctx.body = {
+      success: true,
+      data: formattedData,
+      total: formattedData.length,
+      page: parseInt(page.toString()),
+      per_page: parseInt(per_page.toString()),
+      message: "获取 GitLab 项目列表成功",
+    }
+  } catch (error) {
+    ctx.status = 500
+    ctx.body = {
+      success: false,
+      message: "获取 GitLab 项目列表失败",
+      error: error instanceof Error ? error.message : String(error),
+    }
+  }
+} 

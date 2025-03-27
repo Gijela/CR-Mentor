@@ -1,7 +1,7 @@
 import Router from "@koa/router"
 
 // import { createPullRequest, fetchRepoBranches, getDiffsDetails } from "../../controller/github"
-import { createMergeRequest, fetchRepoBranches, getDiffsDetails } from "../../controller/gitlab"
+import { createMergeRequest, fetchRepoBranches, getDiffsDetails, getProjectList } from "../../controller/gitlab"
 
 const router = new Router({ prefix: "/gitlab" })
 
@@ -13,6 +13,9 @@ router.post("/createMergeRequest", createMergeRequest)
 
 // 获取 diffs 详情
 router.post("/getDiffsDetails", getDiffsDetails)
+
+// 获取项目列表
+router.post("/getProjectList", getProjectList)
 
 // 测试路由
 router.get("/test", async (ctx) => {

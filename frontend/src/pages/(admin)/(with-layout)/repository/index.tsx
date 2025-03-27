@@ -52,7 +52,13 @@ export function Component() {
     setPage(1);
   };
 
-  const { data, isLoading, page, setPage, totalCount } = useRepositories({
+  const {
+    data = [],
+    isLoading,
+    page,
+    setPage,
+    totalCount,
+  } = useRepositories({
     githubName: user?.publicMetadata?.githubName as string,
     search,
     sort,
@@ -139,18 +145,20 @@ export function Component() {
                       )}
 
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <span
-                            className={cn("w-3 h-3 rounded-full", {
-                              "bg-yellow-400": repo.language === "JavaScript",
-                              "bg-green-500": repo.language === "Vue",
-                              "bg-gray-400": !["JavaScript", "Vue"].includes(
-                                repo.language
-                              ),
-                            })}
-                          />
-                          {repo.language}
-                        </div>
+                        {repo.language && (
+                          <div className="flex items-center gap-1">
+                            <span
+                              className={cn("w-3 h-3 rounded-full", {
+                                "bg-yellow-400": repo.language === "JavaScript",
+                                "bg-green-500": repo.language === "Vue",
+                                "bg-gray-400": !["JavaScript", "Vue"].includes(
+                                  repo.language
+                                ),
+                              })}
+                            />
+                            {repo.language}
+                          </div>
+                        )}
                         <div className="flex items-center gap-1">
                           <StarIcon className="h-4 w-4" />
                           {repo.stargazers_count}
