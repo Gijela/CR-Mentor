@@ -26,9 +26,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { RepositorySearch } from "@/components/repository-search";
+import { usePlatform } from "@/hooks/use-platform";
 
 interface DiffInfo {
-  githubName: string;
+  githubName?: string;
+  projectId?: string;
   compareUrl: string;
   headLabel: string;
   baseLabel: string;
@@ -45,7 +47,7 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
   const [sourceBranch, setSourceBranch] = useState("");
   const [targetBranch, setTargetBranch] = useState("");
   const [selectedKb, setSelectedKb] = useState("");
-  const [selectedRepo, setSelectedRepo] = useState("");
+  const [selectedRepo, setSelectedRepo] = useState(""); // github 存仓库名, gitlab 存项目 id
   const [branches, setBranches] = useState<{ value: string; label: string }[]>(
     []
   );
@@ -53,6 +55,7 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
   const [loading, setLoading] = useState(false);
   const { user } = useUser();
   const navigate = useNavigate();
+  const { isGithub, isGitlab } = usePlatform();
 
   const resetForm = () => {
     setTitle("");
@@ -64,7 +67,7 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
     setBranches([]);
   };
 
-  const handleCreatePR = async () => {
+  const handleCreateGithubPR = async () => {
     setLoading(true);
     try {
       const response = await fetch(
@@ -117,7 +120,57 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
     }
   };
 
-  const handleRepoBranch = async (repoName: string) => {
+  const handleCreateGitlabPR = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_HOST}/gitlab/createMergeRequest`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            projectId: selectedRepo,
+            title,
+            description,
+            source_branch: sourceBranch,
+            target_branch: targetBranch,
+            // kb_name: selectedKb,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const { success, msg, data } = await response.json();
+      if (!success) {
+        throw new Error(msg);
+      }
+      toast.success(msg);
+
+      // ToDo 保存必要的 diff 信息，跳转到code review 页面
+      // const diffInfo: DiffInfo = {
+      //   projectId: data?.project_id,
+      //   compareUrl: data?.head?.repo?.compare_url,
+      //   baseLabel: data?.target_branch, // 目标分支
+      //   headLabel: data?.source_branch, // 源分支
+      //   commentUrl: data?._links?.comments?.href,
+      //   reviewCommentsUrl: data?._links?.review_comments?.href,
+      //   repoUrl: data?.head?.repo?.html_url,
+      //   sourceBranch: data?.head?.ref,
+      // };
+
+      // navigate(`/agents?diffInfo=${JSON.stringify(diffInfo)}`);
+
+      // resetForm();
+      // setOpen(false);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      toast.error("fail to create mr");
+      setLoading(false);
+    }
+  };
+
+  const handleGithubRepoBranch = async (repoName: string) => {
     const response = await fetch(
       `${import.meta.env.VITE_SERVER_HOST}/github/fetchRepoBranches`,
       {
@@ -142,7 +195,32 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
     );
   };
 
-  // const handleGetDiffInfo = async (diffInfo: DiffInfo) => {
+  const handleGitlabRepoBranch = async (projectId: string) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_SERVER_HOST}/gitlab/fetchRepoBranches`,
+      {
+        method: "POST",
+        body: JSON.stringify({ projectId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const { success, data, msg } = await response.json();
+    if (!success) {
+      toast.error(msg);
+      console.error(msg);
+      return;
+    }
+    console.log("🚀 ~ handleGitlabRepoBranch ~ data:", data);
+    setBranches(
+      data.map((branch: { name: string }) => ({
+        value: branch.name,
+        label: branch.name,
+      }))
+    );
+  };
+  // const handleGetDiffInfo = async (dif fInfo: DiffInfo) => {
   //   const response = await fetch(`${import.meta.env.VITE_SERVER_HOST}/github/getDiffsDetails`, {
   //     method: "POST",
   //     body: JSON.stringify(diffInfo),
@@ -191,7 +269,11 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
               onChange={(value) => setSelectedRepo(value)}
               onSelect={(repo) => {
                 setSelectedRepo(repo.value);
-                handleRepoBranch(repo.value);
+                isGithub && handleGithubRepoBranch(repo.value);
+                if (isGitlab && repo.id) {
+                  setSelectedRepo(repo.id.toString());
+                  handleGitlabRepoBranch(repo.id.toString());
+                }
               }}
             />
           </div>
@@ -282,7 +364,18 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
           <DialogTrigger asChild>
             <Button variant="outline">{t("common.cancel", "Cancel")}</Button>
           </DialogTrigger>
-          <Button onClick={handleCreatePR} disabled={loading}>
+          <Button
+            onClick={() => {
+              if (isGithub) {
+                handleCreateGithubPR();
+              } else if (isGitlab) {
+                handleCreateGitlabPR();
+              } else {
+                toast.error("Unsupported platform");
+              }
+            }}
+            disabled={loading}
+          >
             {loading
               ? t("common.loading", "Loading...")
               : t("repository.pr.submit", "Submit")}

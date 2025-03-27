@@ -86,13 +86,19 @@ export interface CreateMRParams {
   description: string
   source_branch: string
   target_branch: string
-  kb_id?: string
-  kb_title?: string
+  kb_name?: string
 }
 
 // 创建 MR
 export const createMergeRequest = async (ctx: Koa.Context) => {
-  const { projectId, data }: { projectId: string, data: CreateMRParams } = ctx.request.body as { projectId: string, data: CreateMRParams }
+  const { projectId, title, description, source_branch, target_branch, kb_name } = ctx.request.body as {
+    projectId: string
+    title: string
+    description: string
+    source_branch: string
+    target_branch: string
+    kb_name?: string
+  }
 
   try {
     // 创建 merge request
@@ -105,10 +111,10 @@ export const createMergeRequest = async (ctx: Koa.Context) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: data.title,
-          description: data.description,
-          source_branch: data.source_branch,
-          target_branch: data.target_branch,
+          title,
+          description,
+          source_branch,
+          target_branch,
           // 可选参数
           // remove_source_branch: true,
           squash: true,
@@ -264,10 +270,10 @@ export const getProjectList = async (ctx: Koa.Context) => {
       name: project.name,
       description: project.description,
       visibility: project.visibility,
-      star_count: project.star_count || 0,
+      stargazers_count: project.star_count || 0,
       forks_count: project.forks_count || 0,
-      last_activity_at: project.last_activity_at,
-      web_url: project.web_url,
+      updated_at: project.last_activity_at,
+      html_url: project.web_url,
       namespace: project.namespace ? {
         name: project.namespace.name,
         path: project.namespace.path,

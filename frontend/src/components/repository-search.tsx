@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { createToken } from "@/lib/github";
+import { usePlatform } from "@/hooks/use-platform";
 
 interface Repository {
   name: string;
@@ -14,7 +15,7 @@ interface RepositorySearchProps {
   owner: string;
   value: string;
   onChange: (value: string) => void;
-  onSelect: (repo: { value: string; label: string }) => void;
+  onSelect: (repo: { value: string; label: string; id?: number }) => void;
   className?: string;
 }
 
@@ -34,8 +35,9 @@ export function RepositorySearch({
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const tokenRef = useRef<TokenData | null>(null);
+  const { isGithub, isGitlab } = usePlatform();
 
-  // 搜索仓库
+  // 搜索 Github 仓库
   const searchRepositories = async (query: string) => {
     setIsLoading(true);
     try {
@@ -89,11 +91,44 @@ export function RepositorySearch({
     }
   };
 
+  // 搜索 Gitlab 仓库
+  const searchGitlabRepositories = async (query: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SERVER_HOST}/gitlab/getProjectList`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            search: query,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to search repositories");
+      }
+
+      const { data } = await response.json();
+
+      setRepositories(data || []);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.error(error);
+      toast.error("Failed to search repositories");
+    }
+  };
+
   // 当搜索输入变化时触发搜索
   useEffect(() => {
     if (value) {
       const debounce = setTimeout(() => {
-        searchRepositories(value);
+        isGithub && searchRepositories(value);
+        isGitlab && searchGitlabRepositories(value);
       }, 300);
       return () => clearTimeout(debounce);
     } else {
@@ -101,7 +136,7 @@ export function RepositorySearch({
     }
   }, [value, owner]);
 
-  const filteredRepositories = repositories.map((repo) => ({
+  const filteredRepositories = (repositories || []).map((repo) => ({
     label: repo.name,
     value: repo.name,
   }));
@@ -132,12 +167,19 @@ export function RepositorySearch({
               No matching repositories found
             </div>
           ) : (
-            filteredRepositories.map((repo) => (
+            (filteredRepositories || []).map((repo) => (
               <div
                 key={repo.value}
                 className="cursor-pointer rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                 onClick={() => {
-                  onSelect(repo);
+                  if (isGitlab) {
+                    const repoItem = repositories.find(
+                      (item) => item.name === repo.value
+                    );
+                    onSelect({ ...repo, id: repoItem?.id || 0 });
+                  } else {
+                    onSelect(repo);
+                  }
                   setShowDropdown(false);
                 }}
               >

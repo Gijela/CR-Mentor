@@ -101,19 +101,8 @@ export function useRepositories(options: UseRepositoriesOptions) {
         }
 
         return {
-          items: responseData.data.map((repo: any) => ({
-            id: repo.id,
-            name: repo.name,
-            visibility: repo.visibility,
-            language: repo.language || "",
-            stargazers_count: repo.star_count,
-            forks_count: repo.forks_count,
-            updated_at: repo.last_activity_at,
-            description: repo.description,
-            license: repo.license,
-            html_url: repo.web_url,
-          })),
-          total_count: responseData.total || responseData.data.length,
+          items: responseData.data,
+          total_count: responseData.total,
         }
       } else {
         throw new Error("Unsupported platform")

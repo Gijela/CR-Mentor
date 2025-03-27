@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import EmptyCard from "../pullRequest/components/emptyCard";
 import { CreatePRDialog } from "./components/create-pr-dialog";
 import type { Repository } from "./interface";
+import { usePlatform } from "@/hooks/use-platform";
 
 export function Component() {
   const { t } = useTranslation();
@@ -46,6 +47,7 @@ export function Component() {
 
   const navigate = useNavigate();
   const { user } = useUser();
+  const { isGithub } = usePlatform();
 
   const handleSearch = (value: string) => {
     setSearch(value);
@@ -87,22 +89,24 @@ export function Component() {
             <SearchIcon className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           </div>
 
-          <Select value={sort} onValueChange={handleSortChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t("repository.sort_by", "Sort by")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="updated">
-                {t("repository.sort.updated", "Recently updated")}
-              </SelectItem>
-              <SelectItem value="stars">
-                {t("repository.sort.stars", "Stars")}
-              </SelectItem>
-              <SelectItem value="forks">
-                {t("repository.sort.forks", "Forks")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          {isGithub && (
+            <Select value={sort} onValueChange={handleSortChange}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder={t("repository.sort_by", "Sort by")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="updated">
+                  {t("repository.sort.updated", "Recently updated")}
+                </SelectItem>
+                <SelectItem value="stars">
+                  {t("repository.sort.stars", "Stars")}
+                </SelectItem>
+                <SelectItem value="forks">
+                  {t("repository.sort.forks", "Forks")}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         <CreatePRDialog
