@@ -1,6 +1,13 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 
+// 导入新增的工具
+import { codeSearchTool } from './codeSearch';
+import { analysisTool } from './analysis';
+import { learningTool } from './learning';
+import { feedbackTool } from './feedback';
+import { decisionTool } from './decision';
+
 interface GeocodingResponse {
   results: {
     latitude: number;
@@ -100,3 +107,23 @@ function getWeatherCondition(code: number): string {
   };
   return conditions[code] || 'Unknown';
 }
+
+/**
+ * 导出代码审查相关工具
+ */
+export {
+  codeSearchTool,
+  analysisTool,
+  learningTool,
+  feedbackTool,
+  decisionTool
+};
+
+// 导出所有工具的集合
+export const codeReviewTools = {
+  codeSearchTool,
+  analysisTool,
+  learningTool,
+  feedbackTool,
+  decisionTool
+};

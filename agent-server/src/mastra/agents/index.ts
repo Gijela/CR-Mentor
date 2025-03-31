@@ -2,6 +2,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { weatherTool } from '../tools';
 import { OpenAIChatModelId } from '@ai-sdk/openai/internal';
+import { codeReviewAgent } from './codeReviewAgent';
 
 const openaiProvider = createOpenAI({
   baseURL: process.env.OPENAI_BASE_URL,
@@ -32,3 +33,6 @@ export const weatherAgent = new Agent({
   model: openaiProvider(process.env.OPENAI_MODEL as OpenAIChatModelId),
   tools: { weatherTool },
 });
+
+// 导出代码审查Agent
+export { codeReviewAgent };
