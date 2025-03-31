@@ -5,8 +5,92 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { codeReviewAgent, tools } from './mastra/codeReviewAgent';
-import { mastra } from './mastra';
+import { codeReviewAgent } from './mastra/agents/codeReviewAgent.js';
+import { mastra } from './mastra/index.js';
+import { Express } from 'express';
+
+// 创建工具函数的适配器
+// 注意：这里我们直接使用一个简单的adapter模式来处理工具函数调用
+const toolHandlers = {
+  learning: async (params: any) => {
+    // 在这里实现学习工具的逻辑
+    console.log('调用learning工具:', params);
+
+    // 模拟处理
+    if (params.action === 'getDeveloperProfile') {
+      // 获取开发者资料
+      return {
+        success: true,
+        action: params.action,
+        developerId: params.developerId,
+        developerProfile: {
+          id: params.developerId,
+          name: `开发者${params.developerId}`,
+          level: 'intermediate',
+          languages: ['JavaScript', 'TypeScript', 'Python'],
+          strengths: ['前端开发', 'API设计'],
+          areas_to_improve: ['代码性能优化', '单元测试']
+        }
+      };
+    } else if (params.action === 'updateDeveloperProfile') {
+      // 更新开发者资料
+      return {
+        success: true,
+        action: params.action,
+        developerId: params.developerId,
+        developerProfile: {
+          id: params.developerId,
+          ...params.profile
+        }
+      };
+    } else if (params.action === 'suggestImprovements') {
+      // 提供改进建议
+      return {
+        success: true,
+        action: params.action,
+        developerId: params.developerId,
+        suggestions: [
+          {
+            area: '代码性能优化',
+            description: '学习如何优化循环和数据处理',
+            resources: ['https://example.com/performance-tips']
+          },
+          {
+            area: '单元测试',
+            description: '学习Jest和TDD方法',
+            resources: ['https://example.com/testing-tutorials']
+          }
+        ]
+      };
+    }
+
+    // 默认返回失败
+    return {
+      success: false,
+      action: params.action,
+      developerId: params.developerId,
+      message: '不支持的操作'
+    };
+  },
+
+  feedback: async (params: any) => {
+    // 在这里实现反馈工具的逻辑
+    console.log('调用feedback工具:', params);
+
+    if (params.action === 'submit') {
+      return {
+        success: true,
+        feedbackId: `feedback_${Date.now()}`,
+        message: '反馈提交成功'
+      };
+    }
+
+    return {
+      success: false,
+      message: '不支持的反馈操作'
+    };
+  }
+};
 
 // 会话存储
 const sessions: Record<string, any> = {};
@@ -16,7 +100,7 @@ const sessions: Record<string, any> = {};
  * @param port 服务端口
  * @returns Express应用实例
  */
-export function startCodeReviewService(port: number = 3000) {
+export function startCodeReviewService(port: number = 3000): Express {
   const app = express();
 
   // 中间件
@@ -35,7 +119,7 @@ export function startCodeReviewService(port: number = 3000) {
       const { developerId, metadata } = req.body;
 
       const conversation = await mastra.createConversation({
-        agent: codeReviewAgent,
+        agentId: 'Code Review Agent', // 使用固定的Agent名称
         metadata: {
           title: metadata?.title || '代码审查会话',
           developerId,
@@ -94,7 +178,7 @@ export function startCodeReviewService(port: number = 3000) {
     try {
       const { developerId } = req.params;
 
-      const result = await tools.learningTool.handler({
+      const result = await toolHandlers.learning({
         action: 'getDeveloperProfile',
         developerId
       });
@@ -125,7 +209,7 @@ export function startCodeReviewService(port: number = 3000) {
       const { developerId } = req.params;
       const profile = req.body;
 
-      const result = await tools.learningTool.handler({
+      const result = await toolHandlers.learning({
         action: 'updateDeveloperProfile',
         developerId,
         profile
@@ -156,7 +240,7 @@ export function startCodeReviewService(port: number = 3000) {
     try {
       const { developerId } = req.params;
 
-      const result = await tools.learningTool.handler({
+      const result = await toolHandlers.learning({
         action: 'suggestImprovements',
         developerId
       });
@@ -187,7 +271,7 @@ export function startCodeReviewService(port: number = 3000) {
       const { reviewId } = req.params;
       const { developerId, rating, comments, helpful } = req.body;
 
-      const result = await tools.feedbackTool.handler({
+      const result = await toolHandlers.feedback({
         action: 'submit',
         reviewId,
         developerId,

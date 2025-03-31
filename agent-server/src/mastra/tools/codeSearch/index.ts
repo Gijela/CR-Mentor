@@ -14,8 +14,8 @@ import {
 } from './types';
 
 // 导入 indexer-searcher
-import { CodeSearch } from 'indexer-searcher';
-import { SearchResult as IndexerSearchResult } from 'indexer-searcher/dist/core/types';
+import { CodeSearch } from '../../../../../indexer-searcher/dist/index';
+import { SearchResult as IndexerSearchResult } from '../../../../../indexer-searcher/dist/core/types';
 
 // 创建单例 CodeSearch 实例
 let codeSearchInstance: CodeSearch | null = null;
