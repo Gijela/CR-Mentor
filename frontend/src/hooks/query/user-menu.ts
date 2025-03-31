@@ -183,4 +183,9 @@ export const menus: IExtendedMenu[] = [
     icon: Bot,
     to: "/chatgpt",
   },
+  {
+    title: "test",
+    icon: Bot,
+    to: "/test",
+  },
 ] as const
