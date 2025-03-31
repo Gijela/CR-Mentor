@@ -1,0 +1,22 @@
+{
+  "name": "project-b",
+  "version": "1.0.0",
+  "description": "Code indexing and search tool",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "example": "ts-node src/example.ts",
+    "postinstall": "node scripts/download-symf.js"
+  },
+  "dependencies": {
+    "async-mutex": "^0.4.0",
+    "mkdirp": "^3.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.1"
+  }
+}
