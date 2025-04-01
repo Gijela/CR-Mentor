@@ -3,49 +3,65 @@
  * 收集代码审查的反馈并用于优化审查体验
  */
 
-import { Tool } from '@mastra/core/tool';
+import { createTool } from '@mastra/core/tools';
+import { z } from 'zod';
 import { storageTool } from '../storage';
 import { FeedbackParams, FeedbackResult } from './types';
+
+// --- Zod Schemas ---
+
+// 输入 Schema
+const FeedbackInputSchema = z.object({
+  action: z.enum(['submit', 'get', 'getStats']).describe('反馈操作类型'),
+  developerId: z.string().describe('开发者ID'),
+  reviewId: z.string().optional().describe('审查ID'),
+  rating: z.number().min(1).max(5).optional().describe('评分（1-5）'),
+  comments: z.string().optional().describe('评论和建议'),
+  helpful: z.boolean().optional().describe('是否有帮助')
+});
+
+// 输出 Schema
+const FeedbackDataSchema = z.object({
+  reviewId: z.string(),
+  developerId: z.string(),
+  rating: z.number().optional(),
+  comments: z.string().optional(),
+  helpful: z.boolean().optional(),
+  timestamp: z.string(),
+  _meta: z.object({
+    id: z.string(),
+    createdAt: z.string(),
+  }).optional()
+});
+
+const FeedbackStatsSchema = z.object({
+  total: z.number(),
+  avgRating: z.number(),
+  helpful: z.number(),
+});
+
+const FeedbackOutputSchema = z.object({
+  success: z.boolean(),
+  action: z.string(),
+  feedbackId: z.string().optional(),
+  feedbacks: z.array(FeedbackDataSchema).optional(),
+  stats: FeedbackStatsSchema.optional(),
+  // recentFeedbacks 似乎未在 handler 中返回，暂时注释掉或移除
+  // recentFeedbacks: z.array(FeedbackDataSchema).optional(),
+  message: z.string().optional(),
+});
 
 /**
  * 反馈工具
  * 收集代码审查的反馈并用于优化审查体验
  */
-export const feedbackTool = new Tool({
-  name: 'feedback',
+export const feedbackTool = createTool({
+  id: 'feedback',
   description: '收集代码审查的反馈并用于优化审查体验',
-  parameters: {
-    type: 'object',
-    properties: {
-      reviewId: {
-        type: 'string',
-        description: '审查ID'
-      },
-      developerId: {
-        type: 'string',
-        description: '开发者ID'
-      },
-      rating: {
-        type: 'number',
-        description: '评分（1-5）'
-      },
-      comments: {
-        type: 'string',
-        description: '评论和建议'
-      },
-      helpful: {
-        type: 'boolean',
-        description: '是否有帮助'
-      },
-      action: {
-        type: 'string',
-        description: '反馈操作类型',
-        enum: ['submit', 'get', 'getStats']
-      }
-    },
-    required: ['action', 'developerId']
-  },
-  handler: async ({ action, reviewId, developerId, rating, comments, helpful }: FeedbackParams): Promise<FeedbackResult> => {
+  inputSchema: FeedbackInputSchema,
+  outputSchema: FeedbackOutputSchema,
+  execute: async ({ context: inputContext }): Promise<FeedbackResult> => {
+    const { action, reviewId, developerId, rating, comments, helpful } = inputContext;
     try {
       switch (action) {
         case 'submit':
@@ -120,34 +136,40 @@ async function submitFeedback(
   };
 
   // 存储反馈
-  const saveResult = await storageTool.handler({
-    action: 'save',
-    type: 'feedback',
-    data: feedbackData
+  const saveResult = await (storageTool as { execute: Function }).execute({
+    context: {
+      action: 'save',
+      type: 'feedback',
+      data: feedbackData
+    }
   });
 
   if (saveResult.success) {
     // 更新关联的审查记录
     try {
-      const reviewResult = await storageTool.handler({
-        action: 'load',
-        type: 'review',
-        id: reviewId
+      const reviewResult = await (storageTool as { execute: Function }).execute({
+        context: {
+          action: 'load',
+          type: 'review',
+          id: reviewId
+        }
       });
 
       if (reviewResult.success && reviewResult.data) {
-        const reviewData = reviewResult.data;
+        const reviewData = reviewResult.data as any;
 
         // 将反馈ID添加到审查记录
         reviewData.feedbackIds = reviewData.feedbackIds || [];
-        reviewData.feedbackIds.push(saveResult.id);
+        reviewData.feedbackIds.push(saveResult.id as string);
 
         // 更新审查记录
-        await storageTool.handler({
-          action: 'save',
-          type: 'review',
-          id: reviewId,
-          data: reviewData
+        await (storageTool as { execute: Function }).execute({
+          context: {
+            action: 'save',
+            type: 'review',
+            id: reviewId,
+            data: reviewData
+          }
         });
       }
     } catch (err) {
@@ -156,14 +178,16 @@ async function submitFeedback(
 
     // 更新开发者记录
     try {
-      const developerResult = await storageTool.handler({
-        action: 'load',
-        type: 'developer',
-        id: developerId
+      const developerResult = await (storageTool as { execute: Function }).execute({
+        context: {
+          action: 'load',
+          type: 'developer',
+          id: developerId
+        }
       });
 
       if (developerResult.success && developerResult.data) {
-        const developerData = developerResult.data;
+        const developerData = developerResult.data as any;
 
         // 更新开发者的反馈统计
         developerData.feedbackStats = developerData.feedbackStats || {
@@ -176,20 +200,22 @@ async function submitFeedback(
 
         if (rating !== undefined) {
           // 更新平均评分
-          const totalRating = developerData.feedbackStats.avgRating * (developerData.feedbackStats.total - 1) + rating;
+          const totalRating = (developerData.feedbackStats.avgRating || 0) * (developerData.feedbackStats.total - 1) + rating;
           developerData.feedbackStats.avgRating = totalRating / developerData.feedbackStats.total;
         }
 
         if (helpful === true) {
-          developerData.feedbackStats.helpful++;
+          developerData.feedbackStats.helpful = (developerData.feedbackStats.helpful || 0) + 1;
         }
 
         // 保存更新后的开发者数据
-        await storageTool.handler({
-          action: 'save',
-          type: 'developer',
-          id: developerId,
-          data: developerData
+        await (storageTool as { execute: Function }).execute({
+          context: {
+            action: 'save',
+            type: 'developer',
+            id: developerId,
+            data: developerData
+          }
         });
       }
     } catch (err) {
@@ -216,9 +242,11 @@ async function submitFeedback(
  */
 async function getFeedback(reviewId: string): Promise<FeedbackResult> {
   // 获取所有反馈
-  const feedbackResult = await storageTool.handler({
-    action: 'load',
-    type: 'feedback'
+  const feedbackResult = await (storageTool as { execute: Function }).execute({
+    context: {
+      action: 'load',
+      type: 'feedback'
+    }
   });
 
   if (feedbackResult.success && feedbackResult.data) {
@@ -247,14 +275,16 @@ async function getFeedback(reviewId: string): Promise<FeedbackResult> {
  */
 async function getFeedbackStats(developerId: string): Promise<FeedbackResult> {
   // 获取开发者信息
-  const developerResult = await storageTool.handler({
-    action: 'load',
-    type: 'developer',
-    id: developerId
+  const developerResult = await (storageTool as { execute: Function }).execute({
+    context: {
+      action: 'load',
+      type: 'developer',
+      id: developerId
+    }
   });
 
   if (developerResult.success && developerResult.data) {
-    const developerData = developerResult.data;
+    const developerData = developerResult.data as any;
 
     // 获取反馈统计
     const stats = developerData.feedbackStats || {
@@ -264,9 +294,11 @@ async function getFeedbackStats(developerId: string): Promise<FeedbackResult> {
     };
 
     // 获取所有反馈
-    const feedbackResult = await storageTool.handler({
-      action: 'load',
-      type: 'feedback'
+    const feedbackResult = await (storageTool as { execute: Function }).execute({
+      context: {
+        action: 'load',
+        type: 'feedback'
+      }
     });
 
     // 获取此开发者的详细反馈

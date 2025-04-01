@@ -3,53 +3,70 @@
  * 用于分析开发者编码模式和提供个性化学习建议
  */
 
-import { Tool } from '@mastra/core/tool';
+import { createTool } from '@mastra/core/tools';
+import { z } from 'zod';
 import { storageTool } from '../storage';
 import { LearningParams, LearningResult, PatternAnalysisResult, ImprovementSuggestion } from './types';
 import { DeveloperInfo, LearningRecord } from '../storage/types';
+
+// --- Zod Schemas ---
+
+// 输入 Schema
+const LearningInputSchema = z.object({
+  action: z.enum(['analyzePatterns', 'getDeveloperProfile', 'suggestImprovements', 'updateDeveloperProfile']).describe('学习工具要执行的操作'),
+  developerId: z.string().describe('开发者ID'),
+  code: z.string().optional().describe('要分析的代码'),
+  language: z.string().optional().describe('编程语言'),
+  profile: z.record(z.any()).optional().describe('要更新的开发者资料')
+});
+
+// 输出 Schema
+const PatternAnalysisResultSchema = z.object({
+  detectedPatterns: z.array(z.object({
+    pattern: z.string(),
+    occurrences: z.number(),
+    examples: z.array(z.string())
+  })),
+  language: z.string(),
+});
+
+const ImprovementSuggestionSchema = z.object({
+  area: z.string(),
+  confidence: z.enum(['low', 'medium', 'high']),
+  description: z.string(),
+  resources: z.array(z.string()).optional()
+});
+
+const LearningOutputSchema = z.object({
+  success: z.boolean(),
+  action: z.string(),
+  developerId: z.string(),
+  patternAnalysis: PatternAnalysisResultSchema.optional(),
+  developerProfile: z.record(z.any()).optional(),
+  suggestions: z.array(ImprovementSuggestionSchema).optional(),
+  message: z.string().optional(),
+});
 
 /**
  * 学习工具
  * 分析开发者的编码模式并提供个性化学习建议
  */
-export const learningTool = new Tool({
-  name: 'learning',
+export const learningTool = createTool({
+  id: 'learning',
   description: '分析开发者编码模式并提供个性化学习建议',
-  parameters: {
-    type: 'object',
-    properties: {
-      developerId: {
-        type: 'string',
-        description: '开发者ID'
-      },
-      code: {
-        type: 'string',
-        description: '要分析的代码'
-      },
-      language: {
-        type: 'string',
-        description: '编程语言'
-      },
-      action: {
-        type: 'string',
-        description: '学习工具要执行的操作',
-        enum: ['analyzePatterns', 'getDeveloperProfile', 'suggestImprovements', 'updateDeveloperProfile']
-      },
-      profile: {
-        type: 'object',
-        description: '要更新的开发者资料'
-      }
-    },
-    required: ['action', 'developerId']
-  },
-  handler: async ({ action, developerId, code, language, profile }: LearningParams): Promise<LearningResult> => {
+  inputSchema: LearningInputSchema,
+  outputSchema: LearningOutputSchema,
+  execute: async ({ context: inputContext }): Promise<LearningResult> => {
+    const { action, developerId, code, language, profile } = inputContext;
     try {
       // 获取开发者信息
       let developerInfo: DeveloperInfo | null = null;
-      const developerResult = await storageTool.handler({
-        action: 'load',
-        type: 'developer',
-        id: developerId
+      const developerResult = await (storageTool as { execute: Function }).execute({
+        context: {
+          action: 'load',
+          type: 'developer',
+          id: developerId
+        }
       });
 
       if (developerResult.success && developerResult.data) {
@@ -150,10 +167,12 @@ async function analyzePatterns(
   };
 
   // 存储学习记录
-  await storageTool.handler({
-    action: 'save',
-    type: 'learning',
-    data: learningRecord
+  await (storageTool as { execute: Function }).execute({
+    context: {
+      action: 'save',
+      type: 'learning',
+      data: learningRecord
+    }
   });
 
   return {
@@ -171,7 +190,7 @@ async function analyzePatterns(
 async function detectPatterns(code: string, language: string): Promise<PatternAnalysisResult> {
   // 模拟模式分析逻辑
   const lines = code.split('\n');
-  const detectedPatterns = [];
+  const detectedPatterns: { pattern: string; occurrences: number; examples: string[]; }[] = [];
 
   // 检测模式 - 实际实现中应根据语言进行更精确的分析
 
@@ -214,7 +233,7 @@ async function detectPatterns(code: string, language: string): Promise<PatternAn
   const complexityPattern = {
     pattern: '代码复杂度',
     occurrences: 0,
-    examples: []
+    examples: [] as string[]
   };
 
   // 嵌套级别
@@ -278,9 +297,11 @@ async function detectPatterns(code: string, language: string): Promise<PatternAn
  */
 async function suggestImprovements(developerInfo: DeveloperInfo): Promise<LearningResult> {
   // 获取开发者的学习记录
-  const learningResult = await storageTool.handler({
-    action: 'load',
-    type: 'learning'
+  const learningResult = await (storageTool as { execute: Function }).execute({
+    context: {
+      action: 'load',
+      type: 'learning'
+    }
   });
 
   let learningRecords: LearningRecord[] = [];
@@ -388,11 +409,13 @@ async function suggestImprovements(developerInfo: DeveloperInfo): Promise<Learni
     }));
 
     // 保存更新后的学习记录
-    await storageTool.handler({
-      action: 'save',
-      type: 'learning',
-      id: latestRecord._meta?.id,
-      data: latestRecord
+    await (storageTool as { execute: Function }).execute({
+      context: {
+        action: 'save',
+        type: 'learning',
+        id: latestRecord._meta?.id,
+        data: latestRecord
+      }
     });
   }
 
@@ -435,11 +458,13 @@ async function updateDeveloperProfile(
   }
 
   // 保存开发者资料
-  const saveResult = await storageTool.handler({
-    action: 'save',
-    type: 'developer',
-    id: developerId,
-    data: developerProfile
+  const saveResult = await (storageTool as { execute: Function }).execute({
+    context: {
+      action: 'save',
+      type: 'developer',
+      id: developerId,
+      data: developerProfile
+    }
   });
 
   if (saveResult.success) {

@@ -3,22 +3,68 @@
  * 主入口文件
  */
 
+import { Mutex } from 'async-mutex'; // 添加显式命名导入以提示构建工具
+
 // 导出mastra库
 export { mastra } from './mastra';
 
 // 导出代码审查Agent和工具
 export { codeReviewAgent, tools } from './mastra/codeReviewAgent';
 
-// 导出代码审查服务
-export { startCodeReviewService } from './server';
-
-// 导出常用工具类型
-export * from './mastra/tools/codeSearch/types';
-export * from './mastra/tools/analysis/types';
-export * from './mastra/tools/learning/types';
-export * from './mastra/tools/feedback/types';
-export * from './mastra/tools/decision/types';
-export * from './mastra/tools/storage/types';
+// 导出常用工具类型 - 显式导出以避免命名冲突
+export type {
+  CodeSearchParams,
+  SearchOptions,
+  CodeSearchResult,
+  SearchResult,
+  ContextAnalysisResult
+} from './mastra/tools/codeSearch/types';
+export type {
+  CodeAnalysisParams,
+  CodeAnalysisResult,
+  CodeIssue,
+  CodeSuggestion,
+  CodeMetrics,
+  CodeUnderstanding
+} from './mastra/tools/analysis/types';
+export type {
+  LearningParams,
+  LearningResult,
+  PatternAnalysisResult,
+  ImprovementSuggestion
+} from './mastra/tools/learning/types';
+export type {
+  FeedbackParams,
+  FeedbackResult,
+  FeedbackData,
+  FeedbackStats,
+  DeveloperProfile as FeedbackDeveloperProfile, // 重命名
+  CodebaseInfo,
+  FeedbackItem,
+  BestPracticeItem
+} from './mastra/tools/feedback/types';
+export type {
+  DecisionParams,
+  DecisionResult,
+  DecisionData,
+  ReviewDecision,
+  ProjectInfo,
+  ReviewHistory as DecisionReviewHistory, // 重命名
+  ToolAction,
+  ReviewStrategy,
+  Decision
+} from './mastra/tools/decision/types';
+export type {
+  StorageAction,
+  StorageDataType,
+  MetaData,
+  StorageParams,
+  StorageResult,
+  ReviewHistory as StorageReviewHistory, // 重命名
+  LearningRecord,
+  DeveloperInfo as StorageDeveloperInfo, // 重命名
+  KnowledgeEntry
+} from './mastra/tools/storage/types';
 
 /**
  * 创建代码审查会话

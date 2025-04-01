@@ -3,7 +3,8 @@
  * 提供代码理解、问题识别和建议生成能力
  */
 
-import { Tool } from '@mastra/core/tool';
+import { createTool } from '@mastra/core/tools';
+import { z } from 'zod';
 import {
   CodeAnalysisParams,
   CodeAnalysisResult,
@@ -14,48 +15,82 @@ import {
 } from './types';
 import { SearchResult } from '../codeSearch/types';
 
+// --- Zod Schemas ---
+
+// 输入 Schema
+const CodeAnalysisInputSchema = z.object({
+  code: z.string().describe('要分析的代码内容'),
+  context: z.object({
+    files: z.array(z.string()).optional().describe('相关文件列表'),
+    directories: z.array(z.string()).optional().describe('相关目录列表'),
+    // 假设 CodeSearchResult 的 schema 定义在 codeSearch/types.ts 对应的 Zod 定义中
+    // 这里暂时用 z.any()，理想情况下应导入并使用 CodeSearchOutputSchema
+    searchResults: z.any().optional().describe('代码搜索结果'),
+    metadata: z.any().optional().describe('其他元数据')
+  }).optional().default({}).describe('分析上下文'),
+});
+
+// 输出 Schema
+const CodeIssueSchema = z.object({
+  type: z.enum(['error', 'warning', 'info']),
+  message: z.string(),
+  location: z.object({
+    file: z.string().optional(),
+    line: z.number().optional(),
+    column: z.number().optional(),
+  }).optional(),
+  severity: z.number(), // 1-10
+  category: z.string(),
+  suggestion: z.string().optional(),
+});
+
+const CodeSuggestionSchema = z.object({
+  type: z.enum(['improvement', 'refactor', 'best_practice', 'pattern']),
+  message: z.string(),
+  code: z.string().optional(),
+  location: z.object({
+    file: z.string().optional(),
+    line: z.number().optional(),
+    column: z.number().optional(),
+  }).optional(),
+  priority: z.number(), // 1-10
+  reasoning: z.string(),
+});
+
+const CodeMetricsSchema = z.object({
+  complexity: z.number(),
+  maintainability: z.number(),
+  testability: z.number(),
+  security: z.number(),
+  performance: z.number(),
+});
+
+const CodeUnderstandingSchema = z.object({
+  purpose: z.string(),
+  components: z.array(z.string()),
+  patterns: z.array(z.string()),
+  dependencies: z.array(z.string()),
+  dataFlow: z.array(z.string()),
+});
+
+const CodeAnalysisOutputSchema = z.object({
+  understanding: CodeUnderstandingSchema,
+  issues: z.array(CodeIssueSchema),
+  suggestions: z.array(CodeSuggestionSchema),
+  metrics: CodeMetricsSchema,
+});
+
 /**
  * 代码分析工具
  * 分析代码并提供改进建议
  */
-export const analysisTool = new Tool({
-  name: 'codeAnalysis',
+export const analysisTool = createTool({
+  id: 'codeAnalysis',
   description: '分析代码并提供改进建议，包括代码理解、问题识别和建议生成',
-  parameters: {
-    type: 'object',
-    properties: {
-      code: {
-        type: 'string',
-        description: '要分析的代码内容',
-      },
-      context: {
-        type: 'object',
-        description: '分析上下文',
-        properties: {
-          files: {
-            type: 'array',
-            items: { type: 'string' },
-            description: '相关文件列表'
-          },
-          directories: {
-            type: 'array',
-            items: { type: 'string' },
-            description: '相关目录列表'
-          },
-          searchResults: {
-            type: 'object',
-            description: '代码搜索结果'
-          },
-          metadata: {
-            type: 'object',
-            description: '其他元数据'
-          }
-        }
-      }
-    },
-    required: ['code']
-  },
-  handler: async ({ code, context = {} }: CodeAnalysisParams) => {
+  inputSchema: CodeAnalysisInputSchema,
+  outputSchema: CodeAnalysisOutputSchema,
+  execute: async ({ context: inputContext }) => {
+    const { code, context = {} } = inputContext; // 从 inputContext 解构
     try {
       console.log('执行代码分析');
 

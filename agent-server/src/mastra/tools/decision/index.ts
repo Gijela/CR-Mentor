@@ -3,50 +3,69 @@
  * 综合各工具的结果，帮助制定代码审查决策
  */
 
-import { Tool } from '@mastra/core/tool';
+import { createTool } from '@mastra/core/tools';
+import { z } from 'zod';
 import { storageTool } from '../storage';
 import { DecisionParams, DecisionResult, DecisionData, ReviewDecision } from './types';
 import { ReviewHistory } from '../storage/types';
+
+// --- Zod Schemas ---
+
+// 输入 Schema
+const DecisionInputSchema = z.object({
+  action: z.enum(['makeDecision', 'getDecision', 'saveReview']).describe('决策操作类型'),
+  reviewId: z.string().optional().describe('审查ID'),
+  developerId: z.string().optional().describe('开发者ID'),
+  codeAnalysis: z.any().optional().describe('代码分析结果'), // 理想情况下应导入并使用 CodeAnalysisOutputSchema
+  searchResults: z.array(z.any()).optional().describe('代码搜索结果'), // 理想情况下应导入并使用 SearchResultSchema
+  reviewData: z.any().optional().describe('代码审查数据'), // 需要更明确的类型
+});
+
+// 输出 Schema
+const ReviewDecisionEnum = z.enum([
+  'approved',
+  'approved_with_suggestions',
+  'needs_minor_changes',
+  'needs_major_changes'
+]);
+
+const DecisionDataSchema = z.object({
+  reviewId: z.string(),
+  timestamp: z.string(),
+  developerId: z.string().optional(),
+  decision: ReviewDecisionEnum,
+  recommendedAction: z.string(),
+  reasoning: z.string(),
+  metrics: z.object({
+    issueCount: z.number(),
+    suggestionCount: z.number(),
+    totalSeverity: z.number(),
+  }).passthrough(), // 允许其他指标
+  _meta: z.object({
+    id: z.string(),
+    createdAt: z.string(),
+  }).optional()
+});
+
+const DecisionOutputSchema = z.object({
+  success: z.boolean(),
+  action: z.string(),
+  reviewId: z.string().optional(),
+  decision: DecisionDataSchema.optional(),
+  message: z.string().optional(),
+});
 
 /**
  * 决策工具
  * 综合各工具的结果，帮助制定代码审查决策
  */
-export const decisionTool = new Tool({
-  name: 'decision',
+export const decisionTool = createTool({
+  id: 'decision', // 使用 id
   description: '综合各工具的结果，帮助制定代码审查决策',
-  parameters: {
-    type: 'object',
-    properties: {
-      reviewId: {
-        type: 'string',
-        description: '审查ID'
-      },
-      developerId: {
-        type: 'string',
-        description: '开发者ID'
-      },
-      codeAnalysis: {
-        type: 'object',
-        description: '代码分析结果'
-      },
-      searchResults: {
-        type: 'array',
-        description: '代码搜索结果'
-      },
-      action: {
-        type: 'string',
-        description: '决策操作类型',
-        enum: ['makeDecision', 'getDecision', 'saveReview']
-      },
-      reviewData: {
-        type: 'object',
-        description: '代码审查数据'
-      }
-    },
-    required: ['action']
-  },
-  handler: async ({ action, reviewId, developerId, codeAnalysis, searchResults, reviewData }: DecisionParams): Promise<DecisionResult> => {
+  inputSchema: DecisionInputSchema,
+  outputSchema: DecisionOutputSchema,
+  execute: async ({ context: inputContext }): Promise<DecisionResult> => { // 更新签名
+    const { action, reviewId, developerId, codeAnalysis, searchResults, reviewData } = inputContext; // 从 context 解构
     try {
       switch (action) {
         case 'makeDecision':
@@ -143,10 +162,12 @@ async function makeDecision(
   // 获取开发者信息（如果有）
   let developerInfo = null;
   if (developerId) {
-    const developerResult = await storageTool.handler({
-      action: 'load',
-      type: 'developer',
-      id: developerId
+    const developerResult = await (storageTool as { execute: Function }).execute({ // 更具体的类型断言
+      context: {
+        action: 'load',
+        type: 'developer',
+        id: developerId
+      }
     });
 
     if (developerResult.success && developerResult.data) {
@@ -171,11 +192,13 @@ async function makeDecision(
   };
 
   // 保存决策
-  const saveResult = await storageTool.handler({
-    action: 'save',
-    type: 'decision',
-    id: decisionData.reviewId,
-    data: decisionData
+  const saveResult = await (storageTool as { execute: Function }).execute({ // 更具体的类型断言
+    context: {
+      action: 'save',
+      type: 'decision',
+      id: decisionData.reviewId,
+      data: decisionData
+    }
   });
 
   if (saveResult.success) {
@@ -232,10 +255,12 @@ function generateReasoning(issues: any[], suggestions: any[], searchResults?: an
  */
 async function getDecision(reviewId: string): Promise<DecisionResult> {
   // 获取决策
-  const decisionResult = await storageTool.handler({
-    action: 'load',
-    type: 'decision',
-    id: reviewId
+  const decisionResult = await (storageTool as { execute: Function }).execute({ // 更具体的类型断言
+    context: {
+      action: 'load',
+      type: 'decision',
+      id: reviewId
+    }
   });
 
   if (decisionResult.success && decisionResult.data) {
@@ -260,8 +285,7 @@ async function getDecision(reviewId: string): Promise<DecisionResult> {
  * 保存审查
  */
 async function saveReview(reviewData: any, reviewId?: string): Promise<DecisionResult> {
-  // 生成ID（如果没有提供）
-  const id = reviewId || `review-${Date.now()}`;
+  const idToSave = reviewId || reviewData.id || `review-${Date.now()}`;
 
   // 准备审查历史数据
   const reviewHistory: ReviewHistory = {
@@ -278,36 +302,42 @@ async function saveReview(reviewData: any, reviewId?: string): Promise<DecisionR
   };
 
   // 保存审查历史
-  const saveResult = await storageTool.handler({
-    action: 'save',
-    type: 'review',
-    id,
-    data: reviewHistory
+  const saveResult = await (storageTool as { execute: Function }).execute({ // 更具体的类型断言
+    context: {
+      action: 'save',
+      type: 'review',
+      id: idToSave,
+      data: reviewHistory
+    }
   });
 
   if (saveResult.success) {
     // 如果有开发者ID，更新开发者的审查历史
     if (reviewData.developerId) {
       try {
-        const developerResult = await storageTool.handler({
-          action: 'load',
-          type: 'developer',
-          id: reviewData.developerId
+        const developerResult = await (storageTool as { execute: Function }).execute({ // 更具体的类型断言
+          context: {
+            action: 'load',
+            type: 'developer',
+            id: reviewData.developerId
+          }
         });
 
         if (developerResult.success && developerResult.data) {
-          const developerData = developerResult.data;
+          const developerData = developerResult.data as any;
 
           // 更新开发者的审查历史
           developerData.reviewHistory = developerData.reviewHistory || [];
-          developerData.reviewHistory.push(id);
+          developerData.reviewHistory.push(idToSave);
 
           // 保存更新后的开发者数据
-          await storageTool.handler({
-            action: 'save',
-            type: 'developer',
-            id: reviewData.developerId,
-            data: developerData
+          await (storageTool as { execute: Function }).execute({ // 更具体的类型断言
+            context: {
+              action: 'save',
+              type: 'developer',
+              id: reviewData.developerId,
+              data: developerData
+            }
           });
         }
       } catch (err) {
@@ -318,7 +348,7 @@ async function saveReview(reviewData: any, reviewId?: string): Promise<DecisionR
     return {
       success: true,
       action: 'saveReview',
-      reviewId: id,
+      reviewId: idToSave,
       message: '审查已保存'
     };
   } else {
