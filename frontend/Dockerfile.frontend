@@ -1,7 +1,7 @@
-FROM node:22-alpine
+FROM node:21-alpine
 
 # 设置工作目录
-WORKDIR /app/cr-mentor/frontend
+WORKDIR /app
 
 # 复制 package.json
 COPY package.json ./

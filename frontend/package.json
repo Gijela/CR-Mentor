@@ -9,9 +9,9 @@
     "url": "git+https://github.com/Gijela/CR-Mentor.git"
   },
   "scripts": {
-    "build": "tsc && vite build",
     "dev": "vite dev",
-    "start": "vite preview"
+    "build": "vite build",
+    "start": "vite preview --port 4423 --host"
   },
   "dependencies": {
     "@ant-design/pro-chat": "^2.4.4",
