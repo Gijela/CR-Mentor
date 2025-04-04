@@ -12,8 +12,8 @@ RUN apk add --no-cache \
 # 设置工作目录
 WORKDIR /app
 
-# 复制package.json和pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml ./
+# 复制package.json
+COPY package.json ./
 
 # 安装pnpm和项目依赖
 RUN npm install -g pnpm
