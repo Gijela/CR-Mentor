@@ -5,7 +5,7 @@ const { t } = useTranslation()
 
 declare global {
   export const APP_DEV_CWD: string
-  export const GIT_COMMIT_SHA: string
+  // export const GIT_COMMIT_SHA: string
   export const DEBUG: boolean
   export const dependencies: Record<string, string>
   export const devDependencies: Record<string, string>

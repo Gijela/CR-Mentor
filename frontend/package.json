@@ -10,21 +10,8 @@
   },
   "scripts": {
     "build": "tsc && vite build",
-    "build-storybook": "storybook build",
-    "commit": "commit",
-    "commitlint": "commitlint --edit",
-    "coverage": "vitest run --coverage",
     "dev": "vite dev",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
-    "prepare": "test -f .env || cp .env.example .env",
-    "preview": "vite preview",
-    "start": "tsc && vite build && vite preview",
-    "storybook": "storybook dev -p 6006",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
-    "test:watch": "vitest watch"
+    "start": "vite preview"
   },
   "dependencies": {
     "@ant-design/pro-chat": "^2.4.4",

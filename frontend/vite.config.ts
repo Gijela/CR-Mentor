@@ -6,7 +6,7 @@ import { defineConfig, loadEnv } from "vite"
 import { createHtmlPlugin } from "vite-plugin-html"
 import tsconfigPaths from "vite-tsconfig-paths"
 
-import { getGitHash } from "./scripts/lib.ts"
+// import { getGitHash } from "./scripts/lib.ts"
 
 const pkg = JSON.parse(readFileSync("package.json", "utf8"))
 // const readme = readFileSync("../../README.md", "utf8")
@@ -38,7 +38,7 @@ export default defineConfig(({ mode }) => {
       APP_VERSION: JSON.stringify(pkg.version),
       APP_NAME: JSON.stringify(pkg.name),
       APP_DEV_CWD: JSON.stringify(process.cwd()),
-      GIT_COMMIT_SHA: JSON.stringify(getGitHash()),
+      // GIT_COMMIT_SHA: JSON.stringify(getGitHash()),
       dependencies: JSON.stringify(pkg.dependencies),
       devDependencies: JSON.stringify(pkg.devDependencies),
       // README: JSON.stringify(readme),
