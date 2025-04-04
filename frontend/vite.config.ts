@@ -62,5 +62,8 @@ export default defineConfig(({ mode }) => {
         // },
       },
     },
+    preview: {
+      allowedHosts: ['*.zeabur.app', 'cr-mentor.com'],
+    },
   }
 })

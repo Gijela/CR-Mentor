@@ -1,0 +1,12 @@
+/agent-server/node_modules
+/agent-server/dist
+/agent-server/pnpm-lock.yaml
+
+/koa-server/node_modules
+/koa-server/dist
+/koa-server/pnpm-lock.yaml
+
+/frontend/node_modules
+/frontend/dist
+/frontend/pnpm-lock.yaml
+
