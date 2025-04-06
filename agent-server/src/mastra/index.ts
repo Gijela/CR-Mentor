@@ -2,16 +2,10 @@
 import { Mastra } from '@mastra/core/mastra';
 import { createLogger } from '@mastra/core/logger';
 
-import { weatherAgent, githubTokenAgent } from './example-agents';
-import { githubAgent, codeReviewAgent } from './github-agents';
+import { agents } from './agents';
 
 export const mastra = new Mastra({
-  agents: {
-    weatherAgent,
-    githubTokenAgent,
-    githubAgent,
-    codeReviewAgent,
-  },
+  agents,
   logger: createLogger({
     name: 'Mastra',
     level: 'info',
