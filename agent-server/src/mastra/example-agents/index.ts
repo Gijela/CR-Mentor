@@ -1,19 +1,19 @@
 import { Agent } from '@mastra/core/agent';
 
-import { openaiProxyModel } from '../provider/openai-proxy';
+import { deepSeekModel } from '../model-provider/deepseek';
 import { weatherTool, getGithubTokenTool } from './tools';
 import { weatherInstructions, githubTokenInstructions } from './instructions';
 
 export const weatherAgent = new Agent({
   name: 'Weather Agent',
-  model: openaiProxyModel,
+  model: deepSeekModel,
   instructions: weatherInstructions,
   tools: { weatherTool },
 });
 
 export const githubTokenAgent = new Agent({
   name: 'GitHub Token Agent',
-  model: openaiProxyModel,
+  model: deepSeekModel,
   instructions: githubTokenInstructions,
   tools: { getGithubTokenTool },
 });
