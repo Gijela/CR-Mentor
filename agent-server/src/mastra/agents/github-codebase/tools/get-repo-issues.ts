@@ -1,4 +1,4 @@
-import { GithubAPI } from "../codebase-agent/lib/github";
+import { GithubAPI } from "../../../lib/github";
 import { Tool } from "@mastra/core/tools";
 import { z } from "zod";
 
