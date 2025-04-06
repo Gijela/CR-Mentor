@@ -14,7 +14,10 @@
   "dependencies": {
     "@ai-sdk/openai-compatible": "^0.2.6",
     "@mastra/core": "^0.7.0",
+    "@mastra/memory": "^0.2.6",
+    "@mastra/pg": "^0.2.6",
     "mastra": "^0.4.4",
+    "octokit": "^4.1.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {
