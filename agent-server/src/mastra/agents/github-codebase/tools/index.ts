@@ -1,17 +1,27 @@
 // 获取文件内容
-export { getFileContent } from "./get-file-content";
+import { getFileContent } from "./get-file-content";
 
 // 获取所有文件路径
-export { getFilePaths } from "./get-file-paths";
+import { getFilePaths } from "./get-file-paths";
 
 // 获取仓库所有提交
-export { getRepositoryCommits } from "./get-repo-commits";
+import { getRepositoryCommits } from "./get-repo-commits";
 
 // 获取仓库所有 Issues
-export { getRepositoryIssues } from "./get-repo-issues";
+import { getRepositoryIssues } from "./get-repo-issues";
 
 // 获取仓库所有 Pull Requests
-export { getRepositoryPullRequests } from "./get-repo-pull-requests";
+import { getRepositoryPullRequests } from "./get-repo-pull-requests";
 
 // 获取仓库总体 Stars
-export { getRepositoryStars } from "./get-repo-stars";
+import { getRepositoryStars } from "./get-repo-stars";
+
+// 封装所有工具为单个对象统一导出
+export const codebaseTools = { 
+  getFileContent, 
+  getFilePaths, 
+  getRepositoryCommits, 
+  getRepositoryIssues, 
+  getRepositoryPullRequests, 
+  getRepositoryStars 
+};

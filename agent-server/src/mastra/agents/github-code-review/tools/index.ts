@@ -1,21 +1,29 @@
 // Placeholder for exporting tools
 
 // Phase 1 Tool
-export { getPullRequestDetails } from './get-pull-request-details';
+import { getPullRequestDetails } from './get-pull-request-details';
 
 // Phase 2 Tools
-export { checkLogicConsistency } from './check-logic-consistency';
-export { integrateKnowledgeBase } from './integrate-knowledge-base';
-export { analyzeChangeImpact } from './analyze-change-impact';
-export { assessTestRelevance } from './assess-test-relevance';
-export { checkArchitectureAdherence } from './check-architecture-adherence';
-export { checkProjectPractices } from './check-project-practices';
-export { recommendReviewFocus } from './recommend-review-focus';
+import { checkLogicConsistency } from './check-logic-consistency';
+import { integrateKnowledgeBase } from './integrate-knowledge-base';
+import { analyzeChangeImpact } from './analyze-change-impact';
+import { assessTestRelevance } from './assess-test-relevance';
+import { checkArchitectureAdherence } from './check-architecture-adherence';
+import { checkProjectPractices } from './check-project-practices';
+import { recommendReviewFocus } from './recommend-review-focus';
 
 // Phase 5 Tool
-export { postPrComment } from './post-pr-comment';
+import { postPrComment } from './post-pr-comment';
 
-// Phase 2 Tools (Placeholders)
-// export { checkLogicConsistency } from './check-logic-consistency';
-// export { integrateKnowledgeBase } from './integrate-knowledge-base';
-// ... etc 
+// 封装所有工具为单个对象统一导出
+export const codeReviewTools = {
+  getPullRequestDetails,
+  checkLogicConsistency,
+  integrateKnowledgeBase,
+  analyzeChangeImpact,
+  assessTestRelevance,
+  checkArchitectureAdherence,
+  checkProjectPractices,
+  recommendReviewFocus,
+  postPrComment,
+};
