@@ -7,10 +7,14 @@ import { githubCodebaseAgent } from './github-codebase';
 // GitHub Code Review Agent
 import { codeReviewAgent } from './github-code-review';
 
+// GitHub Diff Review Agent
+import { githubDiffReviewAgent } from './github-diff-review';
+
 // 注册到 mastra 的 agents
 export const agents = {
   weatherAgent,
   githubTokenAgent,
   githubCodebaseAgent,
   codeReviewAgent,
+  githubDiffReviewAgent,
 };

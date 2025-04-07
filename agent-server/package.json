@@ -18,6 +18,7 @@
     "@mastra/pg": "^0.2.6",
     "mastra": "^0.4.4",
     "octokit": "^4.1.2",
+    "what-the-diff": "^0.6.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {

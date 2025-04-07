@@ -1,29 +1,30 @@
 // Placeholder for exporting tools
 
-// Phase 1 Tool
+// Tool for getting PR details
 import { getPullRequestDetails } from './get-pull-request-details';
 
-// Phase 2 Tools
-import { checkLogicConsistency } from './check-logic-consistency';
-import { integrateKnowledgeBase } from './integrate-knowledge-base';
-import { analyzeChangeImpact } from './analyze-change-impact';
-import { assessTestRelevance } from './assess-test-relevance';
-import { checkArchitectureAdherence } from './check-architecture-adherence';
-import { checkProjectPractices } from './check-project-practices';
+// Tool for checking PR size (Optional Stage 0)
+import { checkPRSize } from './checkPRSize';
+
+// Tool to delegate file review to the sub-agent
+import { performComprehensiveFileReview } from './performComprehensiveFileReview';
+
+// Tool for recommending review focus based on aggregated findings
 import { recommendReviewFocus } from './recommend-review-focus';
 
-// Phase 5 Tool
+// Tool for posting the final comment
 import { postPrComment } from './post-pr-comment';
 
-// 封装所有工具为单个对象统一导出
+// Note: Removed old analysis tools like checkLogicConsistency, analyzeChangeImpact, etc.
+// Their functionality is now intended to be handled within the github-diff-review agent.
+
+// Combine all tools for the main code review agent (orchestrator)
 export const codeReviewTools = {
+  // Core workflow tools
   getPullRequestDetails,
-  checkLogicConsistency,
-  integrateKnowledgeBase,
-  analyzeChangeImpact,
-  assessTestRelevance,
-  checkArchitectureAdherence,
-  checkProjectPractices,
+  performComprehensiveFileReview,
   recommendReviewFocus,
   postPrComment,
+  // Optional tools
+  checkPRSize,
 };
