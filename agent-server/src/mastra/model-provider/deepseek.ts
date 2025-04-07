@@ -4,7 +4,7 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
  * deepseek provider
  */
 export const deepSeekProvider = createOpenAICompatible({
-  baseURL: process.env.DEEPSEEK_BASE_URL!,
+  baseURL: 'https://api.deepseek.com/v1',
   name: 'deepseek',
   headers: {
     Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY!}`,
@@ -14,4 +14,4 @@ export const deepSeekProvider = createOpenAICompatible({
 /**
  * deepseek model
  */
-export const deepSeekModel = deepSeekProvider.chatModel(process.env.DEEPSEEK_MODEL!);
+export const deepSeekModel = deepSeekProvider.chatModel('deepseek-chat');
