@@ -4,9 +4,6 @@ import { getFileContent } from "./get-file-content";
 // 获取所有文件路径
 import { getFilePaths } from "./get-file-paths";
 
-// 获取指定文件的 Patch
-import { getFilePatch } from "./get-file-patch";
-
 // 获取仓库所有提交
 import { getRepositoryCommits } from "./get-repo-commits";
 
@@ -23,7 +20,6 @@ import { getRepositoryStars } from "./get-repo-stars";
 export const codebaseTools = {
   getFileContent,
   getFilePaths,
-  getFilePatch,
   getRepositoryCommits,
   getRepositoryIssues,
   getRepositoryPullRequests,
