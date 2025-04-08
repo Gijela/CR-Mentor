@@ -1,5 +1,7 @@
 import { z } from 'zod';
-import { Tool, ToolExecutionContext, createTool } from '@mastra/core'; // Assuming types are available
+import { Tool, ToolExecutionContext, createTool } from '@mastra/core';
+import { Buffer } from 'buffer';
+import { GithubAPI } from '../../../lib/github'; // Corrected import path
 
 // Define the input schema for the tool
 const GetFileContentInputSchema = z.object({
@@ -11,9 +13,6 @@ const GetFileContentInputSchema = z.object({
     .describe(
       "The name of the commit/branch/tag. Default: the repository's default branch."
     ),
-  // Note: githubToken should ideally be handled securely, not passed directly if possible,
-  // or handled by the execution environment. Added here for conceptual clarity.
-  // githubToken: z.string().optional().describe('GitHub API token for authentication'),
 });
 
 // Define the output schema for the tool
@@ -25,66 +24,72 @@ const GetFileContentOutputSchema = z.object({
   error: z.string().optional().describe('Error message if fetching failed.'),
 });
 
-// Define inferred types for better type safety
+// Inferred types - No need for ExtendedToolExecutionContext anymore
 type InputType = z.infer<typeof GetFileContentInputSchema>;
 type OutputType = z.infer<typeof GetFileContentOutputSchema>;
 
 /**
- * Placeholder Tool: Fetches the full content of a specific file from a GitHub repository at a specific ref.
- *
- * !!! IMPLEMENTATION REQUIRED !!!
- * This is a placeholder. You need to implement the actual GitHub API call
- * using 'fetch' or a library like 'axios' or '@octokit/rest'.
- * Remember to handle authentication (e.g., using a securely provided GitHub token)
- * and Base64 decoding of the 'content' field from the API response.
- * Proper error handling for API limits, file not found, auth errors, etc., is crucial.
+ * Tool: Fetches the full content of a specific file from a GitHub repository at a specific ref.
+ * Uses the pre-configured GithubAPI (Octokit) instance for authentication and API calls.
  */
 export const getFileContentFromRepo = createTool({
   id: 'getFileContentFromRepo',
   description:
-    'Fetches the full content of a file from a GitHub repository at a specific ref (commit SHA or branch name). Requires owner, repo, filePath, and ref.',
+    'Fetches the full content of a file from a GitHub repository at a specific ref using the configured Octokit instance.',
   inputSchema: GetFileContentInputSchema as any,
   outputSchema: GetFileContentOutputSchema as any,
 
-  // Correct execute signature based on the reference example
+  // execute function using GithubAPI instance
   execute: async ({ context }: { context: InputType & ToolExecutionContext }): Promise<OutputType> => {
-    // Assuming input properties are directly on the context object, along with potential standard context properties like logger.
-    // We merge InputType and ToolExecutionContext for typing purposes here.
-    // Adjust if logger or other standard props are nested differently in your specific Mastra version.
-    const { owner, repo, filePath, ref } = context; // Destructure input from context
+    // No need to destructure githubToken anymore
+    const { owner, repo, filePath, ref } = context;
 
-    // Log execution start
-    console.warn(
-      `Executing placeholder tool: getFileContentFromRepo for ${filePath}`
-    );
-
-    // Example: Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log(`Fetching file content for ${filePath} using GithubAPI...`);
 
     try {
-      // Simulate API response based on input
-      if (!owner || !repo || !filePath || !ref || filePath.includes('nonexistent')) {
-        return {
-          content: null,
-          error: `Placeholder: File not found, ref missing, or invalid input for path: ${filePath}`,
-        };
+      const response = await GithubAPI.rest.repos.getContent({
+        owner,
+        repo,
+        path: filePath,
+        ref,
+      });
+
+      // Check if the response data is for a file and has content
+      // Octokit's response type checking might differ slightly, adjust as needed
+      // Based on Octokit types, response.data should have a `content` property for files.
+      // Need to assert the type or check its existence.
+      if (response.status !== 200 || !('content' in response.data) || typeof response.data.content !== 'string') {
+        // Handle cases where it's not a file (e.g., directory) or unexpected response
+        const errorMessage = `Failed to get file content from GitHub API. Status: ${response.status}. Path might not be a file or response format unexpected.`;
+        console.error(`getFileContentFromRepo Error: ${errorMessage} for ${filePath}`);
+        return { content: null, error: errorMessage };
       }
 
-      // Simulate successful fetch and decode
-      const simulatedContent = `// Placeholder content for ${filePath} at ref ${ref}\nconsole.log('Hello from ${filePath}');\n\n// Simulating some external import\nimport { externalFunction } from '../utils/helpers';\n\nfunction localFunction() {\n  // Simulate using the external function\n  const result = externalFunction('test');
-  console.log('Result from external function:', result);
-}\n\nlocalFunction();\n`;
+      // Decode Base64 content
+      const decodedContent = Buffer.from(response.data.content, 'base64').toString(
+        'utf-8'
+      );
 
+      console.log(`Successfully fetched and decoded content for ${filePath}`);
       return {
-        content: simulatedContent, // Return simulated decoded content
+        content: decodedContent,
         error: undefined,
       };
     } catch (error: any) {
+      // Handle Octokit/API errors (e.g., 404 Not Found)
+      if (error.status === 404) {
+        console.warn(`getFileContentFromRepo: File not found - ${filePath} at ref ${ref}`);
+        return { content: null, error: `File not found: ${filePath} at ref ${ref}` };
+      }
+      // Handle other errors
+      console.error(
+        `getFileContentFromRepo Error: Unexpected error fetching ${filePath} - ${error.message || error}`,
+        error
+      );
       return {
         content: null,
-        error: `Placeholder: Unexpected error - ${error.message}`,
+        error: `Unexpected GitHub API error: ${error.message || error}`,
       };
     }
-    // --- Placeholder Logic --- END
   },
 }); 
