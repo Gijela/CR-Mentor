@@ -1,7 +1,7 @@
 // Placeholder for exporting tools
 
 // Tool for getting PR details
-import { getPullRequestDetails } from './get-pull-request-details';
+import { getPullRequestDetail } from './get-pull-request-detail';
 
 // Tool for checking PR size (Optional Stage 0)
 import { checkPRSize } from './checkPRSize';
@@ -21,7 +21,7 @@ import { postPrComment } from './post-pr-comment';
 // Combine all tools for the main code review agent (orchestrator)
 export const codeReviewTools = {
   // Core workflow tools
-  getPullRequestDetails,
+  getPullRequestDetail,
   performComprehensiveFileReview,
   recommendReviewFocus,
   postPrComment,

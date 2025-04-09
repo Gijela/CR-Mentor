@@ -8,7 +8,7 @@ const GetFileContentInputSchema = z.object({
   owner: z.string().describe('Repository owner'),
   repo: z.string().describe('Repository name'),
   filePath: z.string().describe('Path to the file within the repository'),
-  ref: z
+  headRef: z
     .string()
     .describe(
       "The name of the commit/branch/tag. Default: the repository's default branch."
@@ -29,7 +29,7 @@ type InputType = z.infer<typeof GetFileContentInputSchema>;
 type OutputType = z.infer<typeof GetFileContentOutputSchema>;
 
 /**
- * Tool: Fetches the full content of a specific file from a GitHub repository at a specific ref.
+ * Tool: Fetches the full content of a specific file from a GitHub repository at a specific headRef.
  * Uses the pre-configured GithubAPI (Octokit) instance for authentication and API calls.
  */
 export const getFileContentFromRepo = createTool({
@@ -42,7 +42,7 @@ export const getFileContentFromRepo = createTool({
   // execute function using GithubAPI instance
   execute: async ({ context }: { context: InputType & ToolExecutionContext }): Promise<OutputType> => {
     // No need to destructure githubToken anymore
-    const { owner, repo, filePath, ref } = context;
+    const { owner, repo, filePath, headRef } = context;
 
     console.log(`Fetching file content for ${filePath} using GithubAPI...`);
 
@@ -51,7 +51,7 @@ export const getFileContentFromRepo = createTool({
         owner,
         repo,
         path: filePath,
-        ref,
+        ref: headRef,
       });
 
       // Check if the response data is for a file and has content
@@ -78,8 +78,8 @@ export const getFileContentFromRepo = createTool({
     } catch (error: any) {
       // Handle Octokit/API errors (e.g., 404 Not Found)
       if (error.status === 404) {
-        console.warn(`getFileContentFromRepo: File not found - ${filePath} at ref ${ref}`);
-        return { content: null, error: `File not found: ${filePath} at ref ${ref}` };
+        console.warn(`getFileContentFromRepo: File not found - ${filePath} at headRef ${headRef}`);
+        return { content: null, error: `File not found: ${filePath} at headRef ${headRef}` };
       }
       // Handle other errors
       console.error(

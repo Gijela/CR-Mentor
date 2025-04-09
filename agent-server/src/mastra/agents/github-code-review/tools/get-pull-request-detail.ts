@@ -13,10 +13,10 @@ const inputSchema = z.object({
 
 // Define a simple structure for linked issues
 interface LinkedIssue {
-    number: number;
-    title: string;
-    url: string;
-    state: string;
+  number: number;
+  title: string;
+  url: string;
+  state: string;
 }
 
 // Define the structure for the output
@@ -30,19 +30,20 @@ const outputSchema = z.object({
     number: z.number().int(),
     baseRef: z.string().describe("Base branch name"),
     headRef: z.string().describe("Head branch name"),
+    headSha: z.string().describe("Head commit SHA"),
   }),
   associatedIssues: z.array(z.object({
-      number: z.number().int(),
-      title: z.string(),
-      url: z.string().url(),
-      state: z.string(),
+    number: z.number().int(),
+    title: z.string(),
+    url: z.string().url(),
+    state: z.string(),
   })).describe("Issues linked to the PR"),
   comments: z.array(z.object({
-      id: z.number().int(),
-      user: z.string().nullable(),
-      body: z.string().nullable(),
-      createdAt: z.string(),
-      url: z.string().url(),
+    id: z.number().int(),
+    user: z.string().nullable(),
+    body: z.string().nullable(),
+    createdAt: z.string(),
+    url: z.string().url(),
   })).describe("Comments on the PR"),
   files: z.array(z.object({
     filename: z.string(),
@@ -54,13 +55,13 @@ const outputSchema = z.object({
   })).describe("Files changed in the PR (metadata only, no patch content)"),
   // rawDiff: z.string().describe("The full raw diff text for the PR."), // REMOVED rawDiff
 }).or(z.object({ // Error case
-    ok: z.literal(false),
-    message: z.string().describe("Error message"),
+  ok: z.literal(false),
+  message: z.string().describe("Error message"),
 }));
 
 
-export const getPullRequestDetails = new Tool({
-  id: "getPullRequestDetails",
+export const getPullRequestDetail = new Tool({
+  id: "getPullRequestDetail",
   description: "Fetches comprehensive details for a specific Pull Request, including metadata, associated issues, comments, and a list of changed files (WITHOUT the full diff or file patches).", // UPDATED description
   inputSchema,
   outputSchema,
@@ -99,12 +100,12 @@ export const getPullRequestDetails = new Tool({
         per_page: 100,
       });
       const files = filesResponse.data.map(f => ({
-          filename: f.filename,
-          status: f.status as 'added' | 'modified' | 'removed' | 'renamed',
-          changes: f.changes,
-          additions: f.additions,
-          deletions: f.deletions,
-          // patch: f.patch, // REMOVED patch assignment
+        filename: f.filename,
+        status: f.status as 'added' | 'modified' | 'removed' | 'renamed',
+        changes: f.changes,
+        additions: f.additions,
+        deletions: f.deletions,
+        // patch: f.patch, // REMOVED patch assignment
       }));
 
       // 4. REMOVED Raw Diff Fetching
@@ -126,12 +127,35 @@ export const getPullRequestDetails = new Tool({
       const issueRegex = /#(\d+)/g;
       const linkedIssueNumbers = new Set<number>();
       if (prData.body) {
-          let match;
-          while ((match = issueRegex.exec(prData.body)) !== null) {
-              linkedIssueNumbers.add(parseInt(match[1], 10));
-          }
+        let match;
+        while ((match = issueRegex.exec(prData.body)) !== null) {
+          linkedIssueNumbers.add(parseInt(match[1], 10));
+        }
       }
-      const associatedIssues: LinkedIssue[] = []; // Keep this simple for now
+
+      const associatedIssues: LinkedIssue[] = [];
+      // Fetch details for each linked issue number
+      for (const issueNumber of linkedIssueNumbers) {
+        try {
+          const issueResponse = await GithubAPI.rest.issues.get({
+            owner,
+            repo,
+            issue_number: issueNumber,
+          });
+          const issueData = issueResponse.data;
+          associatedIssues.push({
+            number: issueData.number,
+            title: issueData.title,
+            url: issueData.html_url,
+            state: issueData.state,
+          });
+        } catch (issueError: any) {
+          // Log the error but continue processing other issues
+          console.warn(`Could not fetch details for linked issue #${issueNumber} in ${owner}/${repo}: ${issueError.message}`);
+          // Optionally add a placeholder or skip the issue
+          // associatedIssues.push({ number: issueNumber, title: 'Error fetching title', url: '', state: 'unknown' });
+        }
+      }
 
       // 7. Construct the final output object (without rawDiff)
       const result = {
@@ -144,6 +168,7 @@ export const getPullRequestDetails = new Tool({
           number: prData.number,
           baseRef: prData.base.ref,
           headRef: prData.head.ref,
+          headSha: prData.head.sha,
         },
         associatedIssues,
         comments,
@@ -157,11 +182,11 @@ export const getPullRequestDetails = new Tool({
       console.error(`Error fetching details for PR #${pull_number} in ${owner}/${repo}:`, error);
       let message = "Failed to fetch pull request details.";
       if (error.status === 404) {
-          message = `Pull Request #${pull_number} not found in ${owner}/${repo}.`;
+        message = `Pull Request #${pull_number} not found in ${owner}/${repo}.`;
       } else if (error.status === 403 || error.status === 401) {
-          message = `Permission denied fetching details for PR #${pull_number}. Check GITHUB_TOKEN permissions.`;
+        message = `Permission denied fetching details for PR #${pull_number}. Check GITHUB_TOKEN permissions.`;
       } else if (error instanceof Error) {
-          message = error.message;
+        message = error.message;
       }
       return {
         ok: false as const,
