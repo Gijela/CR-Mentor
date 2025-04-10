@@ -48,20 +48,20 @@ jobs:
 
       # --- START: 针对特定语言的设置 ---
 
-      # 设置 Node.js 环境 (用于 JS/TS 项目)
+      # 先安装 pnpm
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3 # 使用官方的 pnpm setup action
+        with:
+          version: 8 # 指定 pnpm 版本 (例如 8), 或省略以使用最新版
+          run_install: false # 我们将在下一步手动运行 install
+
+      # 再设置 Node.js 环境，并让它配置 pnpm 缓存
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20" # 指定你项目需要的 Node.js 版本
           # 缓存 pnpm store (对两个项目都有益)
           cache: "pnpm" # 启用 pnpm 依赖缓存
-
-      # 安装 pnpm
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3 # 使用官方的 pnpm setup action
-        with:
-          version: 8 # 指定 pnpm 版本 (例如 8), 或省略以使用最新版
-          run_install: false # 我们将在下一步手动运行 install
 
       # 示例：设置 Python 环境 (用于 Python 项目)
       # - name: Set up Python
