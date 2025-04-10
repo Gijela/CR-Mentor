@@ -52,7 +52,8 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v3 # 使用官方的 pnpm setup action
         with:
-          version: 8 # 指定 pnpm 版本 (例如 8), 或省略以使用最新版
+          # version: 8 # <--- 注释掉或删除这一行，让它使用最新稳定版
+          # 或者明确指定 version: 10
           run_install: false # 我们将在下一步手动运行 install
 
       # 再设置 Node.js 环境，并让它配置 pnpm 缓存
