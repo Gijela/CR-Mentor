@@ -13,9 +13,9 @@ on:
   pull_request:
     branches: [main] # 或者 [ master ]
     # 可以更精确地指定路径，例如只在 koa-server 或 frontend 目录变化时触发
-    # paths:
-     - 'koa-server/**'
-     - 'frontend/**'
+    paths:
+      - "koa-server/**"
+      - "frontend/**"
 
   # 允许手动或通过 API 触发
   workflow_dispatch:
