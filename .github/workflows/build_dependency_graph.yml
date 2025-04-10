@@ -60,8 +60,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20" # 指定你项目需要的 Node.js 版本
-          # 缓存 pnpm store (对两个项目都有益)
-          cache: "pnpm" # 启用 pnpm 依赖缓存
+          # cache: "pnpm" # <--- 删除或注释掉这一行
 
       # 示例：设置 Python 环境 (用于 Python 项目)
       # - name: Set up Python
