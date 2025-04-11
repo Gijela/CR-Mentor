@@ -87,7 +87,7 @@ jobs:
         run: |
           # 在 koa-server 目录下运行，分析当前目录 '.' (即 koa-server)
           # 将输出重定向到工作区根目录下的 koa-server-graph.json
-          pnpx dependency-cruiser . --output-type json --output-to ../koa-server-graph.json --exclude "(^node_modules)|(pnpm-lock\\.yaml$)" --no-config
+          pnpm depcruise . -x '(^dist)|(^node_modules)' --ts-config tsconfig.json --no-config -T json -f ../koa-server-graph.json
 
       # --- 处理 frontend ---
       - name: Install frontend Dependencies
@@ -107,7 +107,7 @@ jobs:
           # 将输出重定向到工作区根目录下的 frontend-graph.json
           # 注意: frontend 项目可能有不同的源码目录 (如 src)，如果 '.' 太宽泛，可以调整为 'src' 或其他
           # 同时可能需要排除更多文件/目录，例如 dist, public 等
-          pnpx dependency-cruiser . --output-type json --output-to ../frontend-graph.json --exclude "(^node_modules)|(pnpm-lock\\.yaml$)|(^dist)|(^public)" --no-config
+          pnpm depcruise . -x '(^dist)|(^node_modules)' --ts-config tsconfig.app.json --no-config -T json -f ../frontend-graph.json
 
       # --- 上传所有图谱 ---
       - name: Upload Dependency Graph Artifacts
