@@ -16,12 +16,14 @@
     "@mastra/core": "^0.7.0",
     "@mastra/memory": "^0.2.6",
     "@mastra/pg": "^0.2.6",
+    "adm-zip": "^0.5.16",
     "mastra": "^0.4.4",
     "octokit": "^4.1.2",
     "what-the-diff": "^0.6.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
     "@types/node": "^22.14.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"

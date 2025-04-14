@@ -15,6 +15,9 @@ import { recommendReviewFocus } from './recommend-review-focus';
 // Tool for posting the final comment
 import { postPrComment } from './post-pr-comment';
 
+// Tool for getting the content of a GitHub Action artifact
+import { getGithubActionArtifactContent } from './get-action-artifact';
+
 // Note: Removed old analysis tools like checkLogicConsistency, analyzeChangeImpact, etc.
 // Their functionality is now intended to be handled within the github-diff-review agent.
 
@@ -22,6 +25,7 @@ import { postPrComment } from './post-pr-comment';
 export const codeReviewTools = {
   // Core workflow tools
   getPullRequestDetail,
+  getGithubActionArtifactContent,
   performComprehensiveFileReview,
   recommendReviewFocus,
   postPrComment,
