@@ -23,19 +23,32 @@
       - PR 的头提交 SHA (`headSha`)。
       - PR 描述等元数据。
     - 调用特定工具 (`getGithubActionArtifactContent` Tool) **下载并获取**之前 GitHub Action 生成的**精简依赖图 JSON 数据** (`dependencyGraph`)。
-    - (按需) 调用 GitHub API 获取 `changedFiles` 列表中每个文件的**完整内容** (`fullFileContents`)。
 
-4.  **任务准备与分发 (Task Preparation & Distribution - 由协调者 Agent 处理):**
+4.  **文件分组 (File Grouping - 由协调者 Agent 处理):**
 
-    - **遍历 `changedFiles` 列表中的每一个 `changedFile`。**
-    - 为每个 `changedFile` 创建一个独立的审查任务。
-    - **准备任务上下文:**
-      - 该文件的 `diff`。
-      - 该文件的**完整内容** (`fullFileContent`)。
-      - 从 `dependencyGraph` 中查询 `changedFile` 对应的条目，提取其直接的**依赖文件路径列表** (`dependencies`) 和**被依赖文件路径列表** (`dependents`)，组合成 `dependencyInfo`。
-    - 将任务 (包含 `filePath`, `diff`, `fullFileContent`, `dependencyInfo`) 分发给审查 Agent (`github-diff-review`) (通常通过消息队列或直接调用)。
+    - **调用新增的 `groupChangedFilesTool`**。
+    - **输入:** 上一步获取的 `changedFiles` 列表和 `dependencyGraph` 数据。
+    - **处理:** Tool 内部调用 `groupChangedFilesBasedOnDeps` 函数，根据文件类别和依赖关系进行分组。
 
-5.  **上下文感知与按需探索的文件审查 (Context-Aware & On-Demand Exploration File Review - 由审查 Agent 执行):**
+    * **输出:** 一个结构化的文件分组列表 (`fileGroups`)，每个分组包含类型 (`type`) 和文件列表 (`files`)。
+
+5.  **任务准备与分发 (Task Preparation & Distribution - 基于分组, 由协调者 Agent 处理):**
+
+    - **遍历 `fileGroups` 列表中的每一个 `group`。**
+    - **根据 `group.type` 处理:**
+      - **跳过审查:** 如果 `type` 是 `ignored` (如构建产物) 或 `removed`。
+      - **特殊处理/可选审查:** 如果 `type` 是 `docs`, `config_or_dependencies`, `workflow` 等，根据策略决定是否分发审查任务或应用不同规则。
+      - **详细审查:** 如果 `type` 是 `dependency_group` 或 `isolated_change`，则进入下一步为该组内的文件准备任务。
+    - **为需要详细审查的分组准备任务上下文:**
+      - **针对分组内的每个 `filePath`:**
+        - **获取该文件的 `diff`** (从 `getPullRequestDetail` 的原始输出中查找)。
+        - **(按需) 获取该文件的完整内容 (`fullFileContent`)** (现在是按需获取，或者批量获取分组内所有文件的内容)。
+        - (可选) 提取与该文件相关的外部依赖信息 (`dependencyInfo`)。
+    - **封装并分发任务:**
+      - 将**分组**信息 (或分组内文件的集合) 连同其包含文件的 `diff`, `fullFileContent` (按需获取), 相关依赖信息等，封装成一个审查任务。
+      - 将任务分发给审查 Agent (`github-diff-review`)。
+
+6.  **上下文感知与按需探索的文件审查 (Context-Aware & On-Demand Exploration File Review - 由审查 Agent 执行):**
 
     - 审查 Agent (`github-diff-review`) 接收任务。
     - **核心分析:** Agent 在分析 `diff` 时，会同时利用：
@@ -48,7 +61,7 @@
     - Agent 可以根据 `dependencyInfo` 和按需获取的内容，对那些涉及跨文件交互的 Findings 进行**特殊标记**或提高优先级。
     - **输出:** 针对当前 `changedFile` 的结构化的 Findings 列表 (包含文件、行号、描述、严重性、类别，以及可能的上下文相关标记)。
 
-6.  **跨文件综合与风险评估 (Cross-File Synthesis & Risk Assessment - 由协调者 Agent/聚合服务处理):**
+7.  **跨文件综合与风险评估 (Cross-File Synthesis & Risk Assessment - 由协调者 Agent/聚合服务处理):**
 
     - **输入:** 所有审查 Agent 返回的 Findings 列表，以及完整的 `dependencyGraph`。
     - **核心处理:**
@@ -60,7 +73,7 @@
         - 结合文件在依赖图中的重要性 (如被多少文件依赖) 和 Findings 的严重性，进行更准确的**风险评估**。
     - **输出:** 经过整理、去重、关联、并带有风险评估的最终 Findings 列表。
 
-7.  **报告生成与交付 (Report Generation & Delivery - 由报告生成服务处理):**
+8.  **报告生成与交付 (Report Generation & Delivery - 由报告生成服务处理):**
     - 将最终的 Findings 列表格式化成易于阅读的报告 (例如 Markdown 格式)。
     - 报告中应清晰地区分**文件内问题**和**基于依赖关系推断出的潜在跨文件关联问题**。
     - (可选) 调用平台 API (如 GitHub API) 将报告作为评论发布到 PR 上。

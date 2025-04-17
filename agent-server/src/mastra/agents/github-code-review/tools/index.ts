@@ -18,6 +18,9 @@ import { postPrComment } from './post-pr-comment';
 // Tool for getting the content of a GitHub Action artifact
 import { getGithubActionArtifactContent } from './get-action-artifact';
 
+// Tool for grouping changed files
+import { groupChangedFilesTool } from './group-changed-files';
+
 // Note: Removed old analysis tools like checkLogicConsistency, analyzeChangeImpact, etc.
 // Their functionality is now intended to be handled within the github-diff-review agent.
 
@@ -29,6 +32,7 @@ export const codeReviewTools = {
   performComprehensiveFileReview,
   recommendReviewFocus,
   postPrComment,
+  groupChangedFilesTool,
   // Optional tools
   checkPRSize,
 };
