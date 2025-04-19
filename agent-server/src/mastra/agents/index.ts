@@ -10,6 +10,9 @@ import { codeReviewAgent } from './github-code-review';
 // GitHub Diff Review Agent
 import { githubDiffReviewAgent } from './github-diff-review';
 
+// GitHub PR Context Builder Agent
+import { PRContextBuilderAgent } from './github-pr-context-builder';
+
 // 注册到 mastra 的 agents
 export const agents = {
   weatherAgent,
@@ -17,4 +20,5 @@ export const agents = {
   githubCodebaseAgent,
   codeReviewAgent,
   githubDiffReviewAgent,
+  PRContextBuilderAgent,
 };

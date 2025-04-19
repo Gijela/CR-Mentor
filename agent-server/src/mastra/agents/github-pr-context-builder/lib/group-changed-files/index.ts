@@ -1,7 +1,9 @@
 export interface ChangedFile {
   filename: string;
   status: 'added' | 'modified' | 'removed' | 'renamed';
-  // other properties like changes, additions, deletions are not needed for grouping
+  changes: number;
+  additions: number;
+  deletions: number;
 }
 
 interface DependencyInfo {
@@ -16,7 +18,9 @@ interface DependencyGraph {
 export interface FileGroup {
   type: string; // e.g., 'dependency_group', 'config', 'docs', 'workflow', 'ignored', 'removed', 'isolated_change'
   reason: string;
-  files: string[];
+  changedFiles: string[]; // Files changed in this PR belonging to the group
+  dependencies: string[]; // Files that changedFiles in this group depend on (context)
+  dependents: string[];   // Files that depend on changedFiles in this group (context)
 }
 
 // --- Helper Function: Define Filters/Categorizers ---
@@ -65,7 +69,7 @@ function categorizeFile(filename: string, status: ChangedFile['status']): { type
  *
  * @param changedFileList - An array of objects representing changed files.
  * @param dependencyGraph - An object representing the project's dependency graph.
- * @returns An array of FileGroup objects.
+ * @returns An array of FileGroup objects, distinguishing changed files and context files (dependencies/dependents).
  */
 export function groupChangedFilesBasedOnDeps(
   changedFileList: ChangedFile[],
@@ -74,19 +78,20 @@ export function groupChangedFilesBasedOnDeps(
 
   const groups: { [type: string]: FileGroup } = {};
   const reviewableFiles: string[] = [];
+  const changedFileSet = new Set(changedFileList.map(f => f.filename)); // Keep track of all originally changed files
 
   // 1. Pre-process and Categorize Files
   for (const file of changedFileList) {
     const category = categorizeFile(file.filename, file.status);
     if (category) {
       if (!groups[category.type]) {
-        // Initialize group if it doesn't exist
-        groups[category.type] = { type: category.type, reason: category.reason, files: [] };
-      } else if (groups[category.type].files.length === 0) {
-        // Update reason if the group was pre-initialized but empty (less likely now)
+        // Initialize group with new structure (empty context arrays)
+        groups[category.type] = { type: category.type, reason: category.reason, changedFiles: [], dependencies: [], dependents: [] };
+      } else if (groups[category.type].changedFiles.length === 0) {
+        // Update reason if the group was pre-initialized but empty
         groups[category.type].reason = category.reason;
       }
-      groups[category.type].files.push(file.filename);
+      groups[category.type].changedFiles.push(file.filename);
     } else {
       // Only consider files for dependency analysis if they exist in the graph and weren't removed
       if (dependencyGraph[file.filename] !== undefined && file.status !== 'removed') {
@@ -95,9 +100,10 @@ export function groupChangedFilesBasedOnDeps(
         // File changed, not special, but not in dependency graph (e.g., new untracked file, asset)
         const isolatedType = 'isolated_change';
         if (!groups[isolatedType]) {
-          groups[isolatedType] = { type: isolatedType, reason: 'Changed file not in dependency graph or unrelated', files: [] };
+          // Initialize group with new structure (empty context arrays)
+          groups[isolatedType] = { type: isolatedType, reason: 'Changed file not in dependency graph or unrelated', changedFiles: [], dependencies: [], dependents: [] };
         }
-        groups[isolatedType].files.push(file.filename);
+        groups[isolatedType].changedFiles.push(file.filename);
       }
     }
   }
@@ -109,26 +115,22 @@ export function groupChangedFilesBasedOnDeps(
       adj.set(file, new Set()); // Initialize node
     }
 
-    // Get dependencies and dependents from the graph, handle cases where file might be missing (though filtered above)
+    // Get dependencies and dependents from the graph
     const dependencies = dependencyGraph[file]?.dependencies || [];
     const dependents = dependencyGraph[file]?.dependents || [];
-
-    // Combine both lists to check for connections within the reviewable set
     const relatedFiles = [...dependencies, ...dependents];
 
     for (const relatedFile of relatedFiles) {
-      // Crucial check: Is the related file also in our set of reviewable files for this PR?
+      // Connect if related file is also in the reviewable set for this PR
       if (reviewableFiles.includes(relatedFile)) {
         if (!adj.has(relatedFile)) {
-          adj.set(relatedFile, new Set()); // Initialize neighbor node if not present
+          adj.set(relatedFile, new Set());
         }
-        // Add edges in both directions for an undirected graph representation
         adj.get(file)?.add(relatedFile);
         adj.get(relatedFile)?.add(file);
       }
     }
   }
-
 
   // 3. Find Connected Components (Dependency Groups) using DFS
   const visited: Set<string> = new Set();
@@ -137,7 +139,7 @@ export function groupChangedFilesBasedOnDeps(
   function dfs(node: string, currentComponent: string[]) {
     visited.add(node);
     currentComponent.push(node);
-    const neighbors = adj.get(node) || new Set(); // Get neighbors or empty set if node has no connections
+    const neighbors = adj.get(node) || new Set();
     for (const neighbor of neighbors) {
       if (!visited.has(neighbor)) {
         dfs(neighbor, currentComponent);
@@ -147,16 +149,41 @@ export function groupChangedFilesBasedOnDeps(
 
   for (const file of reviewableFiles) {
     if (!visited.has(file)) {
-      const component: string[] = [];
-      dfs(file, component);
-      if (component.length > 0) {
+      const componentChangedFiles: string[] = []; // Changed files in this component
+      dfs(file, componentChangedFiles);
+
+      if (componentChangedFiles.length > 0) {
+        // Find context files (dependencies and dependents) for this component
+        const componentDependencies = new Set<string>();
+        const componentDependents = new Set<string>();
+        const componentFileSet = new Set(componentChangedFiles); // Faster lookups
+
+        for (const changedFile of componentChangedFiles) {
+          // Get dependencies of this changed file
+          (dependencyGraph[changedFile]?.dependencies || []).forEach(dep => {
+            // Add if it's NOT part of the component itself
+            if (!componentFileSet.has(dep)) {
+              componentDependencies.add(dep);
+            }
+          });
+
+          // Get dependents of this changed file
+          (dependencyGraph[changedFile]?.dependents || []).forEach(dep => {
+            // Add if it's NOT part of the component itself
+            if (!componentFileSet.has(dep)) {
+              componentDependents.add(dep);
+            }
+          });
+        }
+
         dependencyGroups.push({
           type: 'dependency_group',
-          // Provide a more informative reason based on component size
-          reason: component.length > 1
+          reason: componentChangedFiles.length > 1
             ? 'Connected component in changed dependency graph'
             : 'Changed file with no reviewable dependencies/dependents in this PR',
-          files: component
+          changedFiles: componentChangedFiles,
+          dependencies: Array.from(componentDependencies), // Convert Set to Array
+          dependents: Array.from(componentDependents)   // Convert Set to Array
         });
       }
     }
@@ -165,6 +192,6 @@ export function groupChangedFilesBasedOnDeps(
   // 4. Combine Results: Start with categorized groups, then add dependency groups
   const finalGroups = [...Object.values(groups), ...dependencyGroups];
 
-  // Remove any potentially empty groups (e.g., if a category had no files)
-  return finalGroups.filter(group => group.files.length > 0);
+  // Remove any potentially empty groups (where changedFiles is empty)
+  return finalGroups.filter(group => group.changedFiles.length > 0);
 }

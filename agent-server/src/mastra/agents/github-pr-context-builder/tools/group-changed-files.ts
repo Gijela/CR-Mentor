@@ -3,7 +3,7 @@ import { Tool } from '@mastra/core/tools';
 import {
   groupChangedFilesBasedOnDeps,
   FileGroup, // Assuming FileGroup interface is exported from split-group
-} from '../../github-pr-context-builder/lib/group-changed-files'; // Adjust path as necessary
+} from '../lib/group-changed-files'; // Adjust path as necessary
 
 // --- Define Schemas based on the expected input/output of groupChangedFilesBasedOnDeps ---
 
@@ -11,7 +11,9 @@ import {
 const ChangedFileSchema = z.object({
   filename: z.string(),
   status: z.enum(['added', 'modified', 'removed', 'renamed']),
-  // Note: Other fields from getPullRequestDetail like changes, additions are ignored here
+  changes: z.number(),
+  additions: z.number(),
+  deletions: z.number(),
 }).describe("Information about a single changed file.");
 
 // Schema for the dependency graph structure needed by the grouping function
@@ -31,52 +33,49 @@ const GroupChangedFilesInputSchema = z.object({
     .describe("The project's dependency graph (e.g., output of getGithubActionArtifactContent tool)."),
 });
 
-// Schema for the output structure (FileGroup)
+// Schema for the output structure (FileGroup) - MODIFIED
 const FileGroupSchema = z.object({
   type: z.string().describe("Category of the group (e.g., 'dependency_group', 'docs', 'config_or_dependencies', 'ignored', 'removed', 'workflow', 'isolated_change')."),
   reason: z.string().describe("Explanation for why these files are grouped together."),
-  files: z.array(z.string()).describe("List of file paths belonging to this group."),
-});
+  changedFiles: z.array(z.string()).describe("List of changed file paths (from the input list) belonging to this group that require review."),
+  dependencies: z.array(z.string()).describe("List of file paths that the 'changedFiles' in this group depend on (context). Excludes files within 'changedFiles'."),
+  dependents: z.array(z.string()).describe("List of file paths that depend on the 'changedFiles' in this group (context). Excludes files within 'changedFiles'."),
+}).describe("Represents a group of files, distinguishing between changed files needing review and related context files (dependencies and dependents).");
 
-// Output Schema for the Tool
+// Output Schema for the Tool - MODIFIED DESCRIPTION
 const GroupChangedFilesOutputSchema = z.array(FileGroupSchema)
-  .describe("An array of file groups, where each group contains files related by dependency or category.");
+  .describe("An array of file groups. Each group differentiates between changed files to be reviewed and related context files (split into dependencies and dependents).");
 
 
 // --- Define the Tool ---
 
-export const groupChangedFilesTool = new Tool({
+export const groupChangedFiles = new Tool({
   id: 'groupChangedFilesTool', // Unique identifier
   description:
-    'Groups a list of changed files based on their interdependencies (using a provided dependency graph) and predefined categories (like docs, config, removed, ignored). Useful for organizing files before detailed code review.',
+    'Groups a list of changed files based on their interdependencies (using a provided dependency graph) and predefined categories. Each group differentiates changed files from related context files (dependencies and dependents). Useful for organizing files before detailed code review.', // MODIFIED DESCRIPTION
   inputSchema: GroupChangedFilesInputSchema,
-  outputSchema: GroupChangedFilesOutputSchema,
+  outputSchema: GroupChangedFilesOutputSchema, // Uses the modified schema
   execute: async ({ context }: { context: z.infer<typeof GroupChangedFilesInputSchema> }): Promise<z.infer<typeof GroupChangedFilesOutputSchema>> => {
     // Destructure the validated input from the context
     const { changedFileList, dependencyGraph } = context;
 
     try {
       console.log(`Grouping ${changedFileList.length} changed files...`);
-      // Call the actual grouping function (imported from lib)
-      // Ensure the input data structures match what the function expects.
-      // Zod validation helps here, but TypeScript interfaces should align.
-      const fileGroups: FileGroup[] = groupChangedFilesBasedOnDeps(
-        changedFileList, // Assuming ChangedFileSchema aligns with the function's expected ChangedFile[]
-        dependencyGraph  // Assuming DependencyGraphSchema aligns with the function's expected DependencyGraph
+      // --- IMPORTANT --- 
+      // Assuming the underlying `groupChangedFilesBasedOnDeps` function in 
+      // `../../../lib/group-changed-files/index.ts` now correctly returns objects 
+      // matching the NEW FileGroupSchema (with dependencies and dependents).
+      const fileGroups = groupChangedFilesBasedOnDeps(
+        changedFileList,
+        dependencyGraph
       );
       console.log(`Successfully grouped files into ${fileGroups.length} groups.`);
+      // No longer need explicit cast if lib function's return type matches FileGroup interface which now aligns with schema
       return fileGroups;
 
     } catch (error: any) {
       console.error('Error during file grouping:', error);
-      // Decide error handling strategy:
-      // 1. Rethrow the error (might halt the agent if not caught upstream)
-      // throw error;
-      // 2. Return an empty list (allows agent to potentially continue, but loses grouping info)
-      // return [];
-      // 3. Return a specific error structure (if outputSchema allows via .or())
-      // For now, returning empty list to avoid crashing, but logging the error.
-      // Consider adding an error indicator to the output schema if needed.
+      // Returning empty list on error
       return [];
     }
   },
