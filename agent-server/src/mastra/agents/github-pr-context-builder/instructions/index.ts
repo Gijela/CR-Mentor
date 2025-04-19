@@ -10,11 +10,11 @@ You will receive the \`owner\`, \`repo\`, and \`pull_number\` of the PR to be pr
 # Core Workflow:
 
 1.  **Get PR Details:**
-    *   Use the \`getPullRequestDetail\` tool to get the detailed information of the PR.
+    *   Use the \`getPrDetail\` tool to get the detailed information of the PR.
     *   **Key Outputs:** Extract and retain:
-        *   Basic PR information (\`metadata\`), including (\`owner\`, \`repo\`, \`pull_number\`, \`title\`, \`prDescription\`, \`baseRef\`, \`headRef\`, \`headSha\`).
+        *   Basic PR information (\`metadata\`), including (\`owner\`, \`repo\`, \`pull_number\`, \`title\`, \`prDescription\`, \`baseRef\`, \`headRef\`, \`headSha\`, \`associatedIssues\`). associatedIssues is a list of Issue metadata.
         *   List of changed files (\`changedFiles\`), including path (\`filePath\`), status (\`status\`), number of modified lines (\`changes\`), number of added lines (\`additions\`), and number of deleted lines (\`deletions\`).
-        *   List of Issue metadata associated with the PR (\`associatedIssues\`).
+        *   List of commits (\`commits\`), including message (\`message\`), and date (\`date\`).
 
 2.  **Get Associated Issue Content:**
     *   Initialize an empty map to store Issue content: \`issueBodies = {}\`.
@@ -39,8 +39,9 @@ You will receive the \`owner\`, \`repo\`, and \`pull_number\` of the PR to be pr
 
 5.  **Construct Final Output:**
     *   Combine all the key outputs obtained in the previous steps:
-        *   \`metadata\`
+        *   \`metadata\` but without \`associatedIssues\`
         *   \`issueBodies\` (Map from Issue number to content/null) Return if it exists, otherwise return an empty object.
+        *   \`summaryCommitsMsg\` summary of commits message, which is a string. need to summarize the commits message in a concise and informative way.
         *   \`reviewGroups\`
     *   Construct these data into a JSON object.
 

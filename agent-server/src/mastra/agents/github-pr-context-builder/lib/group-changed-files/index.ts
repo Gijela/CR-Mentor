@@ -21,6 +21,9 @@ export interface FileGroup {
   changedFiles: string[]; // Files changed in this PR belonging to the group
   dependencies: string[]; // Files that changedFiles in this group depend on (context)
   dependents: string[];   // Files that depend on changedFiles in this group (context)
+  changes: number;
+  additions: number;
+  deletions: number;
 }
 
 // --- Helper Function: Define Filters/Categorizers ---
@@ -75,6 +78,9 @@ export function groupChangedFilesBasedOnDeps(
   changedFileList: ChangedFile[],
   dependencyGraph: DependencyGraph
 ): FileGroup[] {
+  // Create a map for quick lookup of file stats
+  const fileStatsMap = new Map<string, ChangedFile>();
+  changedFileList.forEach(file => fileStatsMap.set(file.filename, file));
 
   const groups: { [type: string]: FileGroup } = {};
   const reviewableFiles: string[] = [];
@@ -85,13 +91,17 @@ export function groupChangedFilesBasedOnDeps(
     const category = categorizeFile(file.filename, file.status);
     if (category) {
       if (!groups[category.type]) {
-        // Initialize group with new structure (empty context arrays)
-        groups[category.type] = { type: category.type, reason: category.reason, changedFiles: [], dependencies: [], dependents: [] };
+        // Initialize group with new structure (empty context arrays and zero stats)
+        groups[category.type] = { type: category.type, reason: category.reason, changedFiles: [], dependencies: [], dependents: [], changes: 0, additions: 0, deletions: 0 };
       } else if (groups[category.type].changedFiles.length === 0) {
         // Update reason if the group was pre-initialized but empty
         groups[category.type].reason = category.reason;
       }
       groups[category.type].changedFiles.push(file.filename);
+      // Accumulate stats
+      groups[category.type].changes += file.changes;
+      groups[category.type].additions += file.additions;
+      groups[category.type].deletions += file.deletions;
     } else {
       // Only consider files for dependency analysis if they exist in the graph and weren't removed
       if (dependencyGraph[file.filename] !== undefined && file.status !== 'removed') {
@@ -100,10 +110,14 @@ export function groupChangedFilesBasedOnDeps(
         // File changed, not special, but not in dependency graph (e.g., new untracked file, asset)
         const isolatedType = 'isolated_change';
         if (!groups[isolatedType]) {
-          // Initialize group with new structure (empty context arrays)
-          groups[isolatedType] = { type: isolatedType, reason: 'Changed file not in dependency graph or unrelated', changedFiles: [], dependencies: [], dependents: [] };
+          // Initialize group with new structure (empty context arrays and zero stats)
+          groups[isolatedType] = { type: isolatedType, reason: 'Changed file not in dependency graph or unrelated', changedFiles: [], dependencies: [], dependents: [], changes: 0, additions: 0, deletions: 0 };
         }
         groups[isolatedType].changedFiles.push(file.filename);
+        // Accumulate stats
+        groups[isolatedType].changes += file.changes;
+        groups[isolatedType].additions += file.additions;
+        groups[isolatedType].deletions += file.deletions;
       }
     }
   }
@@ -157,8 +171,18 @@ export function groupChangedFilesBasedOnDeps(
         const componentDependencies = new Set<string>();
         const componentDependents = new Set<string>();
         const componentFileSet = new Set(componentChangedFiles); // Faster lookups
+        let componentChanges = 0;
+        let componentAdditions = 0;
+        let componentDeletions = 0;
 
         for (const changedFile of componentChangedFiles) {
+          const stats = fileStatsMap.get(changedFile);
+          if (stats) {
+            componentChanges += stats.changes;
+            componentAdditions += stats.additions;
+            componentDeletions += stats.deletions;
+          }
+
           // Get dependencies of this changed file
           (dependencyGraph[changedFile]?.dependencies || []).forEach(dep => {
             // Add if it's NOT part of the component itself
@@ -183,7 +207,10 @@ export function groupChangedFilesBasedOnDeps(
             : 'Changed file with no reviewable dependencies/dependents in this PR',
           changedFiles: componentChangedFiles,
           dependencies: Array.from(componentDependencies), // Convert Set to Array
-          dependents: Array.from(componentDependents)   // Convert Set to Array
+          dependents: Array.from(componentDependents),   // Convert Set to Array
+          changes: componentChanges,
+          additions: componentAdditions,
+          deletions: componentDeletions
         });
       }
     }

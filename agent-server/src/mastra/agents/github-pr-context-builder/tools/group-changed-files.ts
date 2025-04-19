@@ -28,7 +28,7 @@ const DependencyGraphSchema = z.record(
 // Input Schema for the Tool
 const GroupChangedFilesInputSchema = z.object({
   changedFileList: z.array(ChangedFileSchema)
-    .describe("List of changed files obtained from pull request details (e.g., output of getPullRequestDetail tool's 'files' field)."),
+    .describe("List of changed files obtained from pull request details (e.g., output of getPrDetail tool's 'files' field)."),
   dependencyGraph: DependencyGraphSchema
     .describe("The project's dependency graph (e.g., output of getGithubActionArtifactContent tool)."),
 });
@@ -40,6 +40,9 @@ const FileGroupSchema = z.object({
   changedFiles: z.array(z.string()).describe("List of changed file paths (from the input list) belonging to this group that require review."),
   dependencies: z.array(z.string()).describe("List of file paths that the 'changedFiles' in this group depend on (context). Excludes files within 'changedFiles'."),
   dependents: z.array(z.string()).describe("List of file paths that depend on the 'changedFiles' in this group (context). Excludes files within 'changedFiles'."),
+  changes: z.number().describe("Total number of lines changed in the 'changedFiles' in this group."),
+  additions: z.number().describe("Total number of lines added in the 'changedFiles' in this group."),
+  deletions: z.number().describe("Total number of lines deleted in the 'changedFiles' in this group."),
 }).describe("Represents a group of files, distinguishing between changed files needing review and related context files (dependencies and dependents).");
 
 // Output Schema for the Tool - MODIFIED DESCRIPTION
