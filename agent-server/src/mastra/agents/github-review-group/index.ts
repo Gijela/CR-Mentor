@@ -4,7 +4,9 @@ import { deepSeekModel } from '../../model-provider/deepseek';
 import { reviewGroupInstructions } from "./instructions";
 // import { githubAgentMemory } from "./memory";
 import { getFileContent } from "./tools/get-file-content";
-import { getRepoFilesPath } from "./tools/get-repo-files-path";
+import { getDiffsContent } from "./tools/get-diffs-content";
+import { prSummary } from "./tools/pr-summary";
+import { fileComment } from "./tools/file-comment";
 
 export const reviewGroupAgent = new Agent({
   name: "github-review-group-agent",
@@ -13,6 +15,8 @@ export const reviewGroupAgent = new Agent({
   // memory: githubAgentMemory,
   tools: {
     getFileContent,
-    getRepoFilesPath,
+    getDiffsContent,
+    prSummary,
+    fileComment,
   },
 });

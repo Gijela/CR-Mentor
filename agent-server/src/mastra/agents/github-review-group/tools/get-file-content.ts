@@ -76,6 +76,7 @@ export const getFileContent = new Tool({
         content,
       };
     } catch (error) {
+      console.error("Error fetching file content:", error);
       return {
         ok: false as const,
         messsage: error instanceof Error ? error.message : "Unkown error",
