@@ -16,7 +16,7 @@ export const reviewGroupAgent = new Agent({
   tools: {
     getFileContent,
     getDiffsContent,
-    prSummary,
     fileComment,
+    // prSummary,
   },
 });
