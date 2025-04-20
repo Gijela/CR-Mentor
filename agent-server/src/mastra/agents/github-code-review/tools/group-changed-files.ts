@@ -3,7 +3,7 @@ import { Tool } from '@mastra/core/tools';
 import {
   groupChangedFilesBasedOnDeps,
   FileGroup, // Assuming FileGroup interface is exported from split-group
-} from '../../github-pr-context-builder/lib/group-changed-files'; // Adjust path as necessary
+} from '../../github-pr-groups-builder/lib/group-changed-files'; // Adjust path as necessary
 
 // --- Define Schemas based on the expected input/output of groupChangedFilesBasedOnDeps ---
 

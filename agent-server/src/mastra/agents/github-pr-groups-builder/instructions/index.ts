@@ -1,4 +1,4 @@
-export const contextBuilderInstructions = `
+export const prGroupsBuilderInstructions = `
 # Role: PR Context Aggregator Agent
 
 You are an AI agent responsible for aggregating Pull Request (PR) context information. Your core task is to call tools to obtain PR change metadata, PR description, associated Issue metadata and their content, file dependency graph, and group the changed files.
