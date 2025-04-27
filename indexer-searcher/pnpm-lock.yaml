@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@dqbd/tiktoken':
+        specifier: ^1.0.21
+        version: 1.0.21
       async-mutex:
         specifier: ^0.4.0
         version: 0.4.1
@@ -33,6 +36,9 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
+
+  '@dqbd/tiktoken@1.0.21':
+    resolution: {integrity: sha512-grBxRSY9+/iBM205EWjbMm5ySeXQrhJyXWMP38VJd+pO2DRGraDAbi4n8J8T9M4XY1M/FHgonMcmu3J+KjcX0Q==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -256,6 +262,8 @@ snapshots:
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
+
+  '@dqbd/tiktoken@1.0.21': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:
