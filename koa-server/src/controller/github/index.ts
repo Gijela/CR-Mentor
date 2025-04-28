@@ -3,6 +3,8 @@ import type Koa from "koa"
 
 import logger from "@/utils/logger"
 import { diffsDetails } from "@/mock/getDiffsDetails"
+import { formatAndGroupDiff } from "@/lib/groupDiff"
+import { EDIT_TYPE, FilePatchInfo } from "@/lib/groupDiff/types"
 
 // 根据 githubName 创建 token
 export const createToken = async (ctx: Koa.Context) => {
@@ -185,7 +187,7 @@ export const createPullRequest = async (ctx: Koa.Context) => {
 
 // 获取 diffs 详情
 export const getDiffsDetails = async (ctx: Koa.Context) => {
-  const { githubName, compareUrl, baseLabel, headLabel } = ctx.request.body as any
+  const { githubName, compareUrl, baseLabel, headLabel, modelMaxToken = 10000 } = ctx.request.body as any
 
   try {
     // 1. 创建token
@@ -203,19 +205,7 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
       return
     }
 
-    // 2. 获取全量 PR 差异
-    // const diffResponse = await fetch(
-    //   diffLink,
-    //   {
-    //     headers: {
-    //       'Authorization': `Bearer ${token}`,
-    //       'Accept': 'application/vnd.github.v3.diff',
-    //       'X-GitHub-Api-Version': '2022-11-28',
-    //     }
-    //   }
-    // );
-    // const diffTotal = await diffResponse.text();
-
+    // 3. 获取 diffs 详情
     const response = await fetch(`${compareUrl.replace("{base}", baseLabel).replace("{head}", headLabel)}`, {
       method: "GET",
       headers: {
@@ -233,9 +223,16 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
     }
     const { files, commits } = await response.json()
 
+    // 4. 智能分组 diff
+    const diffFiles = files.map(file => ({
+      ...file,
+      patch: file.status === EDIT_TYPE.DELETED ? null : file.patch,
+      edit_type: file.status as EDIT_TYPE,
+    })) as FilePatchInfo[];
+    const result = formatAndGroupDiff(modelMaxToken, diffFiles, '测试测试system prompt');
+
     ctx.status = 200
-    ctx.body = { success: true, data: { files, commits } }
-    // ctx.body = diffsDetails
+    ctx.body = { success: true, data: result }
   } catch (error) {
     logger.error("🚀 ~ getDiffsDetails ~ error:", error)
     ctx.status = 500

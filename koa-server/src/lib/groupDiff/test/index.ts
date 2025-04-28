@@ -1,45 +1,9 @@
-import { handleLargeDiff, FilePatchInfo, LanguageInfo, EDIT_TYPE, TiktokenHandler } from './diff_handle';
+import { formatAndGroupDiff } from '../index';
+import { FilePatchInfo, EDIT_TYPE } from '../types';
 import { largePrDetails } from './getDiffsDetails';
-
-// 辅助函数：根据文件名猜测语言信息
-function guessLanguages(files: FilePatchInfo[]): LanguageInfo[] {
-  const languages: Record<string, string[]> = {};
-  const extensionMap: Record<string, string> = {
-    '.ts': 'TypeScript',
-    '.tsx': 'TypeScript',
-    '.js': 'JavaScript',
-    '.jsx': 'JavaScript',
-    '.py': 'Python',
-    '.java': 'Java',
-    '.go': 'Go',
-    '.md': 'Markdown',
-    '.vue': 'Vue',
-    '.json': 'JSON',
-    '.yaml': 'YAML',
-    '.yml': 'YAML',
-    '.gitignore': 'Ignore',
-    '.cursorrules': 'Rules',
-  };
-
-  files.forEach(file => {
-    const ext = '.' + file.filename.split('.').pop();
-    const lang = extensionMap[ext] || 'Unknown';
-    if (!languages[lang]) {
-      languages[lang] = [];
-    }
-    languages[lang].push(file.filename);
-  });
-
-  return Object.entries(languages).map(([language, files]) => ({ language, files }));
-}
-
 
 // 主测试函数
 const test = async () => {
-  console.log("初始化 TiktokenHandler...");
-  const tokenHandler = new TiktokenHandler(100); // Prompt 占用 100 tokens
-  const model = "gpt-3.5-turbo";
-
   // 定义测试用例
   const testCases = [
     // {
@@ -73,16 +37,12 @@ const test = async () => {
       patch: file.status === EDIT_TYPE.DELETED ? null : file.patch,
       edit_type: file.status as EDIT_TYPE,
     })) as FilePatchInfo[];
-    const prLanguages = guessLanguages(diffFiles); // 基于当前数据猜测语言
-    // console.log('prLanguages: ', prLanguages);
 
     console.log(`调用 handleLargeDiff 处理 ${diffFiles.length} 个文件变更...`);
-    const result = handleLargeDiff(
+    const result = formatAndGroupDiff(
+      4000,
       diffFiles,
-      prLanguages,
-      tokenHandler,
-      model,
-      tc.options
+      '测试测试system prompt',
     );
 
     // console.log('result ===> ', result);
