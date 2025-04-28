@@ -6,14 +6,13 @@ import { Tiktoken, get_encoding } from "@dqbd/tiktoken";
 
 const OUTPUT_BUFFER_TOKENS_SOFT_THRESHOLD = 1000; // 示例值：输出缓冲区 Token 软阈值，用于判断是否需要裁剪
 const OUTPUT_BUFFER_TOKENS_HARD_THRESHOLD = 500;  // 示例值：输出缓冲区 Token 硬阈值，用于裁剪时的绝对上限
-const MAX_EXTRA_FILES_TO_PROMPT = 5; // 示例值 - 注意：此常量未在提供的核心逻辑中直接使用，但为了完整性保留，以备他处需要。
 
 // 定义文件编辑类型的枚举
 export enum EDIT_TYPE {
-  ADDED = "ADDED",       // 新增文件
-  DELETED = "DELETED",     // 删除文件
-  MODIFIED = "MODIFIED",   // 修改文件
-  RENAMED = "RENAMED",     // 重命名文件 (逻辑上可能视为修改)
+  ADDED = "added",       // 新增文件
+  DELETED = "removed",     // 删除文件
+  MODIFIED = "modified",   // 修改文件
+  RENAMED = "renamed",     // 重命名文件 (逻辑上可能视为修改)
 }
 
 // 用于在裁剪后生成文件列表摘要的字符串前缀
@@ -822,18 +821,3 @@ function runExampleUsage() {
   // 辅助函数 'pass'，用于在未使用的分支或日志中占位
   function pass() { }
 }
-
-// ==========================================================================
-// 模块执行入口 (Module Execution Entry Point)
-// ==========================================================================
-
-// 如果此脚本是直接执行的（例如，使用 ts-node），则运行示例用法函数
-// 这种检查在 TS 模块中不如在 Python 中常见/直接，但此处用于示例目的。
-if (typeof require !== 'undefined' && require.main === module) {
-  runExampleUsage();
-}
-
-// 如果作为模块使用，则导出必要的组件
-// 注意：所有需要导出的组件（如 handleLargeDiff, FilePatchInfo 等）都已在它们定义的地方单独使用 `export` 关键字导出。
-// 因此，此处的批量导出注释可以保持注释状态或移除。
-// export { handleLargeDiff, FilePatchInfo, LanguageInfo, TokenHandler, MockTokenHandler, EDIT_TYPE }; // 已在上方单独导出

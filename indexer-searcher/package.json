@@ -8,7 +8,8 @@
     "build": "tsc",
     "test": "jest",
     "example": "ts-node src/example.ts",
-    "postinstall": "node scripts/download-symf.js"
+    "postinstall": "node scripts/download-symf.js",
+    "diff": "ts-node test.ts"
   },
   "dependencies": {
     "@dqbd/tiktoken": "^1.0.21",
