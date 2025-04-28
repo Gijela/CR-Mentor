@@ -1,5 +1,7 @@
+import { FileObject } from "@/controller/github/types";
+import { sortFilesFlat } from "./sortFilesFlat";
 import { TiktokenHandler, TokenHandler } from "./tokenCalculate";
-import { EDIT_TYPE, FilePatchInfo, HandleLargeDiffResult } from "./types";
+import { EDIT_TYPE, HandleLargeDiffResult } from "./types";
 import { generateCompressedDiff, extendPatchAndCalcToken, handleFormatResult } from "./utils";
 
 /**
@@ -8,7 +10,7 @@ import { generateCompressedDiff, extendPatchAndCalcToken, handleFormatResult } f
  */
 export function formatAndGroupDiff(
   modelMaxToken: number,
-  diffFiles: FilePatchInfo[],           // 输入的原始 diff 文件列表
+  diffFiles: FileObject[],           // 输入的原始 diff 文件列表
   systemPromptText: string,           // 系统提示的源文本
   options?: {                           // 可选配置项
     largePrHandling?: boolean;         // 是否启用大型 PR 处理模式
@@ -23,18 +25,21 @@ export function formatAndGroupDiff(
   const softTokenLimit = modelMaxToken - OUTPUT_BUFFER_TOKENS_SOFT_THRESHOLD; // 触发裁剪的阈值
   const hardTokenLimit = modelMaxToken - OUTPUT_BUFFER_TOKENS_HARD_THRESHOLD; // 裁剪后的硬性上限
 
+  // 排序 diff 文件，按照文件类型排序
+  const sortedDiffFiles = sortFilesFlat(diffFiles);
+
   // --- 步骤 1: 尝试生成完整的、扩展的 diff ---
-  const { patchesExtended, totalTokens: totalTokensFull } = extendPatchAndCalcToken(tokenHandler, diffFiles);
+  const { patchesExtended, totalTokens: totalTokensFull } = extendPatchAndCalcToken(tokenHandler, sortedDiffFiles);
 
   // --- 步骤 2: 检查完整 diff 是否在软限制内 ---
   if (totalTokensFull < softTokenLimit) {
     console.log(`总 tokens (${totalTokensFull}) 低于软限制 (${softTokenLimit})。返回完整 diff。`);
     // 收集所有有 patch 内容的文件和所有被删除的文件
-    const allFilesWithPatches = diffFiles
+    const allFilesWithPatches = sortedDiffFiles
       .filter(f => f.patch !== null) // 过滤有实际 patch 内容的文件
       .map(f => f.filename);
-    const allDeletedFiles = diffFiles
-      .filter(f => f.edit_type === EDIT_TYPE.DELETED) // 过滤删除的文件
+    const allDeletedFiles = sortedDiffFiles
+      .filter(f => f.status === EDIT_TYPE.DELETED) // 过滤删除的文件
       .map(f => f.filename);
 
     // 构造结果对象
@@ -67,14 +72,14 @@ export function formatAndGroupDiff(
     OUTPUT_BUFFER_TOKENS_HARD_THRESHOLD,
     tokenHandler,
     largePrHandling,
-    diffFiles,
+    sortedDiffFiles,
     maxAiCalls
   );
 
   // --- 步骤 4: 处理压缩/分块的结果 ---
   const result = handleFormatResult(
     patchesList,
-    diffFiles,
+    sortedDiffFiles,
     deletedFilesList,
     returnRemainingFiles,
     largePrHandling,

@@ -13,7 +13,7 @@
     "start": "tsx dist/src/index.js",
     "dev": "tsx watch src/index.ts",
     "rag": "tsx watch src/router/rag/test/index.js",
-    "diff": "tsx watch src/lib/groupDiff/test/index.ts",
+    "diff": "tsx watch src/lib/groupDiff/sortFilesFlat.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

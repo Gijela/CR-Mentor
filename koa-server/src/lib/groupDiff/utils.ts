@@ -1,13 +1,13 @@
 import { TokenHandler } from "./tokenCalculate";
-import { EDIT_TYPE, FilePatchInfo, GeneratePatchAndCalculateTokenResult, HandleLargeDiffResult } from "./types";
-
+import { EDIT_TYPE, GeneratePatchAndCalculateTokenResult, HandleLargeDiffResult } from "./types";
+import { FileObject } from "@/controller/github/types";
 
 /**
  * 生成扩展后的 diff patches 并计算 Token 数量。
  */
 export function extendPatchAndCalcToken(
   tokenHandler: TokenHandler, // 用于计算 Token 的处理器
-  diffFiles: FilePatchInfo[] // 包含所有文件差异信息的列表
+  diffFiles: FileObject[] // 包含所有文件差异信息的列表
 ): GeneratePatchAndCalculateTokenResult {
   const patchesExtended: string[] = []; // 存储生成的扩展 patch 字符串
   const patchesExtendedTokens: Record<string, number> = {}; // 记录每个文件 patch 的 Token 数
@@ -19,12 +19,12 @@ export function extendPatchAndCalcToken(
     const filename = file.filename || 'unknown_file';
 
     // 跳过没有 patch 内容的文件，除非它们是被删除的文件
-    if (patch === null && file.edit_type !== EDIT_TYPE.DELETED) {
+    if (patch === null && file.status !== EDIT_TYPE.DELETED) {
       continue;
     }
 
     // 处理删除的文件（它们计入文件列表，但不贡献 patch 内容的 Token）
-    if (file.edit_type === EDIT_TYPE.DELETED) {
+    if (file.status === EDIT_TYPE.DELETED) {
       patchesExtendedTokens[filename] = 0; // 删除文件的 patch Token 成本为 0
       continue; // 处理下一个文件
     }
@@ -60,14 +60,14 @@ export function generateCompressedDiff(
   outputBufferTokensHardThreshold: number, // 输出缓冲区 Token 硬限制
   tokenHandler: TokenHandler,            // Token 处理器
   largePrHandling: boolean,              // 是否启用大型 PR 处理模式（允许多个块）
-  diffFiles: FilePatchInfo[],            // 所有文件的差异信息
+  diffFiles: FileObject[],            // 所有文件的差异信息
   maxAiCalls: number = 5                 // 允许生成的最大块数 (来自 PRDescription 设置的默认值)
 ): {
   patchesList: string[][];              // 块列表，每个块是 patch 字符串列表
   totalTokensList: number[];            // 每个块的总 Token 数列表
   deletedFilesList: string[];           // 所有被删除文件的名称列表
   remainingFilesList: string[];         // 未包含在任何块中的（有 patch 的）文件列表
-  fileDict: Record<string, FilePatchInfo>; // 文件名字典
+  fileDict: Record<string, FileObject>; // 文件名字典
   filesInPatchesList: string[][];       // 块列表，每个块是其包含的文件名列表
 } {
   const patchesList: string[][] = [];       // 初始化块列表
@@ -76,7 +76,7 @@ export function generateCompressedDiff(
   let filesInPatchesList: string[][] = []; // 初始化块内文件列表
 
   // 创建文件名字典以便快速查找，并存储编辑类型
-  const fileDict: Record<string, FilePatchInfo> = {};
+  const fileDict: Record<string, FileObject> = {};
   diffFiles.forEach(f => { fileDict[f.filename] = f; });
 
   // 需要处理的文件应该是那些有实际 patch 内容的文件, 过滤出有 patch 的文件, 然后获取文件名列表
@@ -87,7 +87,7 @@ export function generateCompressedDiff(
 
   // 收集所有被删除文件的名称
   deletedFilesList = diffFiles
-    .filter(f => f.edit_type === EDIT_TYPE.DELETED)
+    .filter(f => f.status === EDIT_TYPE.DELETED)
     .map(f => f.filename);
 
   // 确定允许的 patch 生成迭代次数
@@ -141,7 +141,7 @@ export function generateCompressedDiff(
  * 直到接近 maxTokensModel（模型的最大 Token 限制）。
  */
 export function generateFullPatch(
-  fileDict: Record<string, FilePatchInfo>, // 文件名字典，方便查找文件信息
+  fileDict: Record<string, FileObject>, // 文件名字典，方便查找文件信息
   modelMaxToken: number,                // 模型允许的最大 Token 数
   outputBufferTokensHardThreshold: number, // 输出缓冲区 Token 硬限制
   filesToProcess: string[],              // 需要处理的文件名列表
@@ -262,7 +262,7 @@ export function clipTokens(
 /* 处理压缩/分块的结果 */
 export function handleFormatResult(
   patchesCompressedListChunks: string[][],
-  diffFiles: FilePatchInfo[],
+  diffFiles: FileObject[],
   deletedFilesList: string[],
   returnRemainingFiles: boolean,
   largePrHandling: boolean,
@@ -271,7 +271,7 @@ export function handleFormatResult(
   remainingFilesListFinal: string[],
   hardTokenLimit: number,
   tokenHandler: TokenHandler,
-  fileDict: Record<string, FilePatchInfo>
+  fileDict: Record<string, FileObject>
 ): HandleLargeDiffResult {
   // 初始化最终结果存储变量
   const finalPatchesStrings: string[] = []; // 最终的 patch 字符串列表
@@ -354,9 +354,9 @@ export function handleFormatResult(
       const fileInfo = fileDict[filename];
       if (!fileInfo) continue; // 跳过没有信息的
 
-      if (fileInfo.edit_type === EDIT_TYPE.ADDED) {
+      if (fileInfo.status === EDIT_TYPE.ADDED) {
         tempAdded.push(filename);
-      } else if (fileInfo.edit_type === EDIT_TYPE.MODIFIED || fileInfo.edit_type === EDIT_TYPE.RENAMED) {
+      } else if (fileInfo.status === EDIT_TYPE.MODIFIED || fileInfo.status === EDIT_TYPE.RENAMED) {
         tempModified.push(filename);
       }
     }

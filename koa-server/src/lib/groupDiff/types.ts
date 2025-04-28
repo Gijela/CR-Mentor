@@ -7,21 +7,6 @@ export enum EDIT_TYPE {
   RENAMED = "renamed",     // 重命名文件 (逻辑上可能视为修改)
 }
 
-// 定义单个文件的差异信息结构
-export interface FilePatchInfo {
-  filename: string;      // 文件名
-  patch: string | null; // Patch 内容，对于没有具体 Patch 信息的删除文件，此值为 null
-  edit_type: EDIT_TYPE;  // 编辑类型
-  // 如果原始结构中有其他相关字段，在此添加
-  [key: string]: any; // 允许包含其他任意属性
-}
-
-// 定义语言及其相关文件列表的结构
-export interface LanguageInfo {
-  language: string; // 编程语言名称
-  files: string[];  // 属于该语言的文件列表
-}
-
 // 定义 handleLargeDiff 函数返回结果的接口
 export interface HandleLargeDiffResult {
   patches: string[]; // 处理后的 patch 块字符串列表 (每个元素是一个完整的 patch 块文本)
