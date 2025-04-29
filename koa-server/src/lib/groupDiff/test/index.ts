@@ -1,5 +1,6 @@
+import { FileObject } from '@/controller/github/types';
 import { formatAndGroupDiff } from '../index';
-import { FilePatchInfo, EDIT_TYPE } from '../types';
+import { EDIT_TYPE } from '../types';
 import { largePrDetails } from './getDiffsDetails';
 
 // 主测试函数
@@ -35,8 +36,7 @@ const test = async () => {
     const diffFiles = tc.data.data.files.map(file => ({
       ...file,
       patch: file.status === EDIT_TYPE.DELETED ? null : file.patch,
-      edit_type: file.status as EDIT_TYPE,
-    })) as FilePatchInfo[];
+    })) as FileObject[];
 
     console.log(`调用 handleLargeDiff 处理 ${diffFiles.length} 个文件变更...`);
     const result = formatAndGroupDiff(

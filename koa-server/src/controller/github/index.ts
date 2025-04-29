@@ -2,10 +2,10 @@ import jwt from "jsonwebtoken"
 import type Koa from "koa"
 
 import logger from "@/utils/logger"
-import { diffsDetails } from "@/mock/getDiffsDetails"
 import { formatAndGroupDiff } from "@/lib/groupDiff"
 import { EDIT_TYPE } from "@/lib/groupDiff/types"
 import { FileObject } from "./types"
+import { buildSystemPrompt } from "@/app/prompt/github/system-prompt"
 
 // 根据 githubName 创建 token
 export const createToken = async (ctx: Koa.Context) => {
@@ -188,7 +188,7 @@ export const createPullRequest = async (ctx: Koa.Context) => {
 
 // 获取 diffs 详情
 export const getDiffsDetails = async (ctx: Koa.Context) => {
-  const { githubName, compareUrl, baseLabel, headLabel, modelMaxToken = 50000 } = ctx.request.body as any
+  const { prTitle, prDesc, githubName, compareUrl, baseLabel, headLabel, modelMaxToken = 100000 } = ctx.request.body as any
 
   try {
     // 1. 创建token
@@ -223,13 +223,15 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
       return
     }
     const { files, commits }: { files: FileObject[], commits: any[] } = await response.json()
+    const commitMessages = commits.map(commit => commit.commit.message)
+    const systemPrompt = buildSystemPrompt(prTitle, prDesc, commitMessages)
 
     // 4. 智能分组 diff
     const diffFiles = files.map(file => ({
       ...file,
       patch: file.status === EDIT_TYPE.DELETED ? null : file.patch,
     })) as FileObject[];
-    const result = formatAndGroupDiff(modelMaxToken, diffFiles, '测试测试system prompt');
+    const result = formatAndGroupDiff(modelMaxToken, diffFiles, systemPrompt);
 
     ctx.status = 200
     ctx.body = { success: true, data: result }
