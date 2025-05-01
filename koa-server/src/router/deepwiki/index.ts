@@ -4,6 +4,7 @@ const router = new Router({ prefix: "/deepwiki" })
 
 import { sendMessage, pollingResponse, generateUUID } from "@/controller/deepwiki/utils"
 import { HandleLargeDiffResult } from "@/lib/groupDiff/types"
+import { buildPrSummaryPrompt } from "@/app/prompt/github/pr-summary";
 
 // // 发送消息
 // router.post("/sendMessage", async (ctx) => {
@@ -39,28 +40,28 @@ async function initializeSessionWithSystemPrompt(
   systemPrompt: string,
   query_id: string,
   logPrefix: string = "" // 可选的日志前缀，用于区分调用场景
-): Promise<boolean> {
+): Promise<{ success: boolean, message: string, content: string, error?: any }> {
   console.log(`${logPrefix}🚀 ~ 使用 Query ID (${query_id}) 发送 System Prompt...`);
   try {
     const sendResult = await sendMessage(repo_name, systemPrompt, query_id);
-    if (!sendResult) {
+    if (!sendResult || !sendResult?.status) {
       console.error(`${logPrefix}🚨 ~ 发送 System Prompt (Query ID: ${query_id}) 失败: sendMessage returned falsy.`);
-      return false; // 发送失败
+      return { success: false, message: 'failed to send message', content: '' }; // 发送失败
     }
     console.log(`${logPrefix}   ~ System Prompt (Query ID: ${query_id}) 发送成功, 开始轮询...`);
 
-    const pollingResult = await pollingResponse(query_id);
-    if (!pollingResult) {
+    const { isDone, content } = await pollingResponse(query_id);
+    if (!isDone) {
       console.warn(`${logPrefix}⚠️ ~ 轮询 System Prompt (Query ID: ${query_id}) 失败: pollingResponse returned falsy.`);
       // 注意：即使轮询失败，对于重试场景，我们可能仍希望继续。
       // 但对于初始场景，这通常表示失败。调用者需要根据返回值决定如何处理。
-      return false; // 轮询失败/无结果
+      return { success: false, message: 'failed to polling response', content: '' }; // 轮询失败/无结果
     }
     console.log(`${logPrefix}   ~ System Prompt (Query ID: ${query_id}) 处理完成.`);
-    return true; // 成功
+    return { success: true, message: 'success', content }; // 成功
   } catch (error: any) {
     console.error(`${logPrefix}🚨 ~ 处理 System Prompt (Query ID: ${query_id}) 时发生异常:`, error);
-    return false; // 发生异常
+    return { success: false, message: 'failed to initialize session with system prompt', content: '', error }; // 发生异常
   }
 }
 
@@ -112,7 +113,7 @@ router.post("/getResult", async (ctx) => {
     console.log("🚀 ~ 获取 diffs & system prompt 成功，共", data.patches.length, "个 patches");
 
     // 1.5 使用初始 Query ID 初始化会话
-    const initialSessionOk = await initializeSessionWithSystemPrompt(repo_name, systemPrompt, currentQueryId, "[初始会话] ");
+    const { success: initialSessionOk } = await initializeSessionWithSystemPrompt(repo_name, systemPrompt, currentQueryId, "[初始会话] ");
     if (!initialSessionOk) {
       console.error("🚨 ~ 初始化会话失败 (发送或轮询初始 System Prompt 出错).");
       ctx.status = 500;
@@ -126,7 +127,7 @@ router.post("/getResult", async (ctx) => {
 
     // 2. 遍历 patches，依次发送消息并获取结果 (允许重试)
     console.log("🚀 ~ 开始处理 Patches...");
-    const CALL_PATCH_REVIEW = 'Please follow the requirements to REVIEW the multiple file diff code provided below.'
+    const CALL_PATCH_REVIEW = 'Please follow the requirements to review the multiple file diff code provided below.'
     for (let i = 0; i < data.patches.length; i++) {
       const patch = CALL_PATCH_REVIEW + data.patches[i];
       const currentAttempt = (retryCounts[i] || 0) + 1;
@@ -168,7 +169,7 @@ router.post("/getResult", async (ctx) => {
           console.log(`   ~ 创建新的 Query ID: ${currentQueryId} 用于重试 Patch ${i + 1} (旧 ID: ${previousQueryId})`)
 
           // === 使用新 Query ID 初始化会话 (用于重试) ===
-          const retrySessionOk = await initializeSessionWithSystemPrompt(repo_name, systemPrompt, currentQueryId, "[重试会话] ");
+          const { success: retrySessionOk } = await initializeSessionWithSystemPrompt(repo_name, systemPrompt, currentQueryId, "[重试会话] ");
           if (!retrySessionOk) {
             // 即使 System Prompt 初始化失败，仍然尝试发送 patch
             console.warn(`   ~ [重试会话] 初始化失败，但仍将继续尝试发送 Patch ${i + 1} (Query ID: ${currentQueryId})`);
@@ -189,12 +190,26 @@ router.post("/getResult", async (ctx) => {
 
     // 3. 所有 patches 处理完成 (可能部分跳过)，返回聚合结果和所有 query_id
     console.log("✅ ~ 所有 Patches 处理完成")
+
+    // 4. 生成 summary
+    const summaryQueryId = generateUUID()
+    const summaryPrompt = buildPrSummaryPrompt(data.deletedFiles, chatResults)
+
+    const { success: finalSessionOk, content: summaryContent, error: summaryError } = await initializeSessionWithSystemPrompt(repo_name, summaryPrompt, summaryQueryId, "[summary] ");
+    if (!finalSessionOk) {
+      console.error("🚨 ~ 初始化会话失败 (发送或轮询初始 System Prompt 出错).");
+      ctx.status = 500;
+      ctx.body = { success: false, message: "Failed to initialize session with system prompt.", queryIds: queryIdsUsed, summaryQueryId, summaryError };
+      return; // 中止处理
+    }
     ctx.status = 200
     ctx.body = {
       success: true,
       data: {
         chatResults: chatResults, // 只包含成功获取结果的 patch
-        queryIds: queryIdsUsed    // 包含所有尝试过的 queryId
+        chatQueryIds: queryIdsUsed,    // 包含所有尝试过的 queryId
+        summaryQueryId,
+        summaryContent
       }
     }
   } catch (error: any) {

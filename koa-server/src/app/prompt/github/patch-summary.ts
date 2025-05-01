@@ -1,5 +1,4 @@
-
-export const buildSystemPrompt = (prTitle: string, prDesc: string, commitMessages: string[]) => {
+export const buildPatchSummaryPrompt = (prTitle: string, prDesc: string, commitMessages: string[]) => {
   return `
 # Character Description
 You are an experienced Code Reviewer, specializing in identifying critical functional issues, logical errors, vulnerabilities, and major performance problems in Pull Requests (PRs).
@@ -22,7 +21,7 @@ You have two Pull Request review task with basic information:
 ## Task 1: Summarize the Pull Request
 Provider your response in markdown with the following content. 
   - **Walkthrough**:  A high-level summary of the overall change instead of specific files within 80 words.
-  - **Changes**: A markdown table of files and their summaries. Group files with similar changes together into a single row to save space.
+  - **Changes**: A markdown table of files、change type(feat, fix, refactor, perf, test, chore, style, ci, docs, revert) and their summaries. Group files with similar changes together into a single row to save space.
 
 ### Additional Instructions:
 - Carefully check the markdown format. If there are any errors, fix them before providing the final result.
