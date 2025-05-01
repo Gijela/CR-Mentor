@@ -33,6 +33,37 @@ import { HandleLargeDiffResult } from "@/lib/groupDiff/types"
 //   }
 // })
 
+// 辅助函数：发送 System Prompt 并等待响应
+async function initializeSessionWithSystemPrompt(
+  repo_name: string,
+  systemPrompt: string,
+  query_id: string,
+  logPrefix: string = "" // 可选的日志前缀，用于区分调用场景
+): Promise<boolean> {
+  console.log(`${logPrefix}🚀 ~ 使用 Query ID (${query_id}) 发送 System Prompt...`);
+  try {
+    const sendResult = await sendMessage(repo_name, systemPrompt, query_id);
+    if (!sendResult) {
+      console.error(`${logPrefix}🚨 ~ 发送 System Prompt (Query ID: ${query_id}) 失败: sendMessage returned falsy.`);
+      return false; // 发送失败
+    }
+    console.log(`${logPrefix}   ~ System Prompt (Query ID: ${query_id}) 发送成功, 开始轮询...`);
+
+    const pollingResult = await pollingResponse(query_id);
+    if (!pollingResult) {
+      console.warn(`${logPrefix}⚠️ ~ 轮询 System Prompt (Query ID: ${query_id}) 失败: pollingResponse returned falsy.`);
+      // 注意：即使轮询失败，对于重试场景，我们可能仍希望继续。
+      // 但对于初始场景，这通常表示失败。调用者需要根据返回值决定如何处理。
+      return false; // 轮询失败/无结果
+    }
+    console.log(`${logPrefix}   ~ System Prompt (Query ID: ${query_id}) 处理完成.`);
+    return true; // 成功
+  } catch (error: any) {
+    console.error(`${logPrefix}🚨 ~ 处理 System Prompt (Query ID: ${query_id}) 时发生异常:`, error);
+    return false; // 发生异常
+  }
+}
+
 type GetResultBody = {
   githubName: string
   compareUrl: string
@@ -56,7 +87,8 @@ router.post("/getResult", async (ctx) => {
   const retryCounts: { [key: number]: number } = {}; // 记录每个 patch 的重试次数
 
   try {
-    // 1. 获取 diffs & 合理分组 diffs
+    // 1. 获取 diffs & systemPrompt
+    console.log("🚀 ~ 开始获取 diff 详情和 system prompt...");
     const response = await fetch(`${process.env.SERVER_HOST}/github/getDiffsDetails`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -70,37 +102,51 @@ router.post("/getResult", async (ctx) => {
       return;
     }
 
-    const { success, data } = (await response.json()) as { success: boolean, data: HandleLargeDiffResult }
-    if (!success || !data || !Array.isArray(data.patches)) {
-      console.error("Invalid diff details response:", { success, data });
+    const { success, data, systemPrompt } = (await response.json()) as { success: boolean, data: HandleLargeDiffResult, systemPrompt: string }
+    if (!success || !data || !Array.isArray(data.patches) || !systemPrompt) {
+      console.error("Invalid diff details response:", { success, data, systemPrompt });
       ctx.status = 500
       ctx.body = { success: false, message: "failed to get diff details or invalid format" }
       return
     }
-    console.log("🚀 ~ 获取完成pr信息 ~ data 成功，共", data.patches.length, "个 patches")
+    console.log("🚀 ~ 获取 diffs & system prompt 成功，共", data.patches.length, "个 patches");
+
+    // 1.5 使用初始 Query ID 初始化会话
+    const initialSessionOk = await initializeSessionWithSystemPrompt(repo_name, systemPrompt, currentQueryId, "[初始会话] ");
+    if (!initialSessionOk) {
+      console.error("🚨 ~ 初始化会话失败 (发送或轮询初始 System Prompt 出错).");
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        message: "Failed to initialize session with system prompt.",
+        queryIds: queryIdsUsed
+      };
+      return; // 中止处理
+    }
 
     // 2. 遍历 patches，依次发送消息并获取结果 (允许重试)
-    for (let i = 0; i < data.patches.length; i++) { // 注意: 循环条件不变
-      const patch = data.patches[i];
-      const currentAttempt = (retryCounts[i] || 0) + 1; // 当前是第几次尝试 (包括首次)
-      console.log(`======  🚀 ~ 处理 Patch ${i + 1}/${data.patches.length} (Attempt ${currentAttempt}) patchLength: ${patch.length} ======`)
+    console.log("🚀 ~ 开始处理 Patches...");
+    const CALL_PATCH_REVIEW = 'Please follow the requirements to REVIEW the multiple file diff code provided below.'
+    for (let i = 0; i < data.patches.length; i++) {
+      const patch = CALL_PATCH_REVIEW + data.patches[i];
+      const currentAttempt = (retryCounts[i] || 0) + 1;
+      console.log(`======  🚀 ~ 处理 Patch ${i + 1}/${data.patches.length} (Attempt ${currentAttempt} using Query ID: ${currentQueryId}) patchLength: ${patch.length} ======`)
 
       try {
         // 2.1 发送当前 patch
-        const sendResultData = await sendMessage(repo_name, patch, currentQueryId) // 使用 currentQueryId
+        const sendResultData = await sendMessage(repo_name, patch, currentQueryId)
         if (!sendResultData) {
-          console.error(`🚀 ~ 发送 Patch ${i + 1} (Attempt ${currentAttempt}) 失败: sendMessage returned falsy`)
-          throw new Error("Send message returned falsy"); // 抛出错误进入 catch 处理重试
+          console.error(`🚀 ~ 发送 Patch ${i + 1} (Attempt ${currentAttempt}, Query ID: ${currentQueryId}) 失败: sendMessage returned falsy`)
+          throw new Error("Send message returned falsy");
         }
-        console.log(`🚀 ~ 发送 Patch ${i + 1} (Attempt ${currentAttempt}) 成功`, sendResultData)
+        console.log(`🚀 ~ 发送 Patch ${i + 1} (Attempt ${currentAttempt}) 成功`)
 
         // 2.2 轮询获取当前 patch 的结果
-        const pollingResultData = await pollingResponse(currentQueryId) // 使用 currentQueryId
+        const pollingResultData = await pollingResponse(currentQueryId)
         console.log(`🚀 ~ 轮询 Patch ${i + 1} (Attempt ${currentAttempt}) 结束:`, pollingResultData ? '有数据' : '无数据')
         if (!pollingResultData) {
-          // 如果轮询明确返回失败 (非异常)，也视为需要重试的错误
-          console.error(`🚀 ~ 轮询 Patch ${i + 1} (Attempt ${currentAttempt}) 失败: pollingResponse returned falsy`)
-          throw new Error("Polling response returned falsy"); // 抛出错误进入 catch 处理重试
+          console.error(`🚀 ~ 轮询 Patch ${i + 1} (Attempt ${currentAttempt}, Query ID: ${currentQueryId}) 失败: pollingResponse returned falsy`)
+          throw new Error("Polling response returned falsy");
         }
 
         // 存储当前 patch 的结果
@@ -110,35 +156,39 @@ router.post("/getResult", async (ctx) => {
 
       } catch (error) {
         // 捕获 pollingResponse 或上面抛出的错误
-        console.warn(`🚀 ~ 处理 Patch ${i + 1} (Attempt ${currentAttempt}) 捕获异常:`, error)
+        console.warn(`🚀 ~ 处理 Patch ${i + 1} (Attempt ${currentAttempt}, Query ID: ${currentQueryId}) 捕获异常:`, error)
 
-        retryCounts[i] = (retryCounts[i] || 0) + 1; // 增加当前 patch 的重试计数
+        retryCounts[i] = (retryCounts[i] || 0) + 1;
 
         if (retryCounts[i] <= MAX_RETRIES_PER_PATCH) {
           // 如果还没达到最大重试次数
-          console.log("   ~ 当前已收集结果数量:", chatResults.length)
-          console.log("   ~ 已使用的 Query IDs:", queryIdsUsed)
-
-          // 生成新的 query_id 并添加到列表中
+          const previousQueryId = currentQueryId; // 保存旧 ID 用于日志
           currentQueryId = generateUUID()
           queryIdsUsed.push(currentQueryId)
-          console.log(`   ~ 创建新的 Query ID: ${currentQueryId} 用于重试 Patch ${i + 1}`)
+          console.log(`   ~ 创建新的 Query ID: ${currentQueryId} 用于重试 Patch ${i + 1} (旧 ID: ${previousQueryId})`)
 
-          // !!! 关键: 减少 i，以便下一次循环迭代再次处理相同的索引 i
-          i--;
-          console.log(`   ~ 将重试 Patch ${i + 2}`) // 因为 i-- 了，所以下一个循环的 i+1 还是当前这个 patch
+          // === 使用新 Query ID 初始化会话 (用于重试) ===
+          const retrySessionOk = await initializeSessionWithSystemPrompt(repo_name, systemPrompt, currentQueryId, "[重试会话] ");
+          if (!retrySessionOk) {
+            // 即使 System Prompt 初始化失败，仍然尝试发送 patch
+            console.warn(`   ~ [重试会话] 初始化失败，但仍将继续尝试发送 Patch ${i + 1} (Query ID: ${currentQueryId})`);
+          } else {
+            console.log(`   ~ [重试会话] 初始化成功 (Query ID: ${currentQueryId}).`);
+          }
+          // === 初始化结束 ===
+
+          i--; // 减少 i，以便下次循环重试当前 patch
+          console.log(`   ~ 将使用新的 Query ID (${currentQueryId}) 重试 Patch ${i + 2}`)
 
         } else {
           // 达到最大重试次数
-          console.error(`🚀 ~ Patch ${i + 1} 达到最大重试次数 (${MAX_RETRIES_PER_PATCH}). 跳过此 patch.`);
-          // 不执行 i--，让 for 循环正常进入下一个 patch (i++)
-          // 可以考虑在这里记录下哪个 patch 最终失败了
+          console.error(`❌ ~ Patch ${i + 1} 达到最大重试次数 (${MAX_RETRIES_PER_PATCH}). 跳过此 patch.`);
         }
       }
     }
 
     // 3. 所有 patches 处理完成 (可能部分跳过)，返回聚合结果和所有 query_id
-    console.log("🚀 ~ 所有 Patches 处理完成")
+    console.log("✅ ~ 所有 Patches 处理完成")
     ctx.status = 200
     ctx.body = {
       success: true,
@@ -148,15 +198,21 @@ router.post("/getResult", async (ctx) => {
       }
     }
   } catch (error: any) {
-    console.error("🚀 ~ getResult 顶层错误:", error)
-    ctx.status = 500
-    // 在顶层错误中也返回已收集的信息
-    ctx.body = {
-      success: false,
-      message: `failed to get result: ${error.message}`,
-      error: error.message,
-      queryIds: queryIdsUsed,
-      resultsSoFar: chatResults
+    // 捕获顶层错误（例如 fetch 失败或初始 system prompt 失败后抛出的错误）
+    console.error("❌ ~ getResult 顶层错误:", error)
+    // 检查是否已设置状态码，如果没有（说明是 fetch 之前的错误），则设为 500
+    if (!ctx.status || ctx.status < 400) {
+      ctx.status = 500;
+    }
+    // 确保即使在顶层错误中也返回一致的结构
+    if (!ctx.body) {
+      ctx.body = {
+        success: false,
+        message: `failed to get result: ${error.message}`,
+        error: error.message,
+        queryIds: queryIdsUsed, // 可能只包含初始 ID
+        resultsSoFar: chatResults // 可能为空
+      };
     }
   }
 })
