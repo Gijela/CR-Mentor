@@ -6,4 +6,6 @@ export const openai = createOpenAI({
   name: 'openai',
 });
 
-export const openaiModel = openai(process.env.OPENAI_MODEL!);
+export const openaiChatModel = openai(process.env.OPENAI_CHAT_MODEL!);
+
+export const openaiEmbeddingModel = openai.embedding(process.env.OPENAI_EMBEDDING_MODEL!);
