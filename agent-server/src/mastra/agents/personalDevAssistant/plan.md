@@ -33,23 +33,10 @@
 
 - **目标**: 实现精准的问题模式跟踪 (对应功能 #1 避坑指南) 和技术优势识别 (对应功能 #4)，为开发者建立可靠、可查询的结构化档案。
 - **开发思路与细节梳理**:
+
   - **实现方式**: 选择通过 **Agent Tools** (`saveStructuredDataTool`, `queryStructuredDataTool`) 来封装数据库交互逻辑，而不是创建独立的后端 API，保持逻辑内聚。
-  - **数据库设计**: 采用**单一表** (`developer_profile_data`) 来存储两种洞察类型（问题 `issue` 和优势 `strength`），通过 `insight_type` 列进行区分。表结构设计如下：
-    ```sql
-    CREATE TABLE public.developer_profile_data (
-        id SERIAL PRIMARY KEY,                             -- 记录唯一标识符
-        developer_id TEXT NOT NULL,                       -- 开发者标识符 (需索引)
-        insight_type TEXT NOT NULL CHECK (insight_type IN ('issue', 'strength')), -- 洞察类型 ('issue' 或 'strength') (需索引)
-        category_or_area TEXT NOT NULL,                   -- 问题类别 或 优势领域 (可索引)
-        description TEXT NOT NULL,                        -- 详细描述
-        frequency INTEGER NOT NULL DEFAULT 1,             -- 出现频率 (主要用于 issue)
-        first_seen_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 首次出现时间
-        last_seen_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 最后出现时间 (需索引)
-        related_prs TEXT[],                              -- 相关 PR 列表 (文本数组)
-        status TEXT CHECK (status IN ('active', 'resolved') OR status IS NULL), -- 状态 ('active'/'resolved' for issue, 可索引)
-        confidence FLOAT CHECK (confidence >= 0 AND confidence <= 1 OR confidence IS NULL) -- 置信度 (可选, 主要用于 strength)
-    );
-    ```
+  - **数据库设计**: 采用**单一表** (`developer_profile_data`) 来存储两种洞察类型（问题 `issue` 和优势 `strength`），通过 `insight_type` 列进行区分。表结构设计[见./table/create-profile-data.sql](./table/create-profile-data.sql)
+
   - **存储逻辑 (`saveStructuredDataTool`)**: 工具负责接收 Agent 识别出的洞察数据。核心逻辑是先**查询**数据库判断是否存在基于 `developer_id`, `insight_type`, `category_or_area`, `description` 的相似记录。若存在，则**更新**该记录的 `frequency`, `last_seen_at` 并合并 `related_prs`；若不存在，则**插入**新记录。_注意：当前基于 `description` 的精确匹配可能过于严格，未来可考虑优化此匹配逻辑或将判断交给 Agent_。
   - **查询逻辑 (`queryStructuredDataTool`)**: 工具接收 `developer_id` 和可选的 `filters`，通过动态构建 SQL `WHERE` 子句执行**精确查询** (不使用向量搜索)，返回匹配的结构化记录列表，按 `last_seen_at` 降序排列。
   - **Agent 指令更新 (`instruction.ts`)**: 已更新指令，明确要求 Agent 在分析后调用 `queryStructuredDataTool` 获取历史，并在综合判断后可选地调用 `saveStructuredDataTool` 保存或更新洞察。生成最终反馈时，强调**优先基于查询到的结构化数据**。
@@ -150,28 +137,103 @@
 
 ---
 
-## 阶段 3: 知识库构建 - 解决方案沉淀与回顾 (待开始，预计 3-4 周)
+## 阶段 3: 知识库构建 - 解决方案沉淀与回顾 (已完成)
 
-- **目标**: 实现个人知识库的自动沉淀和快速回顾 (对应功能 #3)。
-- **关键任务**:
-  1.  **数据库设计**:
-      - 设计新表或扩展结构来存储 `knowledge_snippets`。
-      - 字段：`id`, `developerId`, `topic` (可选), `contentSummary` (text, 提炼内容), `embedding` (vector(1536)), `sourcePR`, `extractedFromSection`, `createdAt`。
-  2.  **后端/工具 - 存储逻辑**:
-      - 扩展 `saveStructuredData` 或创建 `saveKnowledgeSnippet` 工具。
-      - 逻辑: 接收数据；调用 `embedder` 生成 embedding；将文本和 embedding 存入数据库。
-  3.  **后端/工具 - 知识搜索逻辑**:
-      - 创建新的后端 API 或 Agent 工具 (`searchKnowledgeBase`)。
-      - 输入: `developerId`, `queryText`, `topicFilter` (可选), `topK` (可选)。
-      - 逻辑: 生成查询 embedding；执行**向量相似度搜索**并结合元数据过滤；返回相关结果。
-  4.  **Agent 指令更新**:
-      - 指导 Agent 从 `walkthrough` 等提炼解决方案并调用 `saveKnowledgeSnippet` 保存。
-      - 指导 Agent 在用户提问相关问题时，调用 `searchKnowledgeBase`。
-  5.  **测试**:
-      - 验证知识点保存和 embedding 生成。
-      - 评估知识库语义搜索的相关性。
-- **产出**: 具备个人知识库功能，支持语义搜索回顾过往解决方案。
-- **风险**: Agent 提炼知识点质量；向量搜索效果调优。
+- **目标**: 实现个人知识库的自动沉淀和快速回顾 (对应功能 #3)，使 Agent 能够存储和检索开发者过往的解决方案和经验。
+- **开发思路与细节梳理**:
+  - **数据库设计**:
+    - 创建新表 `public.knowledge_snippets` 用于存储知识片段。
+    - **表结构**: [见./table/create-knowledge-snippets.sql](./table/create-knowledge-snippets.sql)
+    - **关键索引**:
+      - 为 `developer_id` 创建 B-tree 索引 (`idx_knowledge_snippets_developer_id`) 以优化按开发者过滤。
+      - 为 `embedding` 创建 HNSW 向量索引 (`idx_knowledge_snippets_embedding_hnsw` 使用 `vector_l2_ops`) 以支持高效的 L2 距离相似度搜索。依赖 `pgvector` 扩展。
+      - 可选为 `topic` 和 `created_at` 创建索引。
+  - **后端/工具 - 存储逻辑**:
+    - 创建新的 Agent Tool `saveKnowledgeSnippetTool` (位于 `tools/saveKnowledgeSnippetTool.ts`)。
+    - **职责**: 接收 Agent 提炼的知识点数据 (`developer_id`, `content_summary`, 可选 `topic`, `source_pr` 等)。
+    - **核心逻辑**:
+      1. 使用共享的 `openaiEmbeddingModel` (来自 `model-provider/openai`，基于 `text-embedding-3-small`) 为 `content_summary` 生成 1536 维 embedding。
+      2. 使用共享的 `pg` 连接池将文本数据和生成的 embedding 向量存入 `knowledge_snippets` 表。
+  - **后端/工具 - 知识搜索逻辑**:
+    - 创建新的 Agent Tool `searchKnowledgeBaseTool` (位于 `tools/searchKnowledgeBaseTool.ts`)。
+    - **职责**: 接收用户查询 (`developer_id`, `queryText`, 可选 `topK`, `topicFilter`)，执行语义搜索。
+    - **核心逻辑**:
+      1. 使用共享的 `openaiEmbeddingModel` 为 `queryText` 生成 embedding。
+      2. 构建 SQL 查询，使用 `pgvector` 的 L2 距离操作符 (`<->`) 计算查询 embedding 与表中记录 embedding 的相似度。
+      3. 查询时**必须**按 `developer_id` 过滤，可选按 `topic` 精确匹配过滤。
+      4. 按 `similarity_score` (L2 距离) **升序**排序，并使用 `LIMIT` 限制返回 `topK` 条结果。
+      5. 返回包含 `id`, `content_summary`, `topic`, `source_pr`, `created_at` 以及 `similarity_score` 的结果列表。
+  - **Agent 指令更新 (`instruction.ts`)**:
+    - 在 `# 可用工具` 部分添加了 `saveKnowledgeSnippet` 和 `searchKnowledgeBase`。
+    - 增加了处理 PR 总结报告的 `流程 A` 中的 `步骤 A5.5: 提炼并保存知识片段 (可选)`，指导 Agent 在分析 PR 后，判断是否有价值保存知识点，并调用 `saveKnowledgeSnippetTool`。
+    - 新增了处理用户直接提问的 `流程 B`，指导 Agent 理解用户回顾性查询意图，调用 `searchKnowledgeBaseTool` 进行搜索，并基于搜索结果生成回答。
+  - **测试**:
+    - 对 `saveKnowledgeSnippetTool` 和 `searchKnowledgeBaseTool` 进行了单元测试，验证了核心功能（Embedding 生成、数据库交互、向量搜索、过滤）按预期工作。
+- **产出**: Agent 具备了将 PR 中的解决方案、经验教训自动沉淀到个人知识库的能力，并能通过自然语言查询快速回顾这些知识。
+- **状态**: **已完成并通过测试验证。**
+  - **测试示例 (Test Cases)**:
+    - **`saveKnowledgeSnippetTool`**:
+      - **Case 1: 基本保存**
+        - 输入 Context:
+          ```json
+          {
+            "developer_id": "dev_test_user_001",
+            "content_summary": "使用 pgvector 的 HNSW 索引可以显著提高大规模向量数据的相似性搜索速度。"
+          }
+          ```
+        - 预期行为: 在 `knowledge_snippets` 表插入新记录，包含 `developer_id`, `content_summary` 和 1536 维 `embedding`，返回 `success: true` 和新记录 `snippetId`。
+      - **Case 2: 包含可选字段的保存**
+        - 输入 Context:
+          ```json
+          {
+            "developer_id": "dev_test_user_002",
+            "content_summary": "在 Node.js 中处理异步操作时，务必对 Promise rejection 进行捕获，例如使用 try/catch 或 .catch()。",
+            "topic": "Node.js 异步错误处理",
+            "source_pr": "https://github.com/your-org/your-repo/pull/123",
+            "extracted_from_section": "代码审查评论"
+          }
+          ```
+        - 预期行为: 在 `knowledge_snippets` 表插入新记录，包含所有提供的信息和 `embedding`，返回 `success: true` 和新记录 `snippetId`。
+    - **`searchKnowledgeBaseTool`** (假设上述 save 操作已成功执行):
+      - **Case 1: 基本语义搜索 (找到相关结果)**
+        - 输入 Context:
+          ```json
+          {
+            "developer_id": "dev_test_user_001",
+            "queryText": "如何加速向量查询？",
+            "topK": 3
+          }
+          ```
+        - 预期输出 (`results`): 返回包含 Case 1 保存的记录的数组 (ID: 1, content_summary: "...HNSW 索引...")，`similarity_score` 较小。
+      - **Case 2: 按主题精确过滤 (找到结果)**
+        - 输入 Context:
+          ```json
+          {
+            "developer_id": "dev_test_user_002",
+            "queryText": "异步错误怎么处理",
+            "topicFilter": "Node.js 异步错误处理"
+          }
+          ```
+        - 预期输出 (`results`): 返回包含 Case 2 保存的记录的数组 (ID: 2, topic: "Node.js 异步错误处理")。
+      - **Case 3: 按主题精确过滤 (无结果)**
+        - 输入 Context:
+          ```json
+          {
+            "developer_id": "dev_test_user_002",
+            "queryText": "异步错误怎么处理",
+            "topicFilter": "数据库性能"
+          }
+          ```
+        - 预期输出 (`results`): 返回空数组 `[]`。
+      - **Case 4: 搜索其他开发者 (无结果)**
+        - 输入 Context:
+          ```json
+          {
+            "developer_id": "dev_test_user_999",
+            "queryText": "数据库索引"
+          }
+          ```
+        - 预期输出 (`results`): 返回空数组 `[]`。
 
 ---
 
