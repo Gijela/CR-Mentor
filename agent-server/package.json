@@ -17,9 +17,11 @@
     "@mastra/core": "^0.7.0",
     "@mastra/memory": "^0.2.6",
     "@mastra/pg": "^0.2.6",
+    "@types/pg": "^8.11.14",
     "adm-zip": "^0.5.16",
     "mastra": "^0.4.4",
     "octokit": "^4.1.2",
+    "pg": "^8.15.6",
     "what-the-diff": "^0.6.0",
     "zod": "^3.24.2"
   },
