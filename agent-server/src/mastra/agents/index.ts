@@ -16,6 +16,9 @@ import { prGroupsBuilderAgent } from './github-pr-groups-builder';
 // GitHub Review Group Agent
 import { reviewGroupAgent } from './github-review-group';
 
+// Personal Dev Assistant Agent
+import { personalDevAssistantAgent } from './personalDevAssistant';
+
 // 注册到 mastra 的 agents
 export const agents = {
   weatherAgent,
@@ -25,4 +28,5 @@ export const agents = {
   githubDiffReviewAgent,
   prGroupsBuilderAgent,
   reviewGroupAgent,
+  personalDevAssistantAgent,
 };
