@@ -257,3 +257,77 @@
 - **测试**: 单元、集成、端到端测试。
 - **监控与日志**: 添加必要日志。
 - **错误处理**: 确保健壮性。
+
+## 时序图
+
+### 场景一：处理 PR 总结报告 (Workflow A)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Agent
+    participant SD_Tools as Structured Data Tools (`query/saveStructuredData`)
+    participant KB_Tools as Knowledge Base Tools (`save/searchKnowledgeSnippet`)
+    participant StructuredDB as Profile Data DB (`developer_profile_data`)
+    participant KnowledgeDB as Knowledge Snippets DB (`knowledge_snippets`)
+    participant EmbedSvc as Embedding Service (OpenAI)
+
+    User->>+Agent: 提交 PR 总结 & 开发者 ID
+    Agent->>Agent: 解析 PR 文本 (提取关键信息)
+    Agent->>+SD_Tools: 调用 queryStructuredData(devId)
+    SD_Tools->>+StructuredDB: SELECT 历史洞察记录
+    StructuredDB-->>-SD_Tools: 返回 历史洞察
+    SD_Tools-->>-Agent: 返回 历史洞察
+    Agent->>Agent: 综合分析 (当前PR, 对话历史, 历史洞察)
+    opt 保存/更新结构化洞察
+        Agent->>+SD_Tools: 调用 saveStructuredData(...)
+        SD_Tools->>+StructuredDB: INSERT/UPDATE Profile Data
+        StructuredDB-->>-SD_Tools: 保存确认
+        SD_Tools-->>-Agent: 保存确认
+    end
+    opt 沉淀知识片段
+        Agent->>Agent: 判断是否有价值保存知识点
+        Agent->>+KB_Tools: 调用 saveKnowledgeSnippet(...)
+        KB_Tools->>+EmbedSvc: 请求生成 Embedding (内容)
+        EmbedSvc-->>-KB_Tools: 返回 Embedding 向量
+        KB_Tools->>+KnowledgeDB: INSERT Knowledge Snippet + Embedding
+        KnowledgeDB-->>-KB_Tools: 保存确认
+        KB_Tools-->>-Agent: 保存确认
+    end
+    Agent->>Agent: 生成个性化反馈
+    Agent-->>-User: 返回 PR 反馈
+```
+
+### 场景二：回答用户直接提问 (Workflow B)
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Agent
+    participant KB_Tools as Knowledge Base Tools (`save/searchKnowledgeSnippet`)
+    participant KnowledgeDB as Knowledge Snippets DB (`knowledge_snippets`)
+    participant EmbedSvc as Embedding Service (OpenAI)
+    participant SD_Tools as Structured Data Tools (`query/saveStructuredData`)
+    participant StructuredDB as Profile Data DB (`developer_profile_data`)
+
+
+    User->>+Agent: 提出问题 & 开发者 ID
+    Agent->>Agent: 理解用户查询意图
+    opt 意图为回顾知识/经验
+        Agent->>+KB_Tools: 调用 searchKnowledgeBase(devId, queryText, ...)
+        KB_Tools->>+EmbedSvc: 请求生成 Embedding (查询文本)
+        EmbedSvc-->>-KB_Tools: 返回 查询 Embedding
+        KB_Tools->>+KnowledgeDB: SELECT 相关 Snippets (向量搜索)
+        KnowledgeDB-->>-KB_Tools: 返回 搜索结果 (Snippets)
+        KB_Tools-->>-Agent: 返回 搜索结果
+    end
+    Agent->>Agent: 生成回答 (基于搜索结果、对话历史或通用知识)
+    opt 若知识库无结果且问题相关
+        Agent->>+SD_Tools: 调用 queryStructuredData(devId)  # 后备查询结构化数据
+        SD_Tools->>+StructuredDB: SELECT 洞察记录
+        StructuredDB-->>-SD_Tools: 返回 洞察记录
+        SD_Tools-->>-Agent: 返回 洞察记录
+        Agent->>Agent: 结合洞察记录生成回答
+    end
+    Agent-->>-User: 返回 回答
+```
