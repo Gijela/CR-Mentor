@@ -66,12 +66,11 @@ async function initializeSessionWithSystemPrompt(
 }
 
 type GetResultBody = {
-  githubName: string
   compareUrl: string
   baseLabel: string
   headLabel: string
   repo_name: string
-  // query_id: string // 这个参数现在不需要了，因为我们在内部生成
+  pull_number: number
   modelMaxToken?: number
   prTitle?: string
   prDesc?: string
@@ -79,13 +78,14 @@ type GetResultBody = {
 
 // 获取结果
 router.post("/getResult", async (ctx) => {
-  const { githubName, compareUrl, baseLabel, headLabel, prTitle, prDesc, modelMaxToken = 25000, repo_name } = ctx.request.body as Omit<GetResultBody, 'query_id'>
+  const { compareUrl, baseLabel, headLabel, prTitle, prDesc, modelMaxToken = 25000, repo_name, pull_number } = ctx.request.body as Omit<GetResultBody, 'query_id'>
 
   let currentQueryId = generateUUID()
   const queryIdsUsed: string[] = [currentQueryId]
   const chatResults: string[] = []
   const MAX_RETRIES_PER_PATCH = 1; // 每个 patch 最多重试1次 (总共尝试 1 + 1 = 2次)
   const retryCounts: { [key: number]: number } = {}; // 记录每个 patch 的重试次数
+  const owner = repo_name.split('/')[0], repo = repo_name.split('/')[1]
 
   try {
     // 1. 获取 diffs & systemPrompt
@@ -93,7 +93,7 @@ router.post("/getResult", async (ctx) => {
     const response = await fetch(`${process.env.SERVER_HOST}/github/getDiffsDetails`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prTitle, prDesc, githubName, compareUrl, baseLabel, headLabel, modelMaxToken }),
+      body: JSON.stringify({ prTitle, prDesc, githubName: owner, compareUrl, baseLabel, headLabel, modelMaxToken }),
     })
     if (!response.ok) {
       const errorText = await response.text();
@@ -202,6 +202,17 @@ router.post("/getResult", async (ctx) => {
       ctx.body = { success: false, message: "Failed to initialize session with system prompt.", queryIds: queryIdsUsed, summaryQueryId, summaryError };
       return; // 中止处理
     }
+
+    // 5. 调用开发者个性化助手
+    const params = {
+      developer_id: 'mock_test_id',
+      owner,
+      repo,
+      pull_number,
+      prReportText: summaryContent
+    }
+    console.log("🚀 ~ params:", params)
+
     ctx.status = 200
     ctx.body = {
       success: true,

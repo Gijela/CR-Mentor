@@ -7,6 +7,8 @@ import { saveStructuredDataTool } from "./tools/saveStructuredDataTool";
 import { queryStructuredDataTool } from "./tools/queryStructuredDataTool";
 import { saveKnowledgeSnippetTool } from "./tools/saveKnowledgeSnippetTool";
 import { searchKnowledgeBaseTool } from "./tools/searchKnowledgeBaseTool";
+import { githubFileCommentTool } from "./tools/githubFileCommentTool";
+import { githubPrSummaryTool } from "./tools/githubPrSummaryTool";
 
 export const personalDevAssistantAgent = new Agent({
   name: "personalDevAssistant",
@@ -18,5 +20,7 @@ export const personalDevAssistantAgent = new Agent({
     queryStructuredData: queryStructuredDataTool,
     saveKnowledgeSnippet: saveKnowledgeSnippetTool,
     searchKnowledgeBase: searchKnowledgeBaseTool,
-  }
+    githubFileComment: githubFileCommentTool,
+    githubPrSummary: githubPrSummaryTool,
+  },
 });
