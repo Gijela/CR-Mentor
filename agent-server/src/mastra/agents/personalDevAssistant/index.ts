@@ -9,6 +9,7 @@ import { saveKnowledgeSnippetTool } from "./tools/saveKnowledgeSnippetTool";
 import { searchKnowledgeBaseTool } from "./tools/searchKnowledgeBaseTool";
 import { githubFileCommentTool } from "./tools/githubFileCommentTool";
 import { githubPrSummaryTool } from "./tools/githubPrSummaryTool";
+import { openaiChatModel } from "../../model-provider/openai";
 
 export const personalDevAssistantAgent = new Agent({
   name: "personalDevAssistant",
