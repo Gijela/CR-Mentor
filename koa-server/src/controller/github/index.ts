@@ -189,7 +189,8 @@ export const createPullRequest = async (ctx: Koa.Context) => {
 // 创建 PR webhook
 export const createPrWebhook = async (ctx: Koa.Context) => {
   console.log("🚀 ~ createPrWebhook ~ ctx.request.body:", ctx.request.body)
-  const { action, number, pull_request } = ctx.request.body as any
+  const { payload } = ctx.request.body as { payload: string }
+  const { action, number, pull_request } = JSON.parse(payload || "{}") as any
 
   if (action !== "opened") {
     ctx.status = 200
