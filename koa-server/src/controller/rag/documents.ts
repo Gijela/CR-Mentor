@@ -103,11 +103,10 @@ export const listDocuments = async (ctx: Koa.Context): Promise<void> => {
   try {
     const results = await pgVector.query({
       indexName: knowledgeBaseName,
-      queryVector: Array.from({ length: 1536 }).fill(0),
+      queryVector: new Array<number>(1536).fill(0),
       // filter: options.filter,
       // start: (options.page - 1) * options.pageSize,
       // topK: options.pageSize,
-      start: 0,
       topK: 99999999999, // 获取所有文档, 先不处理分页
     })
 

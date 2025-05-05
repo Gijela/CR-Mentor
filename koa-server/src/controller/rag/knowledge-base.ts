@@ -51,7 +51,7 @@ const getKnowledgeBaseMetadata = async (
   try {
     const results = await pgVector.query({
       indexName: name,
-      queryVector: Array.from({ length: 1536 }).fill(0),
+      queryVector: new Array<number>(1536).fill(0),
       filter: { type: "kb_metadata" },
       topK: 1,
     })
@@ -70,7 +70,7 @@ const setKnowledgeBaseMetadata = async (
   const { pgVector } = createClients(config)
   await pgVector.upsert({
     indexName: name,
-    vectors: [Array.from({ length: 1536 }).fill(0)],
+    vectors: [new Array<number>(1536).fill(0)],
     metadata: [{
       ...metadata,
       type: "kb_metadata",
@@ -149,7 +149,7 @@ export const getKnowledgeBase = async (ctx: Koa.Context): Promise<void> => {
   try {
     const results = await pgVector.query({
       indexName: name,
-      queryVector: Array.from({ length: 1536 }).fill(0),
+      queryVector: new Array<number>(1536).fill(0),
       topK: 1,
     })
 
