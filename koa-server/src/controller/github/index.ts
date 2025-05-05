@@ -40,7 +40,7 @@ export const createToken = async (ctx: Koa.Context) => {
         },
       },
     )
-    const { id: installationId } = await installationsResponse.json()
+    const { id: installationId, account } = await installationsResponse.json()
 
     // 3. 获取 githubName 对应用户的 token
     const access_tokens_url = `https://api.github.com/app/installations/${installationId}/access_tokens`
@@ -54,7 +54,7 @@ export const createToken = async (ctx: Koa.Context) => {
     const { token }: { token: string } = await accessTokenResponse.json()
     logger.info("🚀 ~ createToken ~ token:", token)
     ctx.status = 200
-    ctx.body = { success: true, token: token || "", msg: "create token success" }
+    ctx.body = { success: true, token: token || "", msg: "create token success", account }
   } catch (error) {
     logger.error("🚀 ~ createToken ~ error:", error)
     ctx.status = 500
@@ -199,7 +199,7 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
       },
       body: JSON.stringify({ githubName }),
     })
-    const { success, token, msg, error } = await tokenResponse.json()
+    const { success, token, msg, error, account } = await tokenResponse.json()
     if (!success) {
       ctx.status = 500
       ctx.body = { success: false, message: msg, error }
@@ -235,7 +235,7 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
     const result = formatAndGroupDiff(modelMaxToken, diffFiles, systemPrompt);
 
     ctx.status = 200
-    ctx.body = { success: true, data: result, systemPrompt }
+    ctx.body = { success: true, data: result, systemPrompt, github_node_id: account?.node_id }
   } catch (error) {
     logger.error("🚀 ~ getDiffsDetails ~ error:", error)
     ctx.status = 500

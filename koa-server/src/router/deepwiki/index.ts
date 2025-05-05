@@ -34,6 +34,14 @@ import { buildPrSummaryPrompt } from "@/app/prompt/github/pr-summary";
 //   }
 // })
 
+import { mock } from './mock'
+import { callDevAssistantGenerate } from "@/mastra/callFunc/callPersonalDevAssistantAgent";
+
+router.post("/test", async (ctx) => {
+  const result = await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`, 'MDQ6VXNlcjgyMDcxMjA5')
+  ctx.body = result
+})
+
 // 辅助函数：发送 System Prompt 并等待响应
 async function initializeSessionWithSystemPrompt(
   repo_name: string,
@@ -103,7 +111,7 @@ router.post("/getResult", async (ctx) => {
       return;
     }
 
-    const { success, data, systemPrompt } = (await response.json()) as { success: boolean, data: HandleLargeDiffResult, systemPrompt: string }
+    const { success, data, systemPrompt, github_node_id } = (await response.json()) as { success: boolean, data: HandleLargeDiffResult, systemPrompt: string, github_node_id: string }
     if (!success || !data || !Array.isArray(data.patches) || !systemPrompt) {
       console.error("Invalid diff details response:", { success, data, systemPrompt });
       ctx.status = 500
@@ -204,23 +212,23 @@ router.post("/getResult", async (ctx) => {
     }
 
     // 5. 调用开发者个性化助手
-    const params = {
-      developer_id: 'mock_test_id',
+    const prPrompt = JSON.stringify({
       owner,
       repo,
       pull_number,
       prReportText: summaryContent
-    }
-    console.log("🚀 ~ params:", params)
+    })
+    await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${prPrompt}`, github_node_id)
 
     ctx.status = 200
     ctx.body = {
       success: true,
+      message: 'call personal dev assistant success',
       data: {
-        chatResults: chatResults, // 只包含成功获取结果的 patch
+        // chatResults: chatResults, // 只包含成功获取结果的 patch
         chatQueryIds: queryIdsUsed,    // 包含所有尝试过的 queryId
         summaryQueryId,
-        summaryContent
+        summaryContent,
       }
     }
   } catch (error: any) {
