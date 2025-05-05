@@ -99,19 +99,35 @@ export function CreatePRDialog({ githubName }: { githubName: string }) {
       toast.success(msg);
 
       // 保存必要的 diff 信息
-      const diffInfo: DiffInfo = {
-        githubName: data?.head?.user?.login,
+      // const diffInfo: DiffInfo = {
+      //   githubName: data?.head?.user?.login,
+      //   compareUrl: data?.head?.repo?.compare_url,
+      //   baseLabel: data?.base?.label,
+      //   headLabel: data?.head?.label,
+      //   commentUrl: data?._links?.comments?.href,
+      //   reviewCommentsUrl: data?._links?.review_comments?.href,
+      //   repoUrl: data?.head?.repo?.html_url,
+      //   sourceBranch: data?.head?.ref,
+      // };
+
+      const deepwikiParams = {
         compareUrl: data?.head?.repo?.compare_url,
         baseLabel: data?.base?.label,
         headLabel: data?.head?.label,
-        commentUrl: data?._links?.comments?.href,
-        reviewCommentsUrl: data?._links?.review_comments?.href,
-        repoUrl: data?.head?.repo?.html_url,
-        sourceBranch: data?.head?.ref,
-      };
+        repo_name: data?.head?.repo?.full_name,
+        pull_number: data?.number,
+      }
+
+      fetch(`${import.meta.env.VITE_SERVER_HOST}/deepwiki/getResult`, {
+        method: "POST",
+        body: JSON.stringify(deepwikiParams),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       // handleGetDiffInfo(diffInfo)
-      navigate(`/agents?diffInfo=${JSON.stringify(diffInfo)}`);
+      // navigate(`/agents?diffInfo=${JSON.stringify(diffInfo)}`);
 
       resetForm();
       setOpen(false);

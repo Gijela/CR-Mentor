@@ -186,6 +186,42 @@ export const createPullRequest = async (ctx: Koa.Context) => {
   }
 }
 
+// 创建 PR webhook
+export const createPrWebhook = async (ctx: Koa.Context) => {
+  console.log("🚀 ~ createPrWebhook ~ ctx.request.body:", ctx.request.body)
+  const { action, number, pull_request } = ctx.request.body as any
+
+  if (action !== "opened") {
+    ctx.status = 200
+    ctx.body = { success: true, msg: `unsupported action: ${action}` }
+    return
+  }
+
+  try {
+    const params = {
+      compareUrl: pull_request.head.repo.compare_url,
+      baseLabel: pull_request.base.label,
+      headLabel: pull_request.head.label,
+      repo_name: pull_request.head.repo.full_name,
+      pull_number: number,
+    }
+    fetch(`${process.env.SERVER_HOST}/deepwiki/getResult`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params),
+    })
+
+    ctx.status = 200
+    ctx.body = { success: true, msg: "success" }
+  } catch (error) {
+    logger.error("🚀 ~ createPrWebhook ~ error:", error)
+    ctx.status = 500
+    ctx.body = { success: false, message: "create pr webhook failed", error }
+  }
+}
+
 // 获取 diffs 详情
 export const getDiffsDetails = async (ctx: Koa.Context) => {
   const { prTitle, prDesc, githubName, compareUrl, baseLabel, headLabel, modelMaxToken = 25000 } = ctx.request.body as any
