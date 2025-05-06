@@ -38,7 +38,7 @@ import { mock } from './mock'
 import { callDevAssistantGenerate } from "@/mastra/callFunc/callPersonalDevAssistantAgent";
 
 router.post("/test", async (ctx) => {
-  const result = await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`, 'MDQ6VXNlcjgyMDcxMjA5')
+  const result = await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`, 'MDQ6VXNlcjgyMDcxMjA5'.toLowerCase())
   ctx.body = result
 })
 
@@ -218,7 +218,7 @@ router.post("/getResult", async (ctx) => {
       pull_number,
       prReportText: summaryContent
     })
-    await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${prPrompt}`, github_node_id)
+    await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${prPrompt}`, github_node_id.toLowerCase())
 
     ctx.status = 200
     ctx.body = {

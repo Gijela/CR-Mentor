@@ -106,7 +106,7 @@ export const pollingResponse = async (query_id: string) => {
   const retryInterval = 2000; // 每次重试间隔2秒
 
   while (retryCount < maxRetries) {
-    console.log("🚀 ~ 轮询 ~ retryCount:", retryCount, query_id)
+    console.log("🚀 ~ 轮询 ~ retryCount:", retryCount)
     data = await getMarkdownData(query_id);
 
     if (data.isDone) {
