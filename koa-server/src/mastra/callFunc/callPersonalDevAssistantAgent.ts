@@ -5,7 +5,7 @@ export const callDevAssistantGenerate = async (message: string, developer_id: st
     const agent = await mastra.getAgent("personalDevAssistantAgent")
     const result = await agent.generate(message, {
       resourceId: developer_id,
-      threadId: `thread_${developer_id}`,
+      threadId: `thread_${developer_id}_${Math.random().toString(36).substring(2, 15)}`,
       maxSteps: 20
     })
     return result
