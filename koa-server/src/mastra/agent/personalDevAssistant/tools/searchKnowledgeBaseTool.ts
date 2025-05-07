@@ -4,7 +4,7 @@ import pg from 'pg';
 import { openaiEmbeddingModel } from "../../../model-provider/openai"; // Import the shared embedder
 
 // Reuse the connection string and pool configuration
-const connectionString = process.env.REPO_DB!;
+const connectionString = process.env.MEMORY_DB_PG_VECTOR!;
 const pool = new pg.Pool({ connectionString });
 
 // 1. Define the input schema for the search tool

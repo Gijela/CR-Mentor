@@ -4,7 +4,7 @@ import { z } from "zod";
 import pg from 'pg';
 
 // 获取数据库连接字符串 (与 memory.ts 保持一致)
-const connectionString = process.env.REPO_DB!;
+const connectionString = process.env.MEMORY_DB_PG_VECTOR!;
 // 创建连接池
 const pool = new pg.Pool({ connectionString });
 

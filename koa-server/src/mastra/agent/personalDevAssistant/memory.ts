@@ -2,7 +2,7 @@ import { Memory } from "@mastra/memory";
 import { PostgresStore, PgVector } from "@mastra/pg";
 import { openaiEmbeddingModel } from "../../model-provider/openai";
 
-const connectionString = process.env.REPO_DB!;
+const connectionString = process.env.MEMORY_DB_PG_VECTOR!;
 
 export const memory = new Memory({
   storage: new PostgresStore({ connectionString }),
