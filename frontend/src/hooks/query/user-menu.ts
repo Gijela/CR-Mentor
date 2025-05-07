@@ -4,7 +4,9 @@ import {
   BookOpen,
   Bot,
   ChartNoAxesCombined,
+  Gauge,
   GitPullRequest,
+  Orbit,
   TrendingUp,
 } from "lucide-react"
 
@@ -44,30 +46,30 @@ export const menus: IExtendedMenu[] = [
     icon: TrendingUp,
     to: "/quickStart",
   },
-  // {
-  //   title: "dashboard",
-  //   icon: Gauge,
-  //   to: "/dashboard",
-  //   children: [
-  //     {
-  //       title: "overview",
-  //       label: "128",
-  //       icon: Gauge,
-  //       to: "/dashboard/overview",
-  //     },
-  //     {
-  //       title: "analysis",
-  //       label: "9",
-  //       icon: ChartNoAxesCombined,
-  //       to: "/dashboard/analysis",
-  //     },
-  //     {
-  //       title: "workplace",
-  //       icon: Orbit,
-  //       to: "/dashboard/workplace",
-  //     },
-  //   ],
-  // },
+  {
+    title: "dashboard",
+    icon: Gauge,
+    to: "/dashboard",
+    // children: [
+    //   {
+    //     title: "overview",
+    //     label: "128",
+    //     icon: Gauge,
+    //     to: "/dashboard/overview",
+    //   },
+    //   {
+    //     title: "analysis",
+    //     label: "9",
+    //     icon: ChartNoAxesCombined,
+    //     to: "/dashboard/analysis",
+    //   },
+    //   {
+    //     title: "workplace",
+    //     icon: Orbit,
+    //     to: "/dashboard/workplace",
+    //   },
+    // ],
+  },
   // {
   //   title: "forms",
   //   label: "12",
@@ -186,6 +188,6 @@ export const menus: IExtendedMenu[] = [
   // {
   //   title: "test",
   //   icon: Bot,
-  //   to: "/test",
+  //   to: "/dashboard",
   // },
 ] as const
