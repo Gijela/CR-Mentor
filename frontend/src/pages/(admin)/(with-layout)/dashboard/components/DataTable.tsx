@@ -47,6 +47,7 @@ import {
   MoreVerticalIcon,
   PlusIcon,
   TrendingUpIcon,
+  AlertTriangleIcon,
 } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import { toast } from "sonner";
@@ -100,18 +101,23 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export const schema = z.object({
-  id: z.number(),
-  header: z.string(),
-  type: z.string(),
-  status: z.string(),
-  target: z.string(),
-  limit: z.string(),
-  reviewer: z.string(),
+// Updated schema for IssueItem
+export const issueSchema = z.object({
+  id: z.string(), // Assuming ID from API is a string or can be converted
+  description: z.string(),
+  category_or_area: z.string(),
+  status: z.string(), // e.g., "active", "resolved", "new"
+  frequency: z.number().optional(),
+  related_prs: z.array(z.string()).nullable().optional(),
+  last_seen_at: z.string().datetime({ offset: true }).optional(), // Expecting ISO 8601 format
+  first_seen_at: z.string().datetime({ offset: true }).optional(),
 });
 
+export type IssueItem = z.infer<typeof issueSchema>;
+
 // Create a separate component for the drag handle
-function DragHandle({ id }: { id: number }) {
+function DragHandle({ id }: { id: string }) {
+  // id type changed to string
   const { attributes, listeners } = useSortable({
     id,
   });
@@ -130,53 +136,31 @@ function DragHandle({ id }: { id: number }) {
   );
 }
 
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
+const columns: ColumnDef<IssueItem>[] = [
+  // Type changed to IssueItem
   {
     id: "drag",
     header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
+    cell: ({ row }) => <DragHandle id={row.original.id} />, // id is string
   },
   {
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "header",
-    header: "Header",
+    accessorKey: "description", // Was "header"
+    header: "Issue Description",
     cell: ({ row }) => {
+      // TableCellViewer will need to be adapted or this cell customized
       return <TableCellViewer item={row.original} />;
     },
     enableHiding: false,
   },
   {
-    accessorKey: "type",
-    header: "Section Type",
+    accessorKey: "category_or_area", // Was "type"
+    header: "Category",
     cell: ({ row }) => (
-      <div className="w-32">
+      <div className="w-36 truncate">
+        {" "}
+        {/* Increased width and added truncate */}
         <Badge variant="outline" className="px-1.5 text-muted-foreground">
-          {row.original.type}
+          {row.original.category_or_area}
         </Badge>
       </div>
     ),
@@ -184,100 +168,96 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    cell: ({ row }) => (
-      <Badge
-        variant="outline"
-        className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
-      >
-        {row.original.status === "Done" ? (
-          <CheckCircle2Icon className="text-green-500 dark:text-green-400" />
-        ) : (
-          <LoaderIcon />
-        )}
-        {row.original.status}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: "target",
-    header: () => <div className="w-full text-right">Target</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error",
-          });
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-target`} className="sr-only">
-          Target
-        </Label>
-        <Input
-          className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background"
-          defaultValue={row.original.target}
-          id={`${row.original.id}-target`}
-        />
-      </form>
-    ),
-  },
-  {
-    accessorKey: "limit",
-    header: () => <div className="w-full text-right">Limit</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error",
-          });
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-          Limit
-        </Label>
-        <Input
-          className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background"
-          defaultValue={row.original.limit}
-          id={`${row.original.id}-limit`}
-        />
-      </form>
-    ),
-  },
-  {
-    accessorKey: "reviewer",
-    header: "Reviewer",
     cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Assign reviewer";
-
-      if (isAssigned) {
-        return row.original.reviewer;
+      const status = row.original.status.toLowerCase();
+      // Example status handling, adjust icons and colors as needed
+      let icon = <LoaderIcon />;
+      if (status === "active" || status === "open" || status === "new") {
+        icon = (
+          <AlertTriangleIcon className="text-orange-500 dark:text-orange-400" />
+        );
+      } else if (
+        status === "resolved" ||
+        status === "closed" ||
+        status === "done"
+      ) {
+        icon = (
+          <CheckCircle2Icon className="text-green-500 dark:text-green-400" />
+        );
       }
-
       return (
-        <>
-          <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-            Reviewer
-          </Label>
-          <Select>
-            <SelectTrigger
-              className="h-8 w-40"
-              id={`${row.original.id}-reviewer`}
-            >
-              <SelectValue placeholder="Assign reviewer" />
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-              <SelectItem value="Jamik Tashpulatov">
-                Jamik Tashpulatov
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </>
+        <Badge
+          variant="outline"
+          className="mr-4 gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
+        >
+          {icon}
+          <span className="capitalize">{row.original.status}</span>
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: "frequency",
+    header: () => <div className="w-full">Frequency</div>,
+    cell: ({ row }) => (
+      <div className="w-24 tabular-nums">
+        {" "}
+        {/* Adjusted width */}
+        {row.original.frequency ?? "N/A"}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "related_prs",
+    header: "Related PRs",
+    cell: ({ row }) => {
+      const prs = row.original.related_prs;
+      if (!prs || prs.length === 0) {
+        return <span className="text-muted-foreground">None</span>;
+      }
+      const prArr = prs?.[0]?.split("/");
+      const repo = prArr?.[prArr.length - 3];
+      const prNumber = prArr?.[prArr.length - 1];
+      // Simple display, could be enhanced with links if PRs are URLs
+      return (
+        <div className="w-36 truncate">
+          {/* Added truncate for long lists */}
+          <Button
+            variant="link"
+            onClick={() => window.open(prs?.[0], "_blank")}
+            className="w-fit px-0 text-left text-foreground"
+          >
+            {repo} PR {prNumber}
+          </Button>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "first_seen_at",
+    header: "First Seen",
+    cell: ({ row }) => {
+      const date = row.original.first_seen_at;
+      return (
+        <div className="w-24">
+          {" "}
+          {/* Adjusted width */}
+          {date ? new Date(date).toLocaleDateString() : "N/A"}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "last_seen_at",
+    header: "Last Seen",
+    cell: ({ row }) => {
+      const date = row.original.last_seen_at;
+      return (
+        <div className="w-24">
+          {" "}
+          {/* Adjusted width */}
+          {date ? new Date(date).toLocaleDateString() : "N/A"}
+        </div>
       );
     },
   },
@@ -296,25 +276,33 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
+            Make a copy
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
+            Favorite
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Delete</DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer" onClick={() => {}}>
+            Delete
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
   },
 ];
 
-function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
+function DraggableRow({ row }: { row: Row<IssueItem> }) {
+  // Type changed to IssueItem
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
   });
 
   return (
     <TableRow
-      data-state={row.getIsSelected() && "selected"}
       data-dragging={isDragging}
       ref={setNodeRef}
       className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
@@ -335,10 +323,9 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
 export function DataTable({
   data: initialData,
 }: {
-  data: z.infer<typeof schema>[];
+  data: IssueItem[]; // Type changed to IssueItem[]
 }) {
-  const [data, setData] = React.useState(() => initialData);
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [data, setData] = React.useState<IssueItem[]>(initialData); // Type changed
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -363,17 +350,14 @@ export function DataTable({
 
   const table = useReactTable({
     data,
-    columns,
+    columns, // Using the updated columns
     state: {
       sorting,
       columnVisibility,
-      rowSelection,
       columnFilters,
       pagination,
     },
     getRowId: (row) => row.id.toString(),
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -402,7 +386,7 @@ export function DataTable({
       defaultValue="outline"
       className="flex w-full flex-col justify-start gap-6"
     >
-      <div className="flex items-center justify-between px-4 lg:px-6">
+      <div className="flex items-center justify-between">
         <Label htmlFor="view-selector" className="sr-only">
           View
         </Label>
@@ -476,15 +460,15 @@ export function DataTable({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
+          {/* <Button variant="outline" size="sm">
             <PlusIcon />
             <span className="hidden lg:inline">Add Section</span>
-          </Button>
+          </Button> */}
         </div>
       </div>
       <TabsContent
         value="outline"
-        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+        className="relative flex flex-col gap-4 overflow-auto"
       >
         <div className="overflow-hidden rounded-lg border">
           <DndContext
@@ -537,11 +521,7 @@ export function DataTable({
             </Table>
           </DndContext>
         </div>
-        <div className="flex items-center justify-between px-4">
-          <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
+        <div className="flex items-center justify-end">
           <div className="flex w-full items-center gap-8 lg:w-fit">
             <div className="hidden items-center gap-2 lg:flex">
               <Label htmlFor="rows-per-page" className="text-sm font-medium">
@@ -615,21 +595,21 @@ export function DataTable({
           </div>
         </div>
       </TabsContent>
-      <TabsContent
+      {/* <TabsContent
         value="past-performance"
-        className="flex flex-col px-4 lg:px-6"
+        className="flex flex-col"
       >
         <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
       </TabsContent>
-      <TabsContent value="key-personnel" className="flex flex-col px-4 lg:px-6">
+      <TabsContent value="key-personnel" className="flex flex-col">
         <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
       </TabsContent>
       <TabsContent
         value="focus-documents"
-        className="flex flex-col px-4 lg:px-6"
+        className="flex flex-col"
       >
         <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
+      </TabsContent> */}
     </Tabs>
   );
 }
@@ -654,19 +634,46 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
+function TableCellViewer({ item }: { item: IssueItem }) {
+  // Type changed to IssueItem
+  const [activeTab, setActiveTab] = React.useState("summary");
   const isMobile = useIsMobile();
+
+  // Update to reflect IssueItem structure
+  const title = item.description; // Use description as title
+  const summaryDetails = [
+    { label: "Category", value: item.category_or_area },
+    { label: "Status", value: item.status },
+    { label: "Frequency", value: item.frequency?.toString() ?? "N/A" },
+    {
+      label: "First Seen",
+      value: item.first_seen_at
+        ? new Date(item.first_seen_at).toLocaleDateString()
+        : "N/A",
+    },
+    {
+      label: "Last Seen",
+      value: item.last_seen_at
+        ? new Date(item.last_seen_at).toLocaleDateString()
+        : "N/A",
+    },
+  ];
+
+  const prs =
+    item.related_prs && item.related_prs.length > 0
+      ? item.related_prs.join(", ")
+      : "None";
 
   return (
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="link" className="w-fit px-0 text-left text-foreground">
-          {item.header}
+          {title}
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="flex flex-col">
         <SheetHeader className="gap-1">
-          <SheetTitle>{item.header}</SheetTitle>
+          <SheetTitle>{title}</SheetTitle>
           <SheetDescription>
             Showing total visitors for the last 6 months
           </SheetDescription>
@@ -729,78 +736,42 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               <Separator />
             </>
           )}
-          <form className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
-              <Input id="header" defaultValue={item.header} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
-                <Select defaultValue={item.type}>
-                  <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Table of Contents">
-                      Table of Contents
-                    </SelectItem>
-                    <SelectItem value="Executive Summary">
-                      Executive Summary
-                    </SelectItem>
-                    <SelectItem value="Technical Approach">
-                      Technical Approach
-                    </SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
-                    <SelectItem value="Focus Documents">
-                      Focus Documents
-                    </SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="status">Status</Label>
-                <Select defaultValue={item.status}>
-                  <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Done">Done</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Not Started">Not Started</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
-                <Input id="target" defaultValue={item.target} />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
-                <Input id="limit" defaultValue={item.limit} />
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="reviewer">Reviewer</Label>
-              <Select defaultValue={item.reviewer}>
-                <SelectTrigger id="reviewer" className="w-full">
-                  <SelectValue placeholder="Select a reviewer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                  <SelectItem value="Jamik Tashpulatov">
-                    Jamik Tashpulatov
-                  </SelectItem>
-                  <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </form>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-2 grid w-full grid-cols-3">
+              <TabsTrigger value="summary">Summary</TabsTrigger>
+              <TabsTrigger value="details">Details</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
+            </TabsList>
+            <TabsContent value="summary">
+              <SheetDescription className="space-y-2">
+                {summaryDetails.map((detail) => (
+                  <div key={detail.label} className="flex justify-between">
+                    <span className="font-medium text-foreground/80">
+                      {detail.label}:
+                    </span>
+                    <span>{detail.value}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between">
+                  <span className="font-medium text-foreground/80">
+                    Related PRs:
+                  </span>
+                  <span className="truncate">{prs}</span>
+                </div>
+              </SheetDescription>
+            </TabsContent>
+            <TabsContent value="details">
+              <SheetDescription>
+                Detailed information about the issue. (Content TBD) <br />
+                Full Description: {item.description}
+              </SheetDescription>
+            </TabsContent>
+            <TabsContent value="activity">
+              <SheetDescription>
+                Activity log for this issue. (Content TBD)
+              </SheetDescription>
+            </TabsContent>
+          </Tabs>
         </div>
         <SheetFooter className="mt-auto flex gap-2 sm:flex-col sm:space-x-0">
           <Button className="w-full">Submit</Button>

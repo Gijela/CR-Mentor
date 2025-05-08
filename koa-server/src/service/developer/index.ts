@@ -113,7 +113,7 @@ interface InsightTrendsData {
 export async function getInsightTrendsData(developerId: string, period: string, granularity: string): Promise<InsightTrendsData> {
   let pgGranularity: string;
   switch (granularity.toLowerCase()) {
-    case "daily": pgGranularity = "day"; break;
+    case "day": pgGranularity = "day"; break;
     case "weekly": pgGranularity = "week"; break;
     case "monthly": pgGranularity = "month"; break;
     default:

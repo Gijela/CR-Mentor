@@ -48,7 +48,7 @@ export async function getInsightTrends(ctx: Context) {
       return;
     }
     const period = rawPeriod || "30d";
-    const granularity = rawGranularity || "daily";
+    const granularity = rawGranularity || "day";
 
     const trends = await getInsightTrendsData(developer_id, period, granularity);
     ctx.body = { success: true, data: { period, granularity, ...trends } }; // Include params in response
