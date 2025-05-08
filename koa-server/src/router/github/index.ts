@@ -1,6 +1,13 @@
 import Router from "@koa/router"
 
-import { createPrWebhook, createPullRequest, createToken, fetchRepoBranches, getDiffsDetails } from "../../controller/github"
+import {
+  createPrWebhook,
+  createPullRequest,
+  createToken,
+  fetchRepoBranches,
+  getDiffsDetails,
+  analyzeUserActivityController
+} from "../../controller/github"
 
 const router = new Router({ prefix: "/github" })
 
@@ -18,5 +25,8 @@ router.post("/createPrWebhook", createPrWebhook)
 
 // 获取 diffs 详情
 router.post("/getDiffsDetails", getDiffsDetails)
+
+// 分析用户活动，获取 commits 和 diffs
+router.post("/analyzeUserActivity", analyzeUserActivityController)
 
 export default router

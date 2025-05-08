@@ -28,6 +28,7 @@
     "@mastra/memory": "^0.3.1",
     "@mastra/pg": "^0.2.1",
     "@mastra/rag": "^0.1.9",
+    "@octokit/rest": "^21.1.1",
     "ai": "3.1.12",
     "dotenv": "^16.5.0",
     "git-analyze": "^1.0.4",

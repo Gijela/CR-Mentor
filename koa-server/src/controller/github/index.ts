@@ -6,6 +6,7 @@ import { formatAndGroupDiff } from "@/lib/groupDiff"
 import { EDIT_TYPE } from "@/lib/groupDiff/types"
 import { FileObject } from "./types"
 import { buildPatchSummaryPrompt } from "@/app/prompt/github/patch-summary"
+import { fetchAndAnalyzeCommits } from "@/service/github/analysisService"
 
 // 根据 githubName 创建 token
 export const createToken = async (ctx: Koa.Context) => {
@@ -278,3 +279,63 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
     ctx.body = { success: false, message: "get diffs details failed", error }
   }
 }
+
+
+// Updated controller function for analyzing user activity
+export const analyzeUserActivityController = async (ctx: Koa.Context) => {
+  try {
+    console.log("[Controller] Received request for analyzeUserActivity", ctx.request.body)
+    const params = ctx.request.body as {
+      repositories: { owner: string; repoName: string; branchName: string }[]
+      timeRange: { since: string; until: string }
+      targetUsername: string
+    }
+
+    console.log("[Controller] Received parameters for analyzeUserActivity:", params)
+
+    // Basic validation
+    if (!params.repositories || !Array.isArray(params.repositories) || params.repositories.length === 0) {
+      ctx.status = 400
+      ctx.body = { error: "'repositories' array is required and cannot be empty." }
+      return
+    }
+    for (const repo of params.repositories) {
+      if (!repo.owner || !repo.repoName || !repo.branchName) {
+        ctx.status = 400
+        ctx.body = { error: "Each repository object must have 'owner', 'repoName', and 'branchName'." }
+        return
+      }
+    }
+    if (!params.timeRange || !params.timeRange.since || !params.timeRange.until) {
+      ctx.status = 400
+      ctx.body = { error: "'timeRange' object with 'since' and 'until' properties is required." }
+      return
+    }
+    if (!params.targetUsername) {
+      ctx.status = 400
+      ctx.body = { error: "'targetUsername' is required." }
+      return
+    }
+
+    console.log("[Controller] Received parameters for analyzeUserActivity:", JSON.stringify(params, null, 2))
+
+    // Call the analysisService to fetch and analyze commits
+    const analysisResult = await fetchAndAnalyzeCommits(params)
+
+    console.log("[Controller] Service call completed. Result count:", analysisResult.length)
+
+    ctx.status = 200
+    ctx.body = analysisResult // Return the actual analysis result from the service
+
+  } catch (error: any) {
+    console.error("[Controller] Error in analyzeUserActivityController:", error)
+    // Consider if the service layer should handle specific errors and controller just handles generic ones
+    if (error.status) { // If error has a status (e.g. from Octokit), use it
+      ctx.status = error.status
+      ctx.body = { error: error.message, details: error.errors || error.documentation_url }
+    } else {
+      ctx.status = 500
+      ctx.body = { error: "Internal server error while analyzing user activity.", details: error.message }
+    }
+  }
+} 
