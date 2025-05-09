@@ -16,6 +16,7 @@
 ## Online Demo
 
 - Homepage: [CR-Mentor](https://cr-mentor.top/)
+- Docs: [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Gijela/CR-Mentor)
 - Code Review Demo: [Code Review Demo](https://github.com/Gijela/Auth-Github-App/pull/46)
 
 ## Highlights
