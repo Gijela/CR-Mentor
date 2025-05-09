@@ -11,6 +11,10 @@ export const generateUUID = () => {
 
 /**
  * 发送消息
+ * @param {string} repo_name 仓库名称 Gijela/CR-Mentor
+ * @param {string} user_prompt 用户提示
+ * @param {string} query_id 查询ID
+ * @returns 
  */
 export const sendMessage = async (repo_name: string, user_prompt: string, query_id: string) => {
   const response = await fetch('https://api.devin.ai/ada/query', {

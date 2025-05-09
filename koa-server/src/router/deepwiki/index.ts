@@ -5,6 +5,7 @@ const router = new Router({ prefix: "/deepwiki" })
 import { sendMessage, pollingResponse, generateUUID } from "@/controller/deepwiki/utils"
 import { HandleLargeDiffResult } from "@/lib/groupDiff/types"
 import { buildPrSummaryPrompt } from "@/app/prompt/github/pr-summary";
+import { handleSingleChat } from "@/controller/deepwiki/singleChatController";
 
 // // 发送消息
 // router.post("/sendMessage", async (ctx) => {
@@ -72,6 +73,9 @@ async function initializeSessionWithSystemPrompt(
     return { success: false, message: 'failed to initialize session with system prompt', content: '', error }; // 发生异常
   }
 }
+
+// 每次会话都单开一个新会话(query_id)
+router.post("/singleChat", handleSingleChat);
 
 type GetResultBody = {
   compareUrl: string
