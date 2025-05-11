@@ -2,8 +2,8 @@ import Router from "@koa/router"
 
 const router = new Router({ prefix: "/deepwiki" })
 
-import { sendMessage, pollingResponse, generateUUID } from "@/controller/deepwiki/utils"
-import { HandleLargeDiffResult } from "@/lib/groupDiff/types"
+import { sendMessage, pollingResponse, generateUUID, initializeSessionWithSystemPrompt, callDeepWiki } from "@/controller/deepwiki/utils"
+import { EDIT_TYPE, HandleLargeDiffResult } from "@/lib/groupDiff/types"
 import { buildPrSummaryPrompt } from "@/app/prompt/github/pr-summary";
 import { handleSingleChat } from "@/controller/deepwiki/singleChatController";
 
@@ -37,42 +37,13 @@ import { handleSingleChat } from "@/controller/deepwiki/singleChatController";
 
 import { mock } from './mock'
 import { callDevAssistantGenerate } from "@/mastra/callFunc/callPersonalDevAssistantAgent";
+import { FileObject } from "@/controller/github/types";
+import { formatAndGroupDiff } from "@/lib/groupDiff";
 
 router.post("/test", async (ctx) => {
   const result = await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`, 'MDQ6VXNlcjgyMDcxMjA5')
   ctx.body = result
 })
-
-// 辅助函数：发送 System Prompt 并等待响应
-async function initializeSessionWithSystemPrompt(
-  repo_name: string,
-  systemPrompt: string,
-  query_id: string,
-  logPrefix: string = "" // 可选的日志前缀，用于区分调用场景
-): Promise<{ success: boolean, message: string, content: string, error?: any }> {
-  console.log(`${logPrefix}🚀 ~ 使用 Query ID (${query_id}) 发送 System Prompt...`);
-  try {
-    const sendResult = await sendMessage(repo_name, systemPrompt, query_id);
-    if (!sendResult || !sendResult?.status) {
-      console.error(`${logPrefix}🚨 ~ 发送 System Prompt (Query ID: ${query_id}) 失败: sendMessage returned falsy.`);
-      return { success: false, message: 'failed to send message', content: '' }; // 发送失败
-    }
-    console.log(`${logPrefix}   ~ System Prompt (Query ID: ${query_id}) 发送成功, 开始轮询...`);
-
-    const { isDone, content } = await pollingResponse(query_id);
-    if (!isDone) {
-      console.warn(`${logPrefix}⚠️ ~ 轮询 System Prompt (Query ID: ${query_id}) 失败: pollingResponse returned falsy.`);
-      // 注意：即使轮询失败，对于重试场景，我们可能仍希望继续。
-      // 但对于初始场景，这通常表示失败。调用者需要根据返回值决定如何处理。
-      return { success: false, message: 'failed to polling response', content: '' }; // 轮询失败/无结果
-    }
-    console.log(`${logPrefix}   ~ System Prompt (Query ID: ${query_id}) 处理完成.`);
-    return { success: true, message: 'success', content }; // 成功
-  } catch (error: any) {
-    console.error(`${logPrefix}🚨 ~ 处理 System Prompt (Query ID: ${query_id}) 时发生异常:`, error);
-    return { success: false, message: 'failed to initialize session with system prompt', content: '', error }; // 发生异常
-  }
-}
 
 // 每次会话都单开一个新会话(query_id)
 router.post("/singleChat", handleSingleChat);
@@ -88,8 +59,8 @@ type GetResultBody = {
   prDesc?: string
 }
 
-// 获取结果
-router.post("/getResult", async (ctx) => {
+// 获取 pr patches 结果
+router.post("/getPrResult", async (ctx) => {
   const { compareUrl, baseLabel, headLabel, prTitle, prDesc, modelMaxToken = 25000, repo_name, pull_number } = ctx.request.body as Omit<GetResultBody, 'query_id'>
 
   let currentQueryId = generateUUID()
@@ -97,7 +68,7 @@ router.post("/getResult", async (ctx) => {
   const chatResults: string[] = []
   const MAX_RETRIES_PER_PATCH = 1; // 每个 patch 最多重试1次 (总共尝试 1 + 1 = 2次)
   const retryCounts: { [key: number]: number } = {}; // 记录每个 patch 的重试次数
-  const owner = repo_name.split('/')[0], repo = repo_name.split('/')[1]
+  const owner = repo_name.split('/')[0], repo = repo_name.split('/')[1] // repo_name 格式: owner/repo
 
   try {
     // 1. 获取 diffs & systemPrompt
@@ -253,6 +224,70 @@ router.post("/getResult", async (ctx) => {
       };
     }
   }
+})
+
+interface Repository {
+  /** 仓库所有者 */
+  owner: string;
+  /** 仓库名称 */
+  repoName: string;
+  /** 仓库分支名称 */
+  branchName: string;
+}
+
+interface TimeRange {
+  /** 开始时间 2025-05-01T00:00:00Z */
+  since: string;
+  /** 结束时间 2025-05-02T00:00:00Z */
+  until: string;
+}
+
+interface GetCommitResultPayload {
+  /** 仓库列表 */
+  repositories: Repository[];
+  /** 时间范围 */
+  timeRange: TimeRange;
+  /** 目标用户名 */
+  targetUsername: string;
+}
+
+// 获取 commit patches 结果
+router.post("/getCommitResult", async (ctx) => {
+  const { repositories, timeRange, targetUsername } = ctx.request.body as GetCommitResultPayload
+
+  // 1. 获取所有仓库的 commit 文件对象
+  const commitResponse = await fetch(`${process.env.SERVER_HOST}/github/analyzeUserActivity`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // 如果您需要 API 密钥或其他请求头，请在此处添加
+    },
+    body: JSON.stringify({ repositories, timeRange, targetUsername }),
+  });
+  const commitResultData = (await commitResponse.json()) as any[]
+
+  // 2. 将 commit 文件对象格式化为 repo_name 分组。
+  const totalFileObject: any = {} // repo_name -> {FileObject[]} patches
+  commitResultData.forEach(repo => {
+    totalFileObject[repo.owner + '/' + repo.repoName] = []
+    repo.commits.forEach(commit => {
+      totalFileObject[repo.owner + '/' + repo.repoName].unshift(...commit.files) // 升序时间 2025.5.6 -> 2025.5.5
+    })
+  })
+
+  // 2. 并发调用 deepwiki 分析 commit 结果
+  const result = await Promise.all(
+    Object.entries(totalFileObject).map(async ([repo_name, rawPatches]: any) => {
+      if (rawPatches.length === 0) return []
+      // repo_name: Gijela/CR-Mentor
+      // rawPatches: FileObject[]
+      const chatResults = await callDeepWiki(repo_name, rawPatches as FileObject[], '总结一下这个commit的改动')
+      return { repo_name, chatResults }
+    })
+  )
+
+  ctx.status = 200
+  ctx.body = result
 })
 
 export default router
