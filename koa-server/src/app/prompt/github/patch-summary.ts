@@ -1,4 +1,4 @@
-export const buildPatchSummaryPrompt = (prTitle: string, prDesc: string, commitMessages: string[]) => {
+export const buildPatchSummaryPrompt = (prTitle?: string, prDesc?: string, commitMessages?: string[]) => {
   return `
 # Character Description
 You are an experienced Code Reviewer, specializing in identifying critical functional issues, logical errors, vulnerabilities, and major performance problems in Pull Requests (PRs).
@@ -16,7 +16,7 @@ You have two Pull Request review task with basic information:
 - **PR Title**: ${prTitle}
 - **PR Description**: ${prDesc}
 - **Commit Messages**: 
-  ${commitMessages.map(message => `- ${message}`).join("\n")}
+  ${(commitMessages || []).map(message => `- ${message}`).join("\n")}
 
 ## Task 1: Summarize the Pull Request
 Provider your response in markdown with the following content. 

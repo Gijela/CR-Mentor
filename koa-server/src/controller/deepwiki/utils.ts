@@ -175,7 +175,11 @@ const modelMaxToken = 25 * 1000
  * @param {string} systemPrompt 系统 prompt
  * @returns {Promise<string[]>} 结果数组
  */
-export const callDeepWiki = async (repo_name: string, rowPatches: FileObject[], systemPrompt: string): Promise<string[]> => {
+export const callDeepWiki = async (
+  repo_name: string,
+  rowPatches: FileObject[],
+  systemPrompt: string
+): Promise<{ success: boolean, message: string, chatResults: string[], deletedFiles: string[] }> => {
   let currentQueryId = generateUUID()
   const queryIdsUsed: string[] = [currentQueryId]
   const chatResults: string[] = []
@@ -187,7 +191,7 @@ export const callDeepWiki = async (repo_name: string, rowPatches: FileObject[], 
     ...file,
     patch: file.status === EDIT_TYPE.DELETED ? null : file.patch,
   })) as FileObject[];
-  const { patches } = formatAndGroupDiff(modelMaxToken, diffFiles, systemPrompt);
+  const { patches, deletedFiles } = formatAndGroupDiff(modelMaxToken, diffFiles, systemPrompt);
 
   console.log("🚀 ~ callDeepWiki ~ repo_name:", repo_name, "rowPatches.length:", rowPatches.length, "patches.length:", patches.length)
 
@@ -195,7 +199,7 @@ export const callDeepWiki = async (repo_name: string, rowPatches: FileObject[], 
   const { success: initialSessionOk } = await initializeSessionWithSystemPrompt(repo_name, systemPrompt, currentQueryId, "[初始会话] ");
   if (!initialSessionOk) {
     console.error("🚨 ~ 初始化会话失败 (发送或轮询初始 System Prompt 出错).");
-    return []
+    return { success: false, message: 'failed to initialize session with system prompt', chatResults: [], deletedFiles }
   }
 
   // 2. 遍历 patches，依次发送消息并获取结果 (允许重试)
@@ -210,7 +214,7 @@ export const callDeepWiki = async (repo_name: string, rowPatches: FileObject[], 
       // 2.1 发送当前 patch
       const sendResultData = await sendMessage(repo_name, patch, currentQueryId)
       if (!sendResultData) {
-        console.error(`🚀 ~ 发送 Patch ${i + 1} (Attempt ${currentAttempt}, Query ID: ${currentQueryId}) 失败: sendMessage returned falsy`)
+        console.error(`🚀 ~ 发送 Patch ${i + 1} (Attempt ${currentAttempt}, query_id: ${currentQueryId}) 失败: sendMessage returned falsy`)
         throw new Error("Send message returned falsy");
       }
       console.log(`🚀 ~ 发送 Patch ${i + 1} (Attempt ${currentAttempt}) 成功`)
@@ -219,7 +223,7 @@ export const callDeepWiki = async (repo_name: string, rowPatches: FileObject[], 
       const pollingResultData = await pollingResponse(currentQueryId)
       console.log(`🚀 ~ 轮询 Patch ${i + 1} (Attempt ${currentAttempt}) 结束:`, pollingResultData ? '有数据' : '无数据')
       if (!pollingResultData) {
-        console.error(`🚀 ~ 轮询 Patch ${i + 1} (Attempt ${currentAttempt}, Query ID: ${currentQueryId}) 失败: pollingResponse returned falsy`)
+        console.error(`🚀 ~ 轮询 Patch ${i + 1} (Attempt ${currentAttempt}, query_id: ${currentQueryId}) 失败: pollingResponse returned falsy`)
         throw new Error("Polling response returned falsy");
       }
 
@@ -230,7 +234,7 @@ export const callDeepWiki = async (repo_name: string, rowPatches: FileObject[], 
 
     } catch (error) {
       // 捕获 pollingResponse 或上面抛出的错误
-      console.warn(`🚀 ~ 处理 Patch ${i + 1} (Attempt ${currentAttempt}, Query ID: ${currentQueryId}) 捕获异常:`, error)
+      console.warn(`🚀 ~ 处理 Patch ${i + 1} (Attempt ${currentAttempt}, query_id: ${currentQueryId}) 捕获异常:`, error)
 
       retryCounts[i] = (retryCounts[i] || 0) + 1;
 
@@ -262,7 +266,7 @@ export const callDeepWiki = async (repo_name: string, rowPatches: FileObject[], 
   }
 
   // 3. 所有 patches 处理完成 (可能部分跳过)，返回聚合结果和所有 query_id
-  console.log("✅ ~ 所有 Patches 处理完成")
+  console.log("✅ ~ 所有 Patches 处理完成", `共${chatResults.length}个 patches, 共${deletedFiles.length}个 deletedFiles`)
 
-  return chatResults
+  return { success: true, message: 'success', chatResults, deletedFiles }
 }

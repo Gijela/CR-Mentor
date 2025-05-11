@@ -260,19 +260,19 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
       return
     }
     const { files, commits }: { files: FileObject[], commits: any[] } = await response.json()
-    const commitMessages = commits.map(commit => commit.commit.message)
-    const CALL_DEEPWIKI_REPO = 'Based on the current repository information, please play the following role to help me review the code, before opening the diff code review, I need you to clarify your task, after you correctly clarify, I will provide you with the diff code.'
-    const systemPrompt = CALL_DEEPWIKI_REPO + buildPatchSummaryPrompt(prTitle, prDesc, commitMessages)
+    // const commitMessages = commits.map(commit => commit.commit.message)
+    // const CALL_DEEPWIKI_REPO = 'Based on the current repository information, please play the following role to help me review the code, before opening the diff code review, I need you to clarify your task, after you correctly clarify, I will provide you with the diff code.'
+    // const systemPrompt = CALL_DEEPWIKI_REPO + buildPatchSummaryPrompt(prTitle, prDesc, commitMessages)
 
-    // 4. 智能分组 diff
-    const diffFiles = files.map(file => ({
-      ...file,
-      patch: file.status === EDIT_TYPE.DELETED ? null : file.patch,
-    })) as FileObject[];
-    const result = formatAndGroupDiff(modelMaxToken, diffFiles, systemPrompt);
+    // // 4. 智能分组 diff
+    // const diffFiles = files.map(file => ({
+    //   ...file,
+    //   patch: file.status === EDIT_TYPE.DELETED ? null : file.patch,
+    // })) as FileObject[];
+    // const result = formatAndGroupDiff(modelMaxToken, diffFiles, systemPrompt);
 
     ctx.status = 200
-    ctx.body = { success: true, data: result, systemPrompt, github_node_id: account?.node_id }
+    ctx.body = { success: true, files, commits, github_node_id: account?.node_id }
   } catch (error) {
     logger.error("🚀 ~ getDiffsDetails ~ error:", error)
     ctx.status = 500
