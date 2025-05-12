@@ -190,11 +190,12 @@ router.post("/getCommitResult", async (ctx) => {
   const commitResultData = (await commitResponse.json()) as any[]
 
   // 2. 将 commit 文件对象格式化为 repo_name 分组。
-  const totalFileObject: any = {} // repo_name -> {FileObject[]} patches
+  const totalFileObject: any = {} // repo_name -> patches as FileObject[]
   commitResultData.forEach(repo => {
-    totalFileObject[repo.owner + '/' + repo.repoName] = []
+    const repo_name = repo.owner + '/' + repo.repoName // repo_name: Gijela/CR-Mentor
+    totalFileObject[repo_name] = []
     repo.commits.forEach(commit => {
-      totalFileObject[repo.owner + '/' + repo.repoName].unshift(...commit.files) // 升序时间 2025.5.6 -> 2025.5.5
+      totalFileObject[repo_name].unshift(...commit.files) // 升序时间 2025.5.3 -> 2025.5.6
     })
   })
 
