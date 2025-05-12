@@ -2,11 +2,13 @@
 import { Mastra } from '@mastra/core/mastra';
 import { createLogger } from '@mastra/core/logger';
 
-import { personalDevAssistantAgent } from './agent/personalDevAssistant';
+import { prAnalyzeAgent } from './agent/prAnalyze';
+import { commitsAnalyzeAgent } from './agent/commitsAnalyze';
 
 export const mastra = new Mastra({
   agents: {
-    personalDevAssistantAgent,
+    prAnalyzeAgent,
+    commitsAnalyzeAgent,
   },
   logger: createLogger({
     name: 'CR-Mentor',

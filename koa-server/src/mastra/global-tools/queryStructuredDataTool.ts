@@ -1,5 +1,3 @@
-// agent-server/src/mastra/agents/personalDevAssistant/tools/queryStructuredDataTool.ts
-
 import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 // 使用 pg 库进行数据库操作

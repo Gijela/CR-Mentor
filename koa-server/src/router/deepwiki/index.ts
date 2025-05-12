@@ -36,13 +36,14 @@ import { handleSingleChat } from "@/controller/deepwiki/singleChatController";
 // })
 
 import { mock } from './mock'
-import { callDevAssistantGenerate } from "@/mastra/callFunc/callPersonalDevAssistantAgent";
+import { callPrAnalyzeAgent } from "@/mastra/callFunc/callPersonalDevAssistantAgent";
 import { FileObject } from "@/controller/github/types";
 import { formatAndGroupDiff } from "@/lib/groupDiff";
 import { buildPatchSummaryPrompt } from "@/app/prompt/github/patch-summary";
+import { buildCommitsSummaryPrompt } from "@/app/prompt/github/commits-summary";
 
 router.post("/test", async (ctx) => {
-  const result = await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`, 'MDQ6VXNlcjgyMDcxMjA5')
+  const result = await callPrAnalyzeAgent(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`, 'MDQ6VXNlcjgyMDcxMjA5')
   ctx.body = result
 })
 
@@ -116,7 +117,7 @@ router.post("/getPrResult", async (ctx) => {
       pull_number,
       prReportText: summaryContent
     })
-    await callDevAssistantGenerate(`Please follow process A for the following pr report message \n\n ${prPrompt}`, github_node_id)
+    await callPrAnalyzeAgent(`Please follow process A for the following pr report message \n\n ${prPrompt}`, github_node_id)
 
     ctx.status = 200
     ctx.body = {
@@ -191,9 +192,11 @@ router.post("/getCommitResult", async (ctx) => {
 
   // 2. 将 commit 文件对象格式化为 repo_name 分组。
   const totalFileObject: any = {} // repo_name -> patches as FileObject[]
+  const totalRepoCommitMsg: any = {} // repo_name -> commits message total
   commitResultData.forEach(repo => {
     const repo_name = repo.owner + '/' + repo.repoName // repo_name: Gijela/CR-Mentor
     totalFileObject[repo_name] = []
+    totalRepoCommitMsg[repo_name] = repo.commits.map(commit => commit.message).reverse()
     repo.commits.forEach(commit => {
       totalFileObject[repo_name].unshift(...commit.files) // 升序时间 2025.5.3 -> 2025.5.6
     })
@@ -205,7 +208,8 @@ router.post("/getCommitResult", async (ctx) => {
       if (rawPatches.length === 0) return []
       // repo_name: Gijela/CR-Mentor
       // rawPatches: FileObject[]
-      const chatResults = await callDeepWiki(repo_name, rawPatches as FileObject[], '总结一下这个commit的改动')
+      const systemPrompt = buildCommitsSummaryPrompt(totalRepoCommitMsg[repo_name])
+      const chatResults = await callDeepWiki(repo_name, rawPatches as FileObject[], systemPrompt)
       return { repo_name, chatResults }
     })
   )

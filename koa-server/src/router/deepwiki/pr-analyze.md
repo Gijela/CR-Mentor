@@ -67,7 +67,7 @@
 - **执行者**: `koa-server` 中的 `/deepwiki/getResult` 接口。
 - **动作**:
   1.  在成功获取到 `summaryContent` (PR 总结报告) 和 `github_node_id` (开发者 GitHub Node ID) 后。
-  2.  调用 `callDevAssistantGenerate` 函数，并将 `summaryContent` 和 `github_node_id` 作为核心参数传递，从而激活 `@mastra` (Personal Dev Assistant Agent)。
+  2.  调用 `callPrAnalyzeAgent` 函数，并将 `summaryContent` 和 `github_node_id` 作为核心参数传递，从而激活 `@mastra` (Personal Dev Assistant Agent)。
 
 ### 步骤 5: `@mastra` Agent 进行深度分析与知识管理
 
@@ -99,7 +99,7 @@
   - `/github/createPrWebhook`: Webhook 接收与初步分发。
   - `/deepwiki/getResult`: 核心流程编排，与 `devin.ai` 交互获取初步分析和总结。
   - `/github/getDiffsDetails`: 从 GitHub API 获取 PR 详细数据。
-  - `callDevAssistantGenerate`: 触发 `@mastra` Agent。
+  - `callPrAnalyzeAgent`: 触发 `@mastra` Agent。
 - **`devin.ai` API**: 外部 AI 服务，执行代码分析和文本生成任务。
 - **`@mastra` (Personal Dev Assistant Agent)**:
   - 执行深度分析，结合历史数据。
@@ -145,7 +145,7 @@ sequenceDiagram
     KoaServer_Deepwiki->>+DevinAI: Send Prompt_for_PR_Summary(patch_analysis_results) (with query_id_2)
     DevinAI-->>-KoaServer_Deepwiki: Return PR_Summary_Report / Polling
 
-    KoaServer_Deepwiki->>+MastraAgent: callDevAssistantGenerate(PR_Summary_Report, devId)
+    KoaServer_Deepwiki->>+MastraAgent: callPrAnalyzeAgent(PR_Summary_Report, devId)
     MastraAgent->>MastraAgent: Parse PR_Summary_Report
     MastraAgent->>+ProfileDB: queryStructuredData(devId)
     ProfileDB-->>-MastraAgent: Return Historical Insights (issues, strengths)
