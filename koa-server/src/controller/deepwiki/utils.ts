@@ -71,11 +71,15 @@ export const getMarkdownData = async (query_id: string) => {
   const data = await response.json();
   // 获取最后一个查询
   const lastItem = data.queries?.[data.queries.length - 1];
+  // 判断是否报错
+  if (lastItem.state === 'error') {
+    return { isError: true, isDone: false, content: '' };
+  }
   // 判断最后一个查询是否完成, 如果未完成则返回空字符串
   const isDone =
     lastItem?.response?.[lastItem?.response?.length - 1]?.type === 'done';
   if (!isDone) {
-    return { isDone: false, content: '' };
+    return { isError: false, isDone: false, content: '' };
   }
 
   // 获取最后一个查询的 markdown 数据
@@ -85,7 +89,7 @@ export const getMarkdownData = async (query_id: string) => {
       markdownData += item.data;
     }
   });
-  return { isDone: true, content: markdownData };
+  return { isError: false, isDone: true, content: markdownData };
   // } catch (error) {
   //   // 获取失败, 证明着已经达到当前 query_id 对应会话的上下文限制。
   //   // 简单测试了一下字符限制是 4*50000, 每轮最大限制字符 50000, 最多能询问四次, 第五次就会报错
@@ -105,17 +109,23 @@ export const pollingResponse = async (query_id: string) => {
   }
 
   // 轮询获取
-  let data: { isDone: boolean; content: string } = {
+  let data: { isError: boolean; isDone: boolean; content: string } = {
+    isError: false,
     isDone: false,
     content: '',
   };
   let retryCount = 0;
-  const maxRetries = 150; // 最多重试150次
-  const retryInterval = 2000; // 每次重试间隔2秒
+  const maxRetries = 50; // 最多重试50次
+  const retryInterval = 4 * 1000; // 每次重试间隔4秒
 
   while (retryCount < maxRetries) {
-    console.log("🚀 ~ 轮询 ~ retryCount:", retryCount)
+    console.log("🚀 ~ 轮询 ~ pollingCount:", retryCount)
     data = await getMarkdownData(query_id);
+    console.log("🚀 ~ 轮询 ~ data:", data)
+
+    if (data.isError) {
+      throw new Error('deepwiki error')
+    }
 
     if (data.isDone) {
       break;
@@ -203,7 +213,7 @@ export const callDeepWiki = async (
   }
 
   // 2. 遍历 patches，依次发送消息并获取结果 (允许重试)
-  console.log("🚀 ~ 开始处理 Patches...");
+  console.log(`🚀 ~ 开始处理 ${repo_name} 仓库 ${patches.length} 个 Patches...`);
   const CALL_PATCH_REVIEW = 'Please follow the requirements to review the multiple file diff code provided below.'
   for (let i = 0; i < patches.length; i++) {
     const patch = CALL_PATCH_REVIEW + patches[i];
