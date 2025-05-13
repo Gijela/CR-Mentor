@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 
-import { memory } from "./memory";
+// import { memory } from "./memory";
 import { globalTools } from "../../global-tools";
 import { instructions } from "./instruction";
 import { deepSeekModel } from "../../model-provider/deepseek";
@@ -11,7 +11,7 @@ export const prAnalyzeAgent = new Agent({
   name: "prAnalyzeAgent",
   instructions,
   model: deepSeekModel,
-  memory,
+  // memory,
   tools: {
     ...globalTools,
     githubFileComment: githubFileCommentTool,

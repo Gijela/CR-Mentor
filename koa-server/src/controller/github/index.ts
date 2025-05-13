@@ -320,12 +320,12 @@ export const analyzeUserActivityController = async (ctx: Koa.Context) => {
     console.log("[Controller] Received parameters for analyzeUserActivity:", JSON.stringify(params, null, 2))
 
     // Call the analysisService to fetch and analyze commits
-    const analysisResult = await fetchAndAnalyzeCommits(params)
+    const { githubNodeId, repositoryAnalyses } = await fetchAndAnalyzeCommits(params)
 
-    console.log("[Controller] Service call completed. Result count:", analysisResult.length)
+    console.log("[Controller] Service call completed. Result count:", repositoryAnalyses.length)
 
     ctx.status = 200
-    ctx.body = analysisResult // Return the actual analysis result from the service
+    ctx.body = { githubNodeId, repositoryAnalyses } // Return the actual analysis result from the service
 
   } catch (error: any) {
     console.error("[Controller] Error in analyzeUserActivityController:", error)

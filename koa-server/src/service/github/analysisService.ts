@@ -44,13 +44,19 @@ interface AnalyzeUserActivityParams {
   targetUsername: string;
 }
 
+// Define the structure for the function's output
+export interface UserActivityAnalysisResult {
+  githubNodeId: string; // GitHub user's node_id
+  repositoryAnalyses: RepositoryAnalysis[];
+}
+
 /**
  * Fetches and analyzes commit history for specified repositories within a time range for a target user.
  * For the MVP, this will fetch data and keep it in memory.
  */
 export const fetchAndAnalyzeCommits = async (
   params: AnalyzeUserActivityParams
-): Promise<RepositoryAnalysis[]> => {
+): Promise<UserActivityAnalysisResult> => {
   const { repositories, timeRange, targetUsername } = params;
 
   // 使用导入的GithubAPI或创建新的实例
@@ -71,9 +77,29 @@ export const fetchAndAnalyzeCommits = async (
   }
 
   // 验证octokit实例
-  if (!octokitInstance || !octokitInstance.repos || typeof octokitInstance.repos.listCommits !== 'function') {
-    console.error('[Service] 严重错误: Octokit实例未能正确初始化或不包含预期方法');
-    return []; // 提前返回空数组，避免后续错误
+  if (!octokitInstance || !octokitInstance.users || typeof octokitInstance.users.getByUsername !== 'function' || !octokitInstance.repos || typeof octokitInstance.repos.listCommits !== 'function') {
+    console.error('[Service] 严重错误: Octokit实例未能正确初始化或不包含预期方法 (users.getByUsername or repos.listCommits)');
+    return { githubNodeId: '', repositoryAnalyses: [] }; // Return new structure in case of critical Octokit error
+  }
+
+  let githubNodeId = '';
+  try {
+    console.log(`[Service] Fetching user details for ${targetUsername}`);
+    const userResponse = await octokitInstance.users.getByUsername({
+      username: targetUsername,
+    });
+    if (userResponse && userResponse.data && userResponse.data.node_id) {
+      githubNodeId = userResponse.data.node_id;
+      console.log(`[Service] Successfully fetched node_id for ${targetUsername}: ${githubNodeId}`);
+    } else {
+      console.warn(`[Service] Could not retrieve node_id for user ${targetUsername}. Response status: ${userResponse?.status}`);
+    }
+  } catch (error: any) {
+    console.error(`[Service] Error fetching user details for ${targetUsername}:`, error.message);
+    if (error.status) {
+      console.error(`[Service] User fetch API status code: ${error.status}`);
+    }
+    // Continue without node_id if user fetch fails
   }
 
   const allAnalysisResults: RepositoryAnalysis[] = [];
@@ -186,5 +212,8 @@ export const fetchAndAnalyzeCommits = async (
   }
 
   console.log("[Service] Finished fetchAndAnalyzeCommits. Total repositories analyzed:", allAnalysisResults.length);
-  return allAnalysisResults;
+  return {
+    githubNodeId,
+    repositoryAnalyses: allAnalysisResults,
+  };
 }; 

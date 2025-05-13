@@ -2,8 +2,8 @@ import Router from "@koa/router"
 
 const router = new Router({ prefix: "/deepwiki" })
 
-import { sendMessage, pollingResponse, generateUUID, initializeSessionWithSystemPrompt, callDeepWiki } from "@/controller/deepwiki/utils"
-import { EDIT_TYPE, HandleLargeDiffResult } from "@/lib/groupDiff/types"
+import { initializeSessionWithSystemPrompt, callDeepWiki } from "@/controller/deepwiki/utils"
+import { generateUUID } from "@/lib/generateUUID";
 import { buildPrSummaryPrompt } from "@/app/prompt/github/pr-summary";
 import { handleSingleChat } from "@/controller/deepwiki/singleChatController";
 
@@ -36,14 +36,14 @@ import { handleSingleChat } from "@/controller/deepwiki/singleChatController";
 // })
 
 import { mock } from './mock'
-import { callPrAnalyzeAgent } from "@/mastra/callFunc/callPersonalDevAssistantAgent";
 import { FileObject } from "@/controller/github/types";
-import { formatAndGroupDiff } from "@/lib/groupDiff";
-import { buildPatchSummaryPrompt } from "@/app/prompt/github/patch-summary";
-import { buildCommitsSummaryPrompt } from "@/app/prompt/github/commits-summary";
+import { buildPatchSummaryPrompt, patchSystemPromptHelloWorld } from "@/app/prompt/github/patch-summary";
+import { buildCommitsSummaryPrompt, commitsSystemPromptHelloWorld } from "@/app/prompt/github/commits-summary";
+import { callPrAnalyzeAgent, callCommitsAnalyzeAgent } from "@/mastra/callAgentFn";
+import { UserActivityAnalysisResult } from "@/service/github/analysisService";
 
 router.post("/test", async (ctx) => {
-  const result = await callPrAnalyzeAgent(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`, 'MDQ6VXNlcjgyMDcxMjA5')
+  const result = await callPrAnalyzeAgent(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`)
   ctx.body = result
 })
 
@@ -86,8 +86,7 @@ router.post("/getPrResult", async (ctx) => {
       return
     }
     const commitMessages = commits.map(commit => commit.commit.message)
-    const CALL_DEEPWIKI_REPO = 'Based on the current repository information, please play the following role to help me review the code, before opening the diff code review, I need you to clarify your task, after you correctly clarify, I will provide you with the diff code.\n\n'
-    const systemPrompt = CALL_DEEPWIKI_REPO + buildPatchSummaryPrompt(prTitle, prDesc, commitMessages)
+    const systemPrompt = patchSystemPromptHelloWorld + buildPatchSummaryPrompt(prTitle, prDesc, commitMessages)
 
     // 2. 调用 deepwiki 分析 diffs
     console.log("🚀 ~ 获取 diffs & system prompt 成功，共", files.length, "个 patches");
@@ -112,12 +111,13 @@ router.post("/getPrResult", async (ctx) => {
 
     // 5. 调用开发者个性化助手
     const prPrompt = JSON.stringify({
+      developer_id: github_node_id.toLowerCase(),
       owner,
       repo,
       pull_number,
       prReportText: summaryContent
     })
-    await callPrAnalyzeAgent(`Please follow process A for the following pr report message \n\n ${prPrompt}`, github_node_id)
+    await callPrAnalyzeAgent(`Please follow process A for the following pr report message \n\n ${prPrompt}`)
 
     ctx.status = 200
     ctx.body = {
@@ -174,6 +174,31 @@ interface GetCommitResultPayload {
   /** 目标用户名 */
   targetUsername: string;
 }
+// // mock
+// const mockGetCommitResultPayload: GetCommitResultPayload = {
+//   "repositories": [
+//     {
+//       "owner": "Gijela", // 示例所有者
+//       "repoName": "CR-Mentor", // 示例仓库
+//       "branchName": "main" // 示例分支
+//     },
+//     {
+//       "owner": "Gijela", // 示例所有者
+//       "repoName": "git-analyze", // 示例仓库
+//       "branchName": "main" // 示例分支
+//     }
+//   ],
+//   "timeRange": {
+//     "since": "2025-04-10T00:00:00Z", // 开始时间
+//     "until": "2025-04-15T00:00:00Z"  // 结束时间
+//   },
+//   "targetUsername": "Gijela" // 使用正确的大小写形式
+// }
+
+type CommitChatResult = {
+  repo_name: string
+  chatResults: string[]
+}
 
 // 获取 commit patches 结果
 router.post("/getCommitResult", async (ctx) => {
@@ -188,31 +213,47 @@ router.post("/getCommitResult", async (ctx) => {
     },
     body: JSON.stringify({ repositories, timeRange, targetUsername }),
   });
-  const commitResultData = (await commitResponse.json()) as any[]
+  const { githubNodeId, repositoryAnalyses } = (await commitResponse.json()) as UserActivityAnalysisResult
 
   // 2. 将 commit 文件对象格式化为 repo_name 分组。
-  const totalFileObject: any = {} // repo_name -> patches as FileObject[]
+  const totalPatchObject: any = {} // repo_name -> patches as FileObject[]
   const totalRepoCommitMsg: any = {} // repo_name -> commits message total
-  commitResultData.forEach(repo => {
+  repositoryAnalyses.forEach(repo => {
     const repo_name = repo.owner + '/' + repo.repoName // repo_name: Gijela/CR-Mentor
-    totalFileObject[repo_name] = []
+    totalPatchObject[repo_name] = []
     totalRepoCommitMsg[repo_name] = repo.commits.map(commit => commit.message).reverse()
     repo.commits.forEach(commit => {
-      totalFileObject[repo_name].unshift(...commit.files) // 升序时间 2025.5.3 -> 2025.5.6
+      totalPatchObject[repo_name].unshift(...commit.files) // 升序时间 2025.5.3 -> 2025.5.6
     })
   })
 
-  // 2. 并发调用 deepwiki 分析 commit 结果
-  const result = await Promise.all(
-    Object.entries(totalFileObject).map(async ([repo_name, rawPatches]: any) => {
+  // 3. 并发调用 deepwiki 分析 commit 结果
+  const totalRepoReportList = await Promise.all(
+    Object.entries(totalPatchObject).map(async ([repo_name, rawPatches]: any) => {
       if (rawPatches.length === 0) return []
       // repo_name: Gijela/CR-Mentor
       // rawPatches: FileObject[]
-      const systemPrompt = buildCommitsSummaryPrompt(totalRepoCommitMsg[repo_name])
-      const chatResults = await callDeepWiki(repo_name, rawPatches as FileObject[], systemPrompt)
-      return { repo_name, chatResults }
+      const systemPrompt = commitsSystemPromptHelloWorld + buildCommitsSummaryPrompt(totalRepoCommitMsg[repo_name])
+      const { chatResults = [] } = await callDeepWiki(repo_name, rawPatches as FileObject[], systemPrompt)
+      return { repo_name, chatResults } as CommitChatResult
     })
   )
+
+  // 4. 并发调用 agent 分析 deepwiki 总结的报告
+  const result = await Promise.all(totalRepoReportList.map(async (repoReport: any) => {
+    const { repo_name = '', chatResults } = repoReport as CommitChatResult
+
+    const userPrompt = JSON.stringify({
+      developer_id: githubNodeId.toLowerCase(),
+      owner: repo_name.split('/')[0],
+      repo: repo_name.split('/')[1],
+      commitsAnalysisReportText: (chatResults || []).join('\n\n'),
+      timeRange
+    })
+
+    const agentResult = await callCommitsAnalyzeAgent(userPrompt)
+    return { userPrompt: JSON.parse(userPrompt), agentResult }
+  }))
 
   ctx.status = 200
   ctx.body = result

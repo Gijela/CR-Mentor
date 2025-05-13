@@ -10,7 +10,7 @@ export const instructions = `
 *   \`developer_id\`: 进行分析的目标开发者的唯一 ID。
 *   \`owner\`: 相关代码仓库的所有者。
 *   \`repo\`: 相关代码仓库的名称。
-*   (可选) \`timeRange\`: 报告分析所覆盖的时间范围信息 (如果外部 AI 在报告中提供了)。
+*   \`timeRange\`: 报告分析所覆盖的时间范围信息。
 
 # 可用工具
 *   \`saveStructuredData\`: 用于保存**新的**或**更新已有的**结构化问题 (\`insight_type: 'issue'\`) 或技术优势 (\`insight_type: 'strength'\`)。

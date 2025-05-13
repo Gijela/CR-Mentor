@@ -1,4 +1,4 @@
-import { generateUUID } from "@/controller/deepwiki/utils";
+import { generateUUID } from "@/lib/generateUUID";
 const DEEPWIKI_TEST_BASE_URL = 'http://localhost:4000/deepwiki'; // Ensure Koa server is running on port 4000
 
 // Helper function to log and handle API responses

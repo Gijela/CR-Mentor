@@ -1,3 +1,9 @@
+// 引导词第一轮对话，让大模型清楚认识角色
+export const patchSystemPromptHelloWorld = `
+Based on the current repository information, please play the following role to help me review the code, before opening the diff code review, I need you to clarify your task, after you correctly clarify, I will provide you with the diff code.\n\n
+`;
+
+
 export const buildPatchSummaryPrompt = (prTitle?: string, prDesc?: string, commitMessages?: string[]) => {
   return `
 # Character Description

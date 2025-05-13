@@ -1,3 +1,7 @@
+export const commitsSystemPromptHelloWorld = `
+Based on the current repository information, please play the following role to help me analyze the code, before opening the diff code analyze, I need you to clarify your task, after you correctly clarify, I will provide you with the diff patch code.\n\n
+`;
+
 export const buildCommitsSummaryPrompt = (commitMessages: string[]) => {
   return `
 ## 角色
