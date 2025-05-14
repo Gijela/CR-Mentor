@@ -1,7 +1,7 @@
 const BASE_URL = 'http://localhost:4000/developers'; // 更新端口为 4000
 const DEVELOPER_ID = 'test_id2'; // 替换为用于测试的有效 developer_id
 
-async function handleApiResponse(fnName: string, response: Response) {
+async function handleDevelopApiResponse(fnName: string, response: Response) {
   console.log(`${fnName} Response Status: ${response.status}`);
   if (response.ok) {
     const data = await response.json();
@@ -17,7 +17,7 @@ async function handleApiResponse(fnName: string, response: Response) {
   }
 }
 
-function handleError(fnName: string, error: any) {
+function handleDevelopError(fnName: string, error: any) {
   console.error(`Error in ${fnName}:`);
   if (error instanceof Error) {
     console.error(error.message);
@@ -38,9 +38,9 @@ async function testKpiSummary() {
       },
       body: JSON.stringify({ developer_id: DEVELOPER_ID }),
     });
-    await handleApiResponse(fnName, response);
+    await handleDevelopApiResponse(fnName, response);
   } catch (error: any) {
-    handleError(fnName, error);
+    handleDevelopError(fnName, error);
   }
 }
 
@@ -59,9 +59,9 @@ async function testInsightTrends(period = '30d', granularity = 'daily') {
         granularity,
       }),
     });
-    await handleApiResponse(fnName, response);
+    await handleDevelopApiResponse(fnName, response);
   } catch (error: any) {
-    handleError(fnName, error);
+    handleDevelopError(fnName, error);
   }
 }
 
@@ -82,9 +82,9 @@ async function testProfileStrengths(page = 1, limit = 5) {
         sortOrder: 'desc',
       }),
     });
-    await handleApiResponse(fnName, response);
+    await handleDevelopApiResponse(fnName, response);
   } catch (error: any) {
-    handleError(fnName, error);
+    handleDevelopError(fnName, error);
   }
 }
 
@@ -106,9 +106,9 @@ async function testProfileIssues(page = 1, limit = 5, status = 'active') {
         status,
       }),
     });
-    await handleApiResponse(fnName, response);
+    await handleDevelopApiResponse(fnName, response);
   } catch (error: any) {
-    handleError(fnName, error);
+    handleDevelopError(fnName, error);
   }
 }
 
@@ -133,9 +133,9 @@ async function testKnowledgeSnippets(page = 1, limit = 5, topic?: string, q?: st
       },
       body: JSON.stringify(body),
     });
-    await handleApiResponse(fnName, response);
+    await handleDevelopApiResponse(fnName, response);
   } catch (error: any) {
-    handleError(fnName, error);
+    handleDevelopError(fnName, error);
   }
 }
 

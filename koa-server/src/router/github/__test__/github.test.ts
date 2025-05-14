@@ -1,6 +1,6 @@
 const GITHUB_TEST_BASE_URL = 'http://localhost:4000/github'; // 请确保您的 Koa 服务器在 4000 端口运行
 
-async function handleApiResponse(fnName: string, response: any) {
+async function handleGithubApiResponse(fnName: string, response: any) {
   console.log(`\n--- ${fnName} API 响应 ---`);
   console.log(`状态: ${response.status}`);
   if (response.ok) {
@@ -43,7 +43,7 @@ async function handleApiResponse(fnName: string, response: any) {
   console.log(`--- ${fnName} API 响应结束 ---`);
 }
 
-function handleError(fnName: string, error: any) {
+function handleGithubError(fnName: string, error: any) {
   console.error(`\n--- ${fnName} 执行出错 ---`);
   if (error instanceof Error) {
     console.error(`错误信息: ${error.message}`);
@@ -100,7 +100,7 @@ async function testAnalyzeUserActivity() {
       body: JSON.stringify(testPayload),
     });
     console.log("response状态:", response.status, response.statusText);
-    await handleApiResponse(fnName, response);
+    await handleGithubApiResponse(fnName, response);
   } catch (error: any) {
     console.error("测试请求发生错误:");
     console.error("错误类型:", typeof error);
@@ -108,7 +108,7 @@ async function testAnalyzeUserActivity() {
     if (error.stack) {
       console.error("错误堆栈:", error.stack.split('\n').slice(0, 3).join('\n'));
     }
-    handleError(fnName, error);
+    handleGithubError(fnName, error);
   }
 }
 
