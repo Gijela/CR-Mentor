@@ -2,9 +2,10 @@ import type { Message } from "@ant-design/pro-chat";
 import { ProChat } from "@ant-design/pro-chat";
 import React, { useState } from "react";
 
-import type { ChatSessionDetail } from "./index";
-import HideLeftArea from "./icons/HideLeftArea";
-import HideRightArea from "./icons/HideRightArea";
+import HideLeftArea from "../icons/HideLeftArea";
+import HideRightArea from "../icons/HideRightArea";
+import type { ChatSessionDetail } from "../Type";
+import ChatBot from "./ChatBot";
 
 const ChatArea: React.FC<{
   isSidebarOpen: boolean;
@@ -257,11 +258,12 @@ const ChatArea: React.FC<{
           {chatSessions.map((session) => (
             <div
               key={session.id}
-              className={`h-full ${
+              className={`h-full flex grow flex-col ${
                 session.id === currentSessionId ? "block" : "hidden"
               }`}
             >
-              <ProChat
+              <ChatBot />
+              {/* <ProChat
                 key="chat-area"
                 sendMessageRequest={handleSendMessage}
                 styles={{
@@ -285,7 +287,7 @@ const ChatArea: React.FC<{
                 }}
                 helloMessage="Hello, how can I assist you today?"
                 placeholder="Type a message..."
-              />
+              /> */}
             </div>
           ))}
         </div>

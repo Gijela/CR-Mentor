@@ -12,11 +12,17 @@ export const mastra = new Mastra({
     dbChatAgent,
   },
   server: {
-    host: '0.0.0.0',
+    host: process.env.NODE_ENV !== 'development' ? '0.0.0.0' : '127.0.0.1',
     port: 4111,
+    cors: {
+      origin: process.env.NODE_ENV !== 'development' ? ["https://cr-mentor.com"] : "*",
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+      allowHeaders: ["Content-Type", "Authorization"],
+      credentials: false,
+    },
   },
   logger: createLogger({
     name: 'CR-Mentor',
-    level: 'info',
+    level: process.env.NODE_ENV !== 'development' ? 'info' : 'debug',
   }),
 });

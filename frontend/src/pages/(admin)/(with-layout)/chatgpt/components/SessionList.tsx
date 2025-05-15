@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { ChatSessionDetail } from "./index";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import type { ChatSessionDetail } from "../Type";
 
 const SessionList: React.FC<{
   isSidebarOpen: boolean;
@@ -130,7 +130,7 @@ const SessionList: React.FC<{
               <div
                 key={session.id}
                 onClick={() => handleSessionClick(session.id)}
-                className={`flex flex-col p-3 rounded-xl cursor-pointer group
+                className={`flex flex-col p-3 rounded-xl cursor-pointer group/session
                     ${
                       currentSessionId === session.id
                         ? "bg-accent"
@@ -182,8 +182,7 @@ const SessionList: React.FC<{
                   {/* 删除按钮 */}
                   <button
                     onClick={(e) => handleDeleteSession(session.id, e)}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-accent 
-                        rounded transition-opacity duration-200"
+                    className="opacity-0 group-hover/session:opacity-100 p-1 hover:bg-accent rounded transition-opacity duration-200"
                   >
                     <svg
                       className="w-4 h-4 text-gray-500"
