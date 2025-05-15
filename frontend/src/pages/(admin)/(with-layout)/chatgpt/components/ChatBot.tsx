@@ -1,6 +1,4 @@
-import { type ChangeEvent } from "react";
-// import Together from "together-ai";
-// import { ChatCompletionStream } from "together-ai/lib/ChatCompletionStream";
+import { useEffect } from "react";
 import Markdown from "react-markdown";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
@@ -10,8 +8,8 @@ import { toast } from "sonner";
 
 const suggestions = [
   {
-    title: "How can I build an app that parses PDFs",
-    subtitle: "and can extract key things from them?",
+    title: "developer_id: 'test_id2' ",
+    subtitle: "这个人怎么样",
   },
   {
     title: "I want to build a voice agent",
@@ -30,16 +28,21 @@ const suggestions = [
 const agentId = "dbChatAgent";
 
 const ChatBot = () => {
-  const { status, messages, input, handleInputChange, handleSubmit } = useChat({
-    api: `${import.meta.env.VITE_AGENT_HOST}/api/agents/${agentId}/stream`,
-    onError: (error) => {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("An unknown error occurred");
-      }
-    },
-  });
+  const { status, messages, input, append, handleInputChange, handleSubmit } =
+    useChat({
+      api: `${import.meta.env.VITE_AGENT_HOST}/api/agents/${agentId}/stream`,
+      onError: (error) => {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error("An unknown error occurred");
+        }
+      },
+    });
+
+  useEffect(() => {
+    console.log("messages ===> ", messages);
+  }, [messages]);
 
   return (
     <>
@@ -49,7 +52,7 @@ const ChatBot = () => {
           {messages.map((message, i) => (
             <div key={i} className="mx-auto flex max-w-3xl">
               {message.role === "user" ? (
-                <div className="ml-auto rounded-full bg-gray-800 px-4 py-2 text-white">
+                <div className="ml-auto rounded-xl bg-gray-800 px-4 py-2 text-white">
                   <Markdown>{message.content}</Markdown>
                 </div>
               ) : (
@@ -76,11 +79,10 @@ const ChatBot = () => {
               }}
               className="rounded-xl border p-4 text-left hover:bg-gray-50"
               onClick={() =>
-                handleInputChange({
-                  target: {
-                    value: suggestion.title + " " + suggestion.subtitle,
-                  },
-                } as ChangeEvent<HTMLInputElement>)
+                append({
+                  role: "user",
+                  content: suggestion.title + " " + suggestion.subtitle,
+                })
               }
             >
               <div className="font-medium">{suggestion.title}</div>
