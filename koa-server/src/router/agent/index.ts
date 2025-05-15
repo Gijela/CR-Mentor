@@ -14,8 +14,8 @@ router.get("/list", async (ctx) => {
   }
 })
 
-// 判断当前 agent 是否使用缓存
-// router.post("/status", async (ctx) => {
+// // 判断指定 agent 是否保存聊天记录
+// router.post("/memory/status", async (ctx) => {
 //   const { agent_name } = ctx.request.body as { agent_name: string }
 //   const agent = await mastra.getAgent(agent_name as any)
 //   const memory = await agent.getMemory()
@@ -28,7 +28,7 @@ router.get("/list", async (ctx) => {
 // })
 
 // 获取指定 agent 的所有线程(一个线程就是一个会话)
-router.post("/thread/list", async (ctx) => {
+router.post("/threads/list", async (ctx) => {
   const { agent_name, resource_id } = ctx.request.body as { agent_name: string, resource_id: string }
 
   try {
@@ -50,13 +50,23 @@ router.post("/thread/list", async (ctx) => {
   }
 })
 
-// 获取指定 agent 的指定线程的会话记录
-router.post("/thread/detail", async (ctx) => {
+// 获取指定 agent 的指定线程的对话信息
+router.post("/thread/messages", async (ctx) => {
   const { agent_name, thread_id } = ctx.request.body as { agent_name: string, thread_id: string }
   try {
-    const agent = await mastra.getAgent(agent_name as any)
-    const memory = await agent.getMemory()
-    const threadInfo = await memory.getMessages({ threadId: thread_id })
+    const agent = mastra.getAgent(agent_name as any)
+    const memory = agent.getMemory()
+    const thread = memory.getThreadById({ threadId: thread_id })
+    if (!thread) {
+      ctx.status = 404
+      ctx.body = {
+        success: false,
+        message: "thread not found",
+      }
+      return
+    }
+
+    const threadInfo = await memory.query({ threadId: thread_id });
 
     ctx.status = 200
     ctx.body = {

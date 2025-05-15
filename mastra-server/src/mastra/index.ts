@@ -1,4 +1,3 @@
-
 import { Mastra } from '@mastra/core/mastra';
 import { createLogger } from '@mastra/core/logger';
 
@@ -12,8 +11,12 @@ export const mastra = new Mastra({
     commitsAnalyzeAgent,
     dbChatAgent,
   },
+  server: {
+    host: '0.0.0.0',
+    port: 4111,
+  },
   logger: createLogger({
     name: 'CR-Mentor',
-    level: 'debug',
+    level: 'info',
   }),
 });
