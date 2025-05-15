@@ -14,6 +14,6 @@ export const mastra = new Mastra({
   },
   logger: createLogger({
     name: 'CR-Mentor',
-    level: 'debug',
+    level: 'info',
   }),
 });
