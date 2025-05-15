@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "mastra dev"
+    "dev": "mastra dev",
+    "build": "mastra build",
+    "start": "node .mastra/output/index.mjs"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +18,7 @@
     "@ai-sdk/openai-compatible": "^0.2.6",
     "@mastra/core": "^0.7.0",
     "@mastra/memory": "^0.2.6",
-    "@mastra/pg": "^0.2.6",
+    "@mastra/pg": "^0.3.4",
     "@types/pg": "^8.11.14",
     "adm-zip": "^0.5.16",
     "mastra": "^0.4.4",
