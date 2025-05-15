@@ -4,7 +4,7 @@ import { z } from "zod";
 import pg from 'pg';
 
 // 获取数据库连接字符串
-const connectionString = process.env.MEMORY_DB_PG_VECTOR || '';
+const connectionString = process.env.MEMORY_DB_PG_VECTOR!;
 const pool = new pg.Pool({ connectionString });
 
 // 1. 定义查询过滤条件 Schema (可选)

@@ -4,7 +4,7 @@ import pg from 'pg';
 import { openaiEmbeddingModel } from "../model-provider/openai"; // Import the shared embedder
 
 // Reuse the connection string and pool configuration from other tools
-const connectionString = process.env.MEMORY_DB_PG_VECTOR || '';
+const connectionString = process.env.MEMORY_DB_PG_VECTOR!;
 const pool = new pg.Pool({ connectionString });
 
 // Define the input schema for the data to be saved
