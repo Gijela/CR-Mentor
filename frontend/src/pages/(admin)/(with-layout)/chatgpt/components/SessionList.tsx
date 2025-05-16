@@ -30,7 +30,7 @@ const SessionList: React.FC<{
   // 过滤会话列表
   const filteredChatSessions = useMemo(() => {
     return (chatSessions || []).filter((session) =>
-      session.title.toLowerCase().includes(chatSearchQuery.toLowerCase())
+      session.title?.toLowerCase().includes(chatSearchQuery.toLowerCase())
     );
   }, [chatSessions, chatSearchQuery]);
 

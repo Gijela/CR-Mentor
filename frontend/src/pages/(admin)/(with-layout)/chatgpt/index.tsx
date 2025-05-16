@@ -7,6 +7,7 @@ import SessionList from "./components/SessionList";
 import {
   createThread,
   deleteThread,
+  getThreadMessages,
   getThreads,
   updateThreadTitle,
 } from "./server";
@@ -37,6 +38,9 @@ export function Component() {
 
   // 添加当前选中会话状态
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
+  // 获取当前 thread 的 messages
+  const [currentSessionMessages, setCurrentSessionMessages] = useState<any[]>([]);
 
   // 获取当前会话的选中知识库
   const currentSelectedKbs = useMemo(() => {
@@ -200,6 +204,16 @@ export function Component() {
     }
   }, [knowledgeBases, isLoaded, isSignedIn]); // Runs when KBs are loaded and user is signed in
 
+  useEffect(() => {
+    if (currentSessionId) {
+      const loadMessages = async () => {
+        const messages = await getThreadMessages(agentId, currentSessionId);
+        setCurrentSessionMessages(messages);
+      };
+      loadMessages();
+    }
+  }, [currentSessionId]);
+
   if (isLoadingSessions && isLoaded) {
     // Show loading spinner only after clerk is loaded
     // You can use your LoadingSpinner component here if you have one
@@ -230,6 +244,7 @@ export function Component() {
         setIsSidebarOpen={setIsSidebarOpen}
         chatSessions={chatSessions}
         currentSessionId={currentSessionId ?? ""}
+        currentSessionMessages={currentSessionMessages}
         currentSelectedKbDetails={currentSelectedKbDetails}
         isRightSidebarOpen={isRightSidebarOpen}
         setIsRightSidebarOpen={setIsRightSidebarOpen}

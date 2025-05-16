@@ -12,6 +12,7 @@ const ChatArea: React.FC<{
   setIsSidebarOpen: (value: boolean) => void;
   chatSessions: ChatSessionDetail[];
   currentSessionId: string;
+  currentSessionMessages: any[];
   currentSelectedKbDetails: string[];
   isRightSidebarOpen: boolean;
   setIsRightSidebarOpen: (value: boolean) => void;
@@ -22,6 +23,7 @@ const ChatArea: React.FC<{
     setIsSidebarOpen,
     chatSessions,
     currentSessionId,
+    currentSessionMessages,
     currentSelectedKbDetails,
     isRightSidebarOpen,
     setIsRightSidebarOpen,
@@ -255,14 +257,12 @@ const ChatArea: React.FC<{
         </div>
 
         <div className="flex-1 mt-16 min-w-0 overflow-hidden">
-          {chatSessions.map((session) => (
+          {/* {chatSessions.map((session) => ( */}
             <div
-              key={session.id}
-              className={`h-full flex grow flex-col ${
-                session.id === currentSessionId ? "block" : "hidden"
-              }`}
+              key={currentSessionId}
+              className={'h-full flex grow flex-col block'}
             >
-              <ChatBot />
+              <ChatBot currentSessionId={currentSessionId} initialMessages={currentSessionMessages} />
               {/* <ProChat
                 key="chat-area"
                 sendMessageRequest={handleSendMessage}
@@ -289,7 +289,7 @@ const ChatArea: React.FC<{
                 placeholder="Type a message..."
               /> */}
             </div>
-          ))}
+          {/* ))} */}
         </div>
       </div>
     );

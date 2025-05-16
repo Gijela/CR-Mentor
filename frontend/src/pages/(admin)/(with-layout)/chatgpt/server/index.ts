@@ -131,3 +131,27 @@ export const updateThreadTitle = async (
     return { success: false, message: "Failed to update thread title", newSession: {} as ChatSessionDetail };
   }
 };
+
+// 获取指定会话的对话信息
+export const getThreadMessages = async (
+  agentId: string,
+  threadId: string,
+): Promise<any[]> => {
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_AGENT_HOST
+      }/api/memory/threads/${threadId}/messages?agentId=${agentId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    return data?.uiMessages || [];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};

@@ -27,10 +27,17 @@ const suggestions = [
 
 const agentId = "dbChatAgent";
 
-const ChatBot = () => {
+interface ChatBotProps {
+  currentSessionId: string;
+  initialMessages: any[];
+}
+
+const ChatBot: React.FC<ChatBotProps> = ({ currentSessionId, initialMessages }) => {
   const { status, messages, input, append, handleInputChange, handleSubmit } =
     useChat({
+      // id: currentSessionId, // todo 保存会话信息到memory, tool 展示设立独立UI
       api: `${import.meta.env.VITE_AGENT_HOST}/api/agents/${agentId}/stream`,
+      initialMessages,
       onError: (error) => {
         if (error instanceof Error) {
           toast.error(error.message);
@@ -57,6 +64,11 @@ const ChatBot = () => {
                 </div>
               ) : (
                 <div className="prose">
+                  {(message.toolInvocations || []).length > 0 && (
+                    <div>
+                      展开折叠工具
+                    </div>
+                  )}
                   <Markdown>{message.content}</Markdown>
                 </div>
               )}
