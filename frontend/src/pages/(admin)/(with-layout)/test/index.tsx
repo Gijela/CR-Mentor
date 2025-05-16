@@ -1,23 +1,28 @@
-import Editor from "@monaco-editor/react";
-import { options } from "./config";
-import { extraHeight } from "../agents";
+import { Markdown, type MarkdownProps } from "@lobehub/ui";
+import { StoryBook, useControls, useCreateStore } from "@lobehub/ui/storybook";
+
+import { content } from "./data";
 
 export function Component() {
+  const store = useCreateStore();
+  const { children, ...rest } = useControls(
+    {
+      children: {
+        rows: true,
+        value: content,
+      },
+      fullFeaturedCodeBlock: true,
+    },
+    { store }
+  ) as MarkdownProps;
+
   return (
-    <div
-      className="w-full border border-red-500"
-      style={{
-        height: window.innerHeight - extraHeight - 2 * 24, // 24 的自身容器的padding
-      }}
-    >
-      <Editor
-        height="100%"
-        defaultLanguage="javascript"
-        defaultValue="// some comment \n 123"
-        theme="light"
-        options={options as any}
-        loading={<div>加载中...</div>}
-      />
+    <div className="border-2 border-red-500">
+      <StoryBook levaStore={store}>
+        <Markdown variant={"chat"} {...rest}>
+          {children}
+        </Markdown>
+      </StoryBook>
     </div>
   );
 }

@@ -1,10 +1,11 @@
-import { useEffect } from "react";
-import Markdown from "react-markdown";
+import { useEffect, useState } from "react";
+import { Markdown } from "@lobehub/ui";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
 import { Greeting } from "./Greeting";
 import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
+import ToolInvocationDisplay from "../artifacts/Normal";
 
 const suggestions = [
   {
@@ -32,7 +33,10 @@ interface ChatBotProps {
   initialMessages: any[];
 }
 
-const ChatBot: React.FC<ChatBotProps> = ({ currentSessionId, initialMessages }) => {
+const ChatBot: React.FC<ChatBotProps> = ({
+  currentSessionId,
+  initialMessages,
+}) => {
   const { status, messages, input, append, handleInputChange, handleSubmit } =
     useChat({
       // id: currentSessionId, // todo 保存会话信息到memory, tool 展示设立独立UI
@@ -47,29 +51,58 @@ const ChatBot: React.FC<ChatBotProps> = ({ currentSessionId, initialMessages }) 
       },
     });
 
+  const [expandedToolCalls, setExpandedToolCalls] = useState<{
+    [key: string]: boolean;
+  }>({});
+
+  const toggleToolCallExpansion = (messageIndex: number, toolIndex: number) => {
+    const key = `${messageIndex}-${toolIndex}`;
+    setExpandedToolCalls((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
   useEffect(() => {
     console.log("messages ===> ", messages);
   }, [messages]);
 
   return (
     <>
-      <div className="flex h-0 grow flex-col overflow-y-scroll">
+      <div className="flex h-0 grow flex-col overflow-y-scroll px-4">
         {messages.length === 0 && <Greeting />}
         <div className="space-y-4 py-8">
-          {messages.map((message, i) => (
+          {messages.map((message: any, i: number) => (
             <div key={i} className="mx-auto flex max-w-3xl">
               {message.role === "user" ? (
                 <div className="ml-auto rounded-xl bg-gray-800 px-4 py-2 text-white">
-                  <Markdown>{message.content}</Markdown>
+                  <Markdown variant={"chat"}>{message.content}</Markdown>
                 </div>
               ) : (
-                <div className="prose">
-                  {(message.toolInvocations || []).length > 0 && (
-                    <div>
-                      展开折叠工具
-                    </div>
-                  )}
-                  <Markdown>{message.content}</Markdown>
+                <div className="prose dark:prose-invert max-w-none">
+                  {message.role === "assistant" &&
+                    message.toolInvocations &&
+                    message.toolInvocations.length > 0 && (
+                      <div className="space-y-2 mt-2">
+                        {message.toolInvocations.map(
+                          (invocation: any, toolIndex: number) => {
+                            const toolCallKey = `${i}-${toolIndex}`;
+                            const isExpanded = !!expandedToolCalls[toolCallKey];
+                            return (
+                              <ToolInvocationDisplay
+                                key={toolCallKey}
+                                invocation={invocation}
+                                isExpanded={isExpanded}
+                                onToggleExpand={() =>
+                                  toggleToolCallExpansion(i, toolIndex)
+                                }
+                              />
+                            );
+                          }
+                        )}
+                      </div>
+                    )}
+                  <Markdown variant={"chat"}>{message.content}</Markdown>
                 </div>
               )}
             </div>
@@ -77,7 +110,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ currentSessionId, initialMessages }) 
         </div>
       </div>
 
-      <div className="mx-auto mb-8 hidden w-full max-w-3xl grid-cols-2 gap-4 md:grid">
+      <div className="mx-auto mb-4 hidden w-full max-w-3xl grid-cols-2 gap-4 md:grid px-4">
         {messages.length === 0 &&
           suggestions.map((suggestion, i) => (
             <motion.button
@@ -104,7 +137,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ currentSessionId, initialMessages }) 
       </div>
 
       {/* 输入框 */}
-      <div className="mb-4 flex justify-center gap-2">
+      <div className="mb-4 flex justify-center gap-2 px-4">
         <form onSubmit={handleSubmit} className="flex w-full max-w-3xl">
           <fieldset className="relative flex w-full">
             <textarea
@@ -114,7 +147,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ currentSessionId, initialMessages }) 
               required
               value={input}
               onChange={handleInputChange}
-              className="block w-full rounded-xl border border-gray-300 bg-gray-100 p-2 pr-12 outline-black"
+              className="block w-full rounded-xl border border-gray-300 bg-gray-100 p-2 pr-12 outline-black dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:placeholder-gray-400"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
@@ -125,7 +158,7 @@ const ChatBot: React.FC<ChatBotProps> = ({ currentSessionId, initialMessages }) 
             <button
               type="submit"
               disabled={status !== "ready"}
-              className="absolute bottom-2 right-2 rounded-full p-2 text-black hover:bg-gray-100 disabled:opacity-50"
+              className="absolute bottom-2 right-2 rounded-full p-2 text-black hover:bg-gray-100 disabled:opacity-50 dark:text-gray-300 dark:hover:bg-gray-600"
             >
               <PaperAirplaneIcon className="h-5 w-5" />
             </button>
