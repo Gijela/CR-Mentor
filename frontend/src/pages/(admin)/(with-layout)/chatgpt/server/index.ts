@@ -1,5 +1,6 @@
 import { toast } from "sonner";
 import type { ChatSessionDetail, ThreadItem } from "../Type";
+import { threadToSessionItem } from "../utils/threadToSessionItem";
 
 // 获取指定 agent 的所有会话
 export const getThreads = async (
@@ -18,15 +19,7 @@ export const getThreads = async (
       }
     );
     const threadList: ThreadItem[] = await threadResponse.json();
-    const formattedSessionList = threadList.map((thread) => ({
-      id: thread.id,
-      title: thread.title,
-      timestamp: new Date(thread.updatedAt),
-      selectedKbs: [],
-      messages: [],
-      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${thread.id}`,
-    }));
-
+    const formattedSessionList = threadList.map((thread) => threadToSessionItem(thread));
     return formattedSessionList.reverse();
   } catch (error) {
     console.error("Failed to load chat sessions:", error);
@@ -36,38 +29,30 @@ export const getThreads = async (
 };
 
 // 为指定 agent 创建新会话
-export const createThread = async (
-  agentId: string,
-  resourceId: string,
-  title: string = "new Session"
-): Promise<ChatSessionDetail> => {
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_AGENT_HOST
-      }/api/memory/threads?agentId=${agentId}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ title, resourceId }),
-      }
-    );
-    const thread: ThreadItem = await response.json();
-    const formattedSession: ChatSessionDetail = {
-      id: thread.id,
-      title: thread.title,
-      timestamp: new Date(thread.updatedAt),
-      selectedKbs: [],
-      messages: [],
-      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${thread.id}`,
-    };
-    return formattedSession;
-  } catch (error) {
-    console.error(error);
-    return {} as ChatSessionDetail;
-  }
-};
+// export const createThread = async (
+//   agentId: string,
+//   resourceId: string,
+//   title: string = "new Session"
+// ): Promise<ChatSessionDetail> => {
+//   try {
+//     const response = await fetch(
+//       `${import.meta.env.VITE_AGENT_HOST
+//       }/api/memory/threads?agentId=${agentId}`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ title, resourceId }),
+//       }
+//     );
+//     const thread: ThreadItem = await response.json();
+//     return threadToSessionItem(thread);
+//   } catch (error) {
+//     console.error(error);
+//     return {} as ChatSessionDetail;
+//   }
+// };
 
 // 删除指定 agent 的指定会话
 export const deleteThread = async (
@@ -116,16 +101,7 @@ export const updateThreadTitle = async (
       throw new Error("Failed to update thread title");
     }
     const thread: ThreadItem = await response.json();
-    const formattedSession: ChatSessionDetail = {
-      id: thread.id,
-      title: thread.title,
-      timestamp: new Date(thread.updatedAt),
-      selectedKbs: [],
-      messages: [],
-      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${thread.id}`,
-    };
-
-    return { success: true, message: "Thread title updated successfully", newSession: formattedSession };
+    return { success: true, message: "Thread title updated successfully", newSession: threadToSessionItem(thread) };
   } catch (error) {
     console.error(error);
     return { success: false, message: "Failed to update thread title", newSession: {} as ChatSessionDetail };

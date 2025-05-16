@@ -5,7 +5,6 @@ import ChatArea from "./components/ChatArea";
 import KnowledgeBaseList from "./components/KnowledgeBaseList";
 import SessionList from "./components/SessionList";
 import {
-  createThread,
   deleteThread,
   getThreadMessages,
   getThreads,
@@ -40,7 +39,9 @@ export function Component() {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // 获取当前 thread 的 messages
-  const [currentSessionMessages, setCurrentSessionMessages] = useState<any[]>([]);
+  const [currentSessionMessages, setCurrentSessionMessages] = useState<any[]>(
+    [] // 类型其实是 UIMessage[], 但是 sdk 没有将这个类型导出
+  );
 
   // 获取当前会话的选中知识库
   const currentSelectedKbs = useMemo(() => {
@@ -90,9 +91,14 @@ export function Component() {
 
   // 创建新会话
   const handleCreateNewChat = async () => {
-    const newSession = await createThread(agentId, resourceId);
-    setChatSessions((prev) => [newSession, ...prev]);
-    setCurrentSessionId(newSession.id);
+    // 创建新会话由 mastra memory 自动完成, 这里不需要手动调接口创建, 手动调接口无法让大模型自己决定标题
+    // const newSession = await createThread(agentId, resourceId);
+    // setChatSessions((prev) => [newSession, ...prev]);
+    // setCurrentSessionId(newSession.id);
+
+    // 所以新建会话就相当于：取消选中的当前会话，并且将聊天消息清空
+    setCurrentSessionId(null);
+    setCurrentSessionMessages([]);
   };
 
   // 修改搜索和会话相关的处理函数
@@ -214,16 +220,6 @@ export function Component() {
     }
   }, [currentSessionId]);
 
-  if (isLoadingSessions && isLoaded) {
-    // Show loading spinner only after clerk is loaded
-    // You can use your LoadingSpinner component here if you have one
-    return (
-      <div className="flex justify-center items-center h-full w-full">
-        Loading sessions...
-      </div>
-    );
-  }
-
   return (
     <div className="flex w-full h-full">
       {/* 左侧会话列表 */}
@@ -243,6 +239,7 @@ export function Component() {
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         chatSessions={chatSessions}
+        setChatSessions={setChatSessions}
         currentSessionId={currentSessionId ?? ""}
         currentSessionMessages={currentSessionMessages}
         currentSelectedKbDetails={currentSelectedKbDetails}
