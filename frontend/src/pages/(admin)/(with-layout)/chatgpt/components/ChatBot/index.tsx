@@ -6,9 +6,7 @@ import {
   useRef,
 } from "react";
 import { Markdown } from "@lobehub/ui";
-import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
-import { motion } from "framer-motion";
-import { Greeting } from "../Greeting";
+import { Greeting } from "./Greeting";
 import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
 import ToolInvocationDisplay from "../../artifacts/Normal";
@@ -37,6 +35,9 @@ const ChatBot: React.FC<ChatBotProps> = ({
   useEffect(() => {
     manualStopRef.current = manualStop;
   }, [manualStop]);
+
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const isUserScrollingUpRef = useRef<boolean>(false);
 
   const {
     status,
@@ -90,6 +91,7 @@ const ChatBot: React.FC<ChatBotProps> = ({
   const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
     if (e) e.preventDefault();
     if (input.trim() === "") return;
+    isUserScrollingUpRef.current = false; // Reset scroll lock for next response
     setManualStop(false);
     originalHandleSubmit(e);
   };
@@ -110,9 +112,33 @@ const ChatBot: React.FC<ChatBotProps> = ({
     console.log("messages ===> ", messages);
   }, [messages]);
 
+  useEffect(() => {
+    if (chatContainerRef.current && !isUserScrollingUpRef.current) {
+      const { scrollHeight, clientHeight } = chatContainerRef.current;
+      chatContainerRef.current.scrollTop = scrollHeight - clientHeight;
+    }
+  }, [messages]);
+
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } =
+        chatContainerRef.current;
+      // A threshold of 10px to consider "not at bottom"
+      if (scrollTop + clientHeight < scrollHeight - 10) {
+        isUserScrollingUpRef.current = true;
+      } else {
+        isUserScrollingUpRef.current = false;
+      }
+    }
+  };
+
   return (
     <>
-      <div className="flex h-0 grow flex-col overflow-y-scroll px-4">
+      <div
+        ref={chatContainerRef}
+        onScroll={handleScroll}
+        className="flex h-0 grow flex-col overflow-y-scroll px-4"
+      >
         {/* 问候语 hi there */}
         {messages.length === 0 && <Greeting />}
         {/* 聊天消息 */}
