@@ -27,7 +27,7 @@ const suggestions = [
 ];
 
 const agentId = "dbChatAgent";
-
+const resourceId = "dbChatAgent";
 interface ChatBotProps {
   currentSessionId: string;
   initialMessages: any[];
@@ -39,15 +39,28 @@ const ChatBot: React.FC<ChatBotProps> = ({
 }) => {
   const { status, messages, input, append, handleInputChange, handleSubmit } =
     useChat({
-      // id: currentSessionId, // todo 保存会话信息到memory, tool 展示设立独立UI
       api: `${import.meta.env.VITE_AGENT_HOST}/api/agents/${agentId}/stream`,
       initialMessages,
+      // 传入 threadId、resourceId，如果agent开启了 memory，则会自动保存聊天记录
+      experimental_prepareRequestBody({ messages }) {
+        return {
+          messages: [messages.at(-1)],
+          threadId: currentSessionId,
+          resourceId,
+        };
+      },
       onError: (error) => {
         if (error instanceof Error) {
           toast.error(error.message);
         } else {
           toast.error("An unknown error occurred");
         }
+      },
+      onToolCall: (toolCall) => {
+        console.log("toolCall ===> ", toolCall);
+      },
+      onFinish: (message) => {
+        console.log("finish message ===> ", message);
       },
     });
 

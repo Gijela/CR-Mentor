@@ -132,7 +132,12 @@ export const updateThreadTitle = async (
   }
 };
 
-// 获取指定会话的对话信息
+/**
+ * 获取指定会话的对话信息
+ * @param agentId 
+ * @param threadId 
+ * @returns {UIMessage[]}
+ */
 export const getThreadMessages = async (
   agentId: string,
   threadId: string,
