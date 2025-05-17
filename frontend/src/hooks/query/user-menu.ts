@@ -70,6 +70,11 @@ export const menus: IExtendedMenu[] = [
     //   },
     // ],
   },
+  {
+    title: "Studio",
+    icon: Bot,
+    to: "/studio",
+  },
   // {
   //   title: "forms",
   //   label: "12",
@@ -168,11 +173,11 @@ export const menus: IExtendedMenu[] = [
     icon: BookOpen,
     to: "/knowledgeBase/list",
   },
-  {
-    title: "Code Review",
-    icon: Bot,
-    to: "/agents",
-  },
+  // {
+  //   title: "Code Review",
+  //   icon: Bot,
+  //   to: "/agents",
+  // },
   {
     title: "Knowledge Base Edit",
     label: "9",
@@ -180,14 +185,9 @@ export const menus: IExtendedMenu[] = [
     icon: ChartNoAxesCombined,
     to: "/knowledgeBase/edit",
   },
-  {
-    title: "ChatGPT",
-    icon: Bot,
-    to: "/chatgpt",
-  },
-  {
-    title: "test",
-    icon: Bot,
-    to: "/test",
-  },
+  // {
+  //   title: "test",
+  //   icon: Bot,
+  //   to: "/test",
+  // },
 ] as const

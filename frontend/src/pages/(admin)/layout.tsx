@@ -21,12 +21,12 @@ export function Component() {
   const sidebarState = localStorage.getItem(SIDEBAR_COOKIE_NAME) === "true";
 
   const location = useLocation();
-  const hidePaddingPaths = ["/agents", "/chatgpt"];
+  const hidePaddingPaths = ["/agents", "/studio"];
   const isHidePadding = hidePaddingPaths.some((path) =>
     location.pathname.includes(path)
   );
 
-  const hideHeaderPaths = ["/chatgpt"];
+  const hideHeaderPaths = ["/studio"];
   const isHideHeader = hideHeaderPaths.some((path) =>
     location.pathname.includes(path)
   );

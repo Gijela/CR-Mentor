@@ -18,9 +18,6 @@ const loadFeatures = () =>
   import("../framer-lazy-feature").then((res) => res.default);
 
 export const RootProviders: FC<PropsWithChildren> = ({ children }) => {
-  // 不需要使用 framer-motion LazyMotion 的页面
-  // const isChatPage = window.location.pathname.includes('chatgpt');
-
   return (
     <ClerkProvider
       publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
