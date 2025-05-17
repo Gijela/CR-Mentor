@@ -1,4 +1,4 @@
-import { GithubAPI } from "../../mastra/lib/github"; // Assuming GithubAPI is correctly set up
+import { GithubAPI } from '@/lib/githubApi';
 import { Octokit } from '@octokit/rest'; // 直接导入Octokit
 
 // 添加调试日志

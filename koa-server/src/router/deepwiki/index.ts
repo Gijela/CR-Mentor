@@ -39,12 +39,27 @@ import { mock } from './mock'
 import { FileObject } from "@/controller/github/types";
 import { buildPatchSummaryPrompt, patchSystemPromptHelloWorld } from "@/app/prompt/github/patch-summary";
 import { buildCommitsSummaryPrompt, commitsSystemPromptHelloWorld } from "@/app/prompt/github/commits-summary";
-import { callPrAnalyzeAgent, callCommitsAnalyzeAgent } from "@/mastra/callAgentFn";
 import { UserActivityAnalysisResult } from "@/service/github/analysisService";
 
 router.post("/test", async (ctx) => {
-  const result = await callPrAnalyzeAgent(`Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`)
-  ctx.body = result
+  const testPrompt = `Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`
+  const result = await fetch(`${process.env.AGENT_HOST}/api/agents/prAnalyzeAgent/generate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      messages: [{ role: "user", content: testPrompt }]
+    })
+  })
+  const agentResult = await result.json()
+  console.log("🚀 ~ agentResult:", agentResult)
+
+  ctx.status = 200
+  ctx.body = {
+    success: true,
+    data: agentResult
+  }
 })
 
 // 每次会话都单开一个新会话(query_id)
@@ -117,7 +132,14 @@ router.post("/getPrResult", async (ctx) => {
       pull_number,
       prReportText: summaryContent
     })
-    await callPrAnalyzeAgent(`Please follow process A for the following pr report message \n\n ${prPrompt}`)
+    const result = await fetch(`${process.env.AGENT_HOST}/api/agents/prAnalyzeAgent/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ messages: [{ role: "user", content: `Please follow process A for the following pr report message \n\n ${prPrompt}` }] })
+    })
+    const agentResult = await result.json()
 
     ctx.status = 200
     ctx.body = {
@@ -128,6 +150,7 @@ router.post("/getPrResult", async (ctx) => {
         chatQueryIds: queryIdsUsed,    // 包含所有尝试过的 queryId
         summaryQueryId,
         summaryContent,
+        agentResult
       }
     }
   } catch (error: any) {
@@ -251,7 +274,14 @@ router.post("/getCommitResult", async (ctx) => {
       timeRange
     })
 
-    const agentResult = await callCommitsAnalyzeAgent(userPrompt)
+    const result = await fetch(`${process.env.AGENT_HOST}/api/agents/commitsAnalyzeAgent/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ messages: [{ role: "user", content: userPrompt }] })
+    })
+    const agentResult = await result.json()
     return { userPrompt: JSON.parse(userPrompt), agentResult }
   }))
 

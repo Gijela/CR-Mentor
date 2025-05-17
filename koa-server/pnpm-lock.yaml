@@ -11,9 +11,6 @@ importers:
       '@ai-sdk/openai':
         specifier: ^1.1.14
         version: 1.3.21(zod@3.24.4)
-      '@ai-sdk/openai-compatible':
-        specifier: ^0.2.13
-        version: 0.2.13(zod@3.24.4)
       '@clerk/backend':
         specifier: ^1.25.2
         version: 1.31.2(react@18.3.1)
@@ -26,12 +23,6 @@ importers:
       '@koa/router':
         specifier: ^13.1.0
         version: 13.1.0
-      '@mastra/core':
-        specifier: ^0.9.1
-        version: 0.9.1(openapi-types@12.1.3)(react@18.3.1)(zod@3.24.4)
-      '@mastra/memory':
-        specifier: ^0.3.1
-        version: 0.3.1(openapi-types@12.1.3)(react@18.3.1)
       '@mastra/pg':
         specifier: ^0.2.1
         version: 0.2.10(openapi-types@12.1.3)(pg-query-stream@4.8.1(pg@8.15.6))(react@18.3.1)
@@ -71,9 +62,6 @@ importers:
       typescript:
         specifier: ^5.8.2
         version: 5.8.3
-      zod:
-        specifier: ^3.24.4
-        version: 3.24.4
     devDependencies:
       '@types/jsonwebtoken':
         specifier: ^9.0.7
@@ -104,12 +92,6 @@ importers:
         version: 10.9.2(@types/node@22.15.3)(typescript@5.8.3)
 
 packages:
-
-  '@ai-sdk/openai-compatible@0.2.13':
-    resolution: {integrity: sha512-tB+lL8Z3j0qDod/mvxwjrPhbLUHp/aQW+NvMoJaqeTtP+Vmv5qR800pncGczxn5WN0pllQm+7aIRDnm69XeSbg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.0.0
 
   '@ai-sdk/openai@1.3.21':
     resolution: {integrity: sha512-ipAhkRKUd2YaMmn7DAklX3N7Ywx/rCsJHVyb0V/lKRqPcc612qAFVbjg+Uve8QYJlbPxgfsM4s9JmCFp6PSdYw==}
@@ -704,9 +686,6 @@ packages:
 
   '@mastra/deployer@0.3.2':
     resolution: {integrity: sha512-3XCvN0eRykE+Okm6nNfhIp13UXCyslk3GWldgPdDQaefXf3Hk+ClsmyygWm1R2Jy4WtMnsME4NfhmcpOIH5OSA==}
-
-  '@mastra/memory@0.3.1':
-    resolution: {integrity: sha512-f56IsfUvGTFEYxjMAVSvTui77O8ZljAIkRBwTlq9McRd9kk7EInz+ZV0jCiEhBW1QCV/xPhC1q8qyo646RjOzw==}
 
   '@mastra/pg@0.2.10':
     resolution: {integrity: sha512-UWtJD8ogVtTPdqkS6mfYz12VfYD/QP6uWkt6IKyRX77HV97YnhllVBm+2aXsrDY5qf2KWF4v6pbQoQTzV8mOuQ==}
@@ -1363,35 +1342,6 @@ packages:
   '@protobufjs/utf8@1.1.0':
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
 
-  '@redis/bloom@1.2.0':
-    resolution: {integrity: sha512-HG2DFjYKbpNmVXsa0keLHp/3leGJz1mjh09f2RLGGLQZzSHpkmZWuwJbAvo3QcRY8p80m5+ZdXZdYOSBLlp7Cg==}
-    peerDependencies:
-      '@redis/client': ^1.0.0
-
-  '@redis/client@1.6.0':
-    resolution: {integrity: sha512-aR0uffYI700OEEH4gYnitAnv3vzVGXCFvYfdpu/CJKvk4pHfLPEy/JSZyrpQ+15WhXe1yJRXLtfQ84s4mEXnPg==}
-    engines: {node: '>=14'}
-
-  '@redis/graph@1.1.1':
-    resolution: {integrity: sha512-FEMTcTHZozZciLRl6GiiIB4zGm5z5F3F6a6FZCyrfxdKOhFlGkiAqlexWMBzCi4DcRoyiOsuLfW+cjlGWyExOw==}
-    peerDependencies:
-      '@redis/client': ^1.0.0
-
-  '@redis/json@1.0.7':
-    resolution: {integrity: sha512-6UyXfjVaTBTJtKNG4/9Z8PSpKE6XgSyEb8iwaqDcy+uKrd/DGYHTWkUdnQDyzm727V7p21WUMhsqz5oy65kPcQ==}
-    peerDependencies:
-      '@redis/client': ^1.0.0
-
-  '@redis/search@1.2.0':
-    resolution: {integrity: sha512-tYoDBbtqOVigEDMAcTGsRlMycIIjwMCgD8eR2t0NANeQmgK/lvxNAvYyb6bZDD4frHRhIHkJu2TBRvB0ERkOmw==}
-    peerDependencies:
-      '@redis/client': ^1.0.0
-
-  '@redis/time-series@1.1.0':
-    resolution: {integrity: sha512-c1Q99M5ljsIuc4YdaCwfUEXsofakb9c8+Zse2qxTadu8TalLXuAESzLvFAvNVbkmSlvlzIQOLpBCmWI9wTOt+g==}
-    peerDependencies:
-      '@redis/client': ^1.0.0
-
   '@rollup/plugin-alias@5.1.1':
     resolution: {integrity: sha512-PR9zDb+rOzkRb2VD+EuKB7UC41vU5DIwZ5qqCpk0KJudcWAyi8rvYOhS7+L5aZCspw1stTViLgN5v6FF1p5cgQ==}
     engines: {node: '>=14.0.0'}
@@ -1940,9 +1890,6 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@upstash/redis@1.34.8':
-    resolution: {integrity: sha512-eGJgOKc+2Uq4AdSM0lNx+WvFFhQeyhJ32SGNuSniLPg4lNb6m5h2AQ77qL+TgWiMZO8HCQ82Zsc/RlVBevCWTg==}
-
   '@vue/compiler-core@3.5.13':
     resolution: {integrity: sha512-oOdAkwqUfW1WqpwSYJce06wvt6HljgY3fGeM9NcVA1HaYOij3mZG9Rkysn0OHuyUAGMbEbARIpsG+LPVlBJ5/Q==}
 
@@ -2172,10 +2119,6 @@ packages:
     resolution: {integrity: sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==}
     engines: {node: '>=0.8'}
 
-  cluster-key-slot@1.1.2:
-    resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
-    engines: {node: '>=0.10.0'}
-
   co-body@6.2.0:
     resolution: {integrity: sha512-Kbpv2Yd1NdL1V/V4cwLVxraHDV6K8ayohr2rmH0J87Er8+zJjcTa6dAn9QMPC9CRgU8+aNajKbSf1TzDB1yKPA==}
     engines: {node: '>=8.0.0'}
@@ -2257,9 +2200,6 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
-
-  crypto-js@4.2.0:
-    resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
 
   css-tree@2.3.1:
     resolution: {integrity: sha512-6Fv1DV/TYw//QF5IzQdqsNDjx/wc8TrMBZsqjL9eW01tWb7R7k/mq+/VXfJCl7SoD5emsJop9cOByJZfs8hYIw==}
@@ -2582,10 +2522,6 @@ packages:
   gcp-metadata@6.1.1:
     resolution: {integrity: sha512-a4tiq7E0/5fTjxPAaH4jpjkSv/uCaU2p5KC6HVGrvl0cDjA8iBZv4vv1gyzlmK0ZUKqwpOyQMKzZQe3lTit77A==}
     engines: {node: '>=14'}
-
-  generic-pool@3.9.0:
-    resolution: {integrity: sha512-hymDOu5B53XvN4QT9dBmZxPX4CWhBPPLguTZ9MMFeFa/Kg0xWVfylOVNlJji/E7yTZWFd/q9GO5TxDLq156D7g==}
-    engines: {node: '>= 4'}
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -3317,10 +3253,6 @@ packages:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
     engines: {node: '>=0.10.0'}
 
-  postgres@3.4.5:
-    resolution: {integrity: sha512-cDWgoah1Gez9rN3H4165peY9qfpEo+SA61oQv65O3cRUE1pOEoJWwddwcqKE8XZYjbblOJlYDlLV4h67HrEVDg==}
-    engines: {node: '>=12'}
-
   posthog-node@4.16.0:
     resolution: {integrity: sha512-j7t3h8gC2A2GUE8inqshaUuSrP7zLLtwHpP6sv9vePNRhjEqqd7lPzyjEeDWdcW1COmHtQXH19TYbyjGlutNXA==}
     engines: {node: '>=15.0.0'}
@@ -3402,9 +3334,6 @@ packages:
   real-require@0.2.0:
     resolution: {integrity: sha512-57frrGM/OCTLqLOAh0mhVA9VBMHd+9U7Zb2THMGdBUoZVOtGbJzjxsYGDJ3A9AYYCP4hn6y1TVbaOfzWtm5GFg==}
     engines: {node: '>= 12.13.0'}
-
-  redis@4.7.0:
-    resolution: {integrity: sha512-zvmkHEAdGMn+hMRXuMBtu4Vo5P6rHQjLoHftu+lBqq8ZTA3RCVC/WzD790bkKKiNFp7d5/9PcSD19fJyyRvOdQ==}
 
   regex-recursion@5.1.1:
     resolution: {integrity: sha512-ae7SBCbzVNrIjgSbh7wMznPcQel1DNlDtzensnFxpiNpXt1U2ju/bHugH422r+4LAVS1FpW1YCwilmnNsjum9w==}
@@ -3958,12 +3887,6 @@ packages:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
-
-  '@ai-sdk/openai-compatible@0.2.13(zod@3.24.4)':
-    dependencies:
-      '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.4)
-      zod: 3.24.4
 
   '@ai-sdk/openai@1.3.21(zod@3.24.4)':
     dependencies:
@@ -5019,39 +4942,6 @@ snapshots:
       - valibot
       - zod-openapi
 
-  '@mastra/memory@0.3.1(openapi-types@12.1.3)(react@18.3.1)':
-    dependencies:
-      '@mastra/core': 0.9.1(openapi-types@12.1.3)(react@18.3.1)(zod@3.24.4)
-      '@upstash/redis': 1.34.8
-      ai: 4.3.13(react@18.3.1)(zod@3.24.4)
-      js-tiktoken: 1.0.20
-      pg: 8.15.6
-      pg-pool: 3.9.6(pg@8.15.6)
-      postgres: 3.4.5
-      redis: 4.7.0
-      xxhash-wasm: 1.1.0
-      zod: 3.24.4
-    transitivePeerDependencies:
-      - '@hono/arktype-validator'
-      - '@hono/effect-validator'
-      - '@hono/typebox-validator'
-      - '@hono/valibot-validator'
-      - '@hono/zod-validator'
-      - '@sinclair/typebox'
-      - '@valibot/to-json-schema'
-      - arktype
-      - aws-crt
-      - bufferutil
-      - effect
-      - encoding
-      - openapi-types
-      - pg-native
-      - react
-      - supports-color
-      - utf-8-validate
-      - valibot
-      - zod-openapi
-
   '@mastra/pg@0.2.10(openapi-types@12.1.3)(pg-query-stream@4.8.1(pg@8.15.6))(react@18.3.1)':
     dependencies:
       '@mastra/core': 0.8.3(openapi-types@12.1.3)(react@18.3.1)
@@ -6005,32 +5895,6 @@ snapshots:
 
   '@protobufjs/utf8@1.1.0': {}
 
-  '@redis/bloom@1.2.0(@redis/client@1.6.0)':
-    dependencies:
-      '@redis/client': 1.6.0
-
-  '@redis/client@1.6.0':
-    dependencies:
-      cluster-key-slot: 1.1.2
-      generic-pool: 3.9.0
-      yallist: 4.0.0
-
-  '@redis/graph@1.1.1(@redis/client@1.6.0)':
-    dependencies:
-      '@redis/client': 1.6.0
-
-  '@redis/json@1.0.7(@redis/client@1.6.0)':
-    dependencies:
-      '@redis/client': 1.6.0
-
-  '@redis/search@1.2.0(@redis/client@1.6.0)':
-    dependencies:
-      '@redis/client': 1.6.0
-
-  '@redis/time-series@1.1.0(@redis/client@1.6.0)':
-    dependencies:
-      '@redis/client': 1.6.0
-
   '@rollup/plugin-alias@5.1.1(rollup@4.40.2)':
     optionalDependencies:
       rollup: 4.40.2
@@ -6682,10 +6546,6 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@upstash/redis@1.34.8':
-    dependencies:
-      crypto-js: 4.2.0
-
   '@vue/compiler-core@3.5.13':
     dependencies:
       '@babel/parser': 7.27.2
@@ -6915,8 +6775,6 @@ snapshots:
 
   clone@2.1.2: {}
 
-  cluster-key-slot@1.1.2: {}
-
   co-body@6.2.0:
     dependencies:
       '@hapi/bourne': 3.0.0
@@ -7009,8 +6867,6 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
-
-  crypto-js@4.2.0: {}
 
   css-tree@2.3.1:
     dependencies:
@@ -7314,8 +7170,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
-
-  generic-pool@3.9.0: {}
 
   gensync@1.0.0-beta.2: {}
 
@@ -8097,8 +7951,6 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
-  postgres@3.4.5: {}
-
   posthog-node@4.16.0:
     dependencies:
       axios: 1.9.0
@@ -8189,15 +8041,6 @@ snapshots:
       string_decoder: 1.3.0
 
   real-require@0.2.0: {}
-
-  redis@4.7.0:
-    dependencies:
-      '@redis/bloom': 1.2.0(@redis/client@1.6.0)
-      '@redis/client': 1.6.0
-      '@redis/graph': 1.1.1(@redis/client@1.6.0)
-      '@redis/json': 1.0.7(@redis/client@1.6.0)
-      '@redis/search': 1.2.0(@redis/client@1.6.0)
-      '@redis/time-series': 1.1.0(@redis/client@1.6.0)
 
   regex-recursion@5.1.1:
     dependencies:
