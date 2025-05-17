@@ -5,7 +5,7 @@ import { deepSeekModel } from "../../model-provider/deepseek";
 import { globalTools } from "../../global-tools";
 
 export const commitsAnalyzeAgent = new Agent({
-  name: "commitsAnalyzeAgent",
+  name: "Commits Analyze Agent",
   instructions,
   model: deepSeekModel,
   tools: globalTools,

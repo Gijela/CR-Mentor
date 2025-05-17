@@ -7,7 +7,7 @@ import { githubFileCommentTool } from "./tools/githubFileCommentTool";
 import { githubPrSummaryTool } from "./tools/githubPrSummaryTool";
 
 export const prAnalyzeAgent = new Agent({
-  name: "prAnalyzeAgent",
+  name: "PR Analyze Agent",
   instructions,
   model: deepSeekModel,
   tools: {

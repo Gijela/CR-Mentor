@@ -6,11 +6,12 @@ import KnowledgeBaseList from "./components/KnowledgeBaseList";
 import SessionList from "./components/SessionList";
 import {
   deleteThread,
+  getAgentInfoList,
   getThreadMessages,
   getThreads,
   updateThreadTitle,
 } from "./server";
-import type { ChatSessionDetail } from "./types";
+import type { Agent, ChatSessionDetail } from "./types";
 import { toast } from "sonner";
 
 export interface KnowledgeBase {
@@ -33,6 +34,9 @@ export function Component() {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isLoadingMessagesFinished, setIsLoadingMessagesFinished] =
     useState(false);
+
+  const [agentList, setAgentList] = useState<Agent[]>([]); // 所有 agent 的信息列表
+  const [currentAgentId, setCurrentAgentId] = useState(""); // 当前选中的 agent id
 
   // 添加会话列表状态
   const [chatSessions, setChatSessions] = useState<ChatSessionDetail[]>([]);
@@ -57,16 +61,35 @@ export function Component() {
     );
   }, [chatSessions, currentSessionId]);
 
+  // 加载新的会话列表
+  const loadNewSessionList = async (curAgentId: string) => {
+    const newSessionList = await getThreads(curAgentId, resourceId);
+    setChatSessions(newSessionList);
+    setCurrentSessionId(newSessionList[0]!.id);
+  };
+
+  // 由新会话从 useChat 的 onFinish 触发, 所以需要在这里加载新的会话列表
   useEffect(() => {
     if (hasNewSession) {
-      const loadNewSessionList = async () => {
-        const newSessionList = await getThreads(agentId, resourceId);
-        setChatSessions(newSessionList);
-        setCurrentSessionId(newSessionList[0]!.id);
-      };
-      loadNewSessionList();
+      loadNewSessionList(currentAgentId);
     }
   }, [hasNewSession]);
+
+  // 切换 agent, 加载新的会话列表
+  useEffect(() => {
+    if (currentAgentId) {
+      const currentAgentInfo = agentList.find(
+        (agent) => agent.id === currentAgentId
+      ) || {
+        name: "Select An Agent",
+        avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=41",
+        hasMemory: false,
+      };
+      if (currentAgentInfo.hasMemory) {
+        loadNewSessionList(currentAgentId);
+      }
+    }
+  }, [currentAgentId]);
 
   // 修改知识库选择处理函数
   const handleKbSelection = (kbTitle: string) => {
@@ -171,20 +194,43 @@ export function Component() {
     );
   };
 
-  // 获取当前 agent 所有会话, 并且默认选中第一个
+  // 获取所有 agent 列表, 并且默认选中第一个 agent 的第一个会话
   useEffect(() => {
     const loadInitialSessions = async () => {
       if (isLoaded && isSignedIn) {
         setIsLoadingSessions(true);
-        const threadList = await getThreads(agentId, resourceId);
+        // 获取所有 agent 列表后保存到 agentList 中
+        const agentsInfoList = await getAgentInfoList();
+        if (agentsInfoList.length === 0) {
+          toast.error("No agent found");
+          setIsLoadingSessions(false);
+          return;
+        }
+        setAgentList(agentsInfoList);
 
-        setChatSessions(threadList);
-        setIsLoadingSessions(false);
-        if (threadList.length > 0) {
-          setCurrentSessionId(threadList[0]!.id);
+        // 过滤所有开启了记忆的 agent 列表
+        const memoryAgentList = agentsInfoList.filter(
+          (agent) => agent.hasMemory
+        );
+        if (memoryAgentList.length === 0) {
+          toast.error("No memory agent found");
+          setIsLoadingSessions(false);
+          return;
+        }
+        setCurrentAgentId(memoryAgentList[0]!.id);
+
+        // 获取第一个开启了记忆的 agent 的会话列表, 并将其第一个会话设置为默认会话
+        const newSessionList = await getThreads(
+          memoryAgentList[0]!.id,
+          resourceId
+        );
+        if (newSessionList.length > 0) {
+          setChatSessions(newSessionList);
+          setCurrentSessionId(newSessionList[0]!.id);
         } else {
           handleCreateNewChat();
         }
+        setIsLoadingSessions(false);
       }
     };
     loadInitialSessions();
@@ -229,6 +275,7 @@ export function Component() {
     }
   }, [knowledgeBases, isLoaded, isSignedIn]); // Runs when KBs are loaded and user is signed in
 
+  // 获取当前会话的 messages
   useEffect(() => {
     console.log("currentSessionId ===>", currentSessionId);
     if (currentSessionId && hasNewSession) {
@@ -261,6 +308,9 @@ export function Component() {
       <SessionList
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        agentHasMemory={agentList.find(
+          (agent) => agent.id === currentAgentId
+        )?.hasMemory!}
         chatSessions={chatSessions}
         currentSessionId={currentSessionId ?? ""}
         handleCreateNewChat={handleCreateNewChat}
@@ -275,6 +325,9 @@ export function Component() {
         key={chatAreaVersion}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
+        agentList={agentList}
+        currentAgentId={currentAgentId}
+        setCurrentAgentId={setCurrentAgentId}
         chatSessions={chatSessions}
         currentSessionId={currentSessionId ?? ""}
         hasNewSession={hasNewSession}

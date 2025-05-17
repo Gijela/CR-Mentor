@@ -1,6 +1,25 @@
 import { toast } from "sonner";
-import type { ChatSessionDetail, ThreadItem } from "../types";
+import type { Agent, ChatSessionDetail, ThreadItem } from "../types";
 import { threadToSessionItem } from "../utils/threadToSessionItem";
+import { agentExtraInfoMap } from "./config";
+
+// 获取所有 agent 列表
+export const getAgentInfoList = async (): Promise<Agent[]> => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_AGENT_HOST}/api/agents`);
+    const rawAgentInfo = (await response.json()) as { [key: string]: Agent };
+    const agentInfoList = Object.entries(rawAgentInfo).map(([agentId, agentInfo]) => ({
+      ...agentInfo,
+      id: agentId,
+      ...agentExtraInfoMap[agentId as keyof typeof agentExtraInfoMap],
+    }));
+
+    return agentInfoList;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
 
 // 获取指定 agent 的所有会话
 export const getThreads = async (

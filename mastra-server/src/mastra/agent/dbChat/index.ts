@@ -6,7 +6,7 @@ import { globalTools } from "../../global-tools";
 import { memory } from "./memory";
 
 export const dbChatAgent = new Agent({
-  name: "dbChatAgent",
+  name: "Chat Agent",
   instructions,
   memory,
   model: deepSeekModel,

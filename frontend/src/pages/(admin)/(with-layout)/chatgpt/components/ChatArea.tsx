@@ -1,14 +1,25 @@
 import React, { useState, type Dispatch, type SetStateAction } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import HideLeftArea from "../icons/HideLeftArea";
 import HideRightArea from "../icons/HideRightArea";
-import type { ChatSessionDetail } from "../types";
+import type { Agent, ChatSessionDetail } from "../types";
 import ChatBot from "./ChatBot";
 import ChatMessagesSkeleton from "./ChatMessagesSkeleton";
 
 type ChatAreaProps = {
   isSidebarOpen: boolean;
-  setIsSidebarOpen: (value: boolean) => void;
+  setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
+  agentList: Agent[];
+  currentAgentId: string;
+  setCurrentAgentId: Dispatch<SetStateAction<string>>;
   chatSessions: ChatSessionDetail[];
   currentSessionId: string;
   hasNewSession: boolean;
@@ -18,7 +29,7 @@ type ChatAreaProps = {
   isLoadingMessagesFinished: boolean;
   currentSelectedKbDetails: string[];
   isRightSidebarOpen: boolean;
-  setIsRightSidebarOpen: (value: boolean) => void;
+  setIsRightSidebarOpen: Dispatch<SetStateAction<boolean>>;
   handleUpdateSessionTitle: (sessionId: string, newTitle: string) => void;
 };
 
@@ -26,6 +37,9 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
   ({
     isSidebarOpen,
     setIsSidebarOpen,
+    agentList,
+    currentAgentId,
+    setCurrentAgentId,
     chatSessions,
     currentSessionId,
     hasNewSession,
@@ -40,6 +54,7 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
   }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editingTitle, setEditingTitle] = useState("");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const handleStartEditing = () => {
       const currentTitle =
@@ -169,27 +184,86 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
     //   return new Response(readableStream);
     // };
 
+    const currentAgentInfo = agentList.find(
+      (agent) => agent.id === currentAgentId
+    ) || {
+      name: "Select An Agent",
+      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=41",
+    };
+
     return (
       <div className="flex-1 flex flex-col relative min-w-[400px]">
         <div className="absolute top-0 left-0 right-0 bg-background z-20 border-b">
           <div className="h-16 px-1 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 hover:bg-accent rounded-lg"
-              >
-                {isSidebarOpen ? <HideLeftArea /> : <HideRightArea />}
-              </button>
-
+            <div className="flex items-center">
+              {!isSidebarOpen && (
+                <button
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="pl-2 hover:bg-accent rounded-lg"
+                >
+                  <HideRightArea />
+                </button>
+              )}
+              {/* 显示当前选中的 agent 的图标 */}
               <img
-                src={
-                  chatSessions.find((s) => s.id === currentSessionId)?.avatar ||
-                  "https://api.dicebear.com/7.x/bottts/svg?seed=default"
-                }
-                alt="assistant avatar"
-                className="w-8 h-8 rounded-full"
+                src={currentAgentInfo.avatar}
+                alt=""
+                className="w-9 h-9 rounded-full mx-2"
               />
+
+              {/* 显示当前选中的 agent 的名称 */}
               <div className="flex flex-col">
+                <DropdownMenu onOpenChange={setIsDropdownOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="p-0 font-medium justify-start h-auto hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 flex items-center gap-1"
+                    >
+                      {currentAgentInfo?.name}
+                      {isDropdownOpen ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[360px]">
+                    {agentList.map((agent) => (
+                      <DropdownMenuItem
+                        key={agent.id}
+                        onSelect={() => {
+                          setCurrentAgentId(agent.id);
+                        }}
+                        className="flex flex-col items-start cursor-pointer p-2"
+                      >
+                        <div className="flex justify-between items-center w-full">
+                          <div className="flex items-center gap-2 flex-1 mr-4">
+                            <img
+                              src={agent.avatar}
+                              alt=""
+                              className="w-6 h-6 rounded-full"
+                            />
+                            <span className="font-medium max-w-[calc(100%-60px)] truncate">
+                              {agent.name}
+                            </span>
+                          </div>
+                          {agent.hasMemory && (
+                            <span className="ml-2 px-1.5 py-0.5 text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100 rounded-full whitespace-nowrap">
+                              memory
+                            </span>
+                          )}
+                        </div>
+                        {agent.description && (
+                          <span className="text-xs text-muted-foreground max-w-full truncate">
+                            {agent.description}
+                          </span>
+                        )}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* 当前选中的会话的名称 */}
                 {isEditing ? (
                   <input
                     type="text"
@@ -197,24 +271,22 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
                     onChange={(e) => setEditingTitle(e.target.value)}
                     onBlur={handleSaveEdit}
                     onKeyDown={handleKeyDown}
-                    className="font-medium bg-transparent border-b border-primary outline-none"
+                    className="text-xs bg-transparent border-b border-primary outline-none mt-1 w-[200px]"
                     autoFocus
                   />
                 ) : (
                   <span
-                    className="font-medium cursor-pointer hover:text-primary"
+                    className="text-xs text-muted-foreground max-w-[200px] truncate cursor-pointer hover:text-primary mt-1"
                     onClick={handleStartEditing}
                   >
-                    agent name, {hasNewSession.toString()}/{currentSessionId}
+                    {chatSessions.find((s) => s.id === currentSessionId)
+                      ?.title || "New Session"}
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground max-w-[200px] truncate">
-                  {chatSessions.find((s) => s.id === currentSessionId)?.title ||
-                    "New Session"}
-                </span>
               </div>
             </div>
 
+            {/* 显示当前选中的知识库 */}
             <div className="flex items-center gap-2">
               <div className="flex -space-x-4">
                 {currentSelectedKbDetails.slice(0, 3).map((kbName) => (
