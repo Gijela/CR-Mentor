@@ -29,6 +29,11 @@ export type Agent = {
   description: string;
   /** 补充额外信息后得到的: 头像 */
   avatar: string;
+  /** 补充额外信息后得到的: 快捷问题 */
+  suggestions: {
+    title: string;
+    subtitle: string;
+  }[];
 };
 
 // 接口返回的 thread 会话列表子项数据类型

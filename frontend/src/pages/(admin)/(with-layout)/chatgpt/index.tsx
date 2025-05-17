@@ -23,8 +23,7 @@ export interface KnowledgeBase {
   updated_at: string;
 }
 
-const agentId = "dbChatAgent",
-  resourceId = "dbChatAgent";
+const resourceId = "dbChatAgent";
 
 export function Component() {
   const [knowledgeBases, setKnowledgeBases] = useState<string[]>([]);
@@ -37,6 +36,7 @@ export function Component() {
 
   const [agentList, setAgentList] = useState<Agent[]>([]); // 所有 agent 的信息列表
   const [currentAgentId, setCurrentAgentId] = useState(""); // 当前选中的 agent id
+  const [currentAgentInfo, setCurrentAgentInfo] = useState<Agent>({} as Agent);
 
   // 添加会话列表状态
   const [chatSessions, setChatSessions] = useState<ChatSessionDetail[]>([]);
@@ -66,11 +66,12 @@ export function Component() {
     const newSessionList = await getThreads(curAgentId, resourceId);
     setChatSessions(newSessionList);
     setCurrentSessionId(newSessionList[0]!.id);
+    setIsLoadingSessions(false);
   };
 
   // 由新会话从 useChat 的 onFinish 触发, 所以需要在这里加载新的会话列表
   useEffect(() => {
-    if (hasNewSession) {
+    if (hasNewSession && currentAgentInfo?.hasMemory) {
       loadNewSessionList(currentAgentId);
     }
   }, [hasNewSession]);
@@ -85,8 +86,15 @@ export function Component() {
         avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=41",
         hasMemory: false,
       };
+      setCurrentAgentInfo(currentAgentInfo as Agent);
+
       if (currentAgentInfo.hasMemory) {
+        setIsLoadingSessions(true);
+        setIsLoadingMessages(true);
         loadNewSessionList(currentAgentId);
+      } else {
+        setChatSessions([]);
+        setCurrentSessionId(null);
       }
     }
   }, [currentAgentId]);
@@ -115,7 +123,7 @@ export function Component() {
     newTitle: string
   ) => {
     const { success, message, newSession } = await updateThreadTitle(
-      agentId,
+      currentAgentId,
       sessionId,
       newTitle
     );
@@ -133,7 +141,7 @@ export function Component() {
   // 创建新会话
   const handleCreateNewChat = async () => {
     // 创建新会话由 mastra memory 自动完成, 这里不需要手动调接口创建, 手动调接口无法让大模型自己决定标题
-    // const newSession = await createThread(agentId, resourceId);
+    // const newSession = await createThread(currentAgentId, resourceId);
     // setChatSessions((prev) => [newSession, ...prev]);
     // setCurrentSessionId(newSession.id);
 
@@ -167,7 +175,7 @@ export function Component() {
   ) => {
     e.stopPropagation(); // 阻止事件冒泡，避免触发会话选择
 
-    const { success, message } = await deleteThread(agentId, sessionId);
+    const { success, message } = await deleteThread(currentAgentId, sessionId);
     if (!success) {
       toast.error(message);
       return;
@@ -287,7 +295,10 @@ export function Component() {
       const loadMessages = async () => {
         setIsLoadingMessages(true);
         setIsLoadingMessagesFinished(false);
-        const messages = await getThreadMessages(agentId, currentSessionId);
+        const messages = await getThreadMessages(
+          currentAgentId,
+          currentSessionId
+        );
         setCurrentSessionMessages(messages);
         setIsLoadingMessages(false);
         setIsLoadingMessagesFinished(true);
@@ -308,9 +319,7 @@ export function Component() {
       <SessionList
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
-        agentHasMemory={agentList.find(
-          (agent) => agent.id === currentAgentId
-        )?.hasMemory!}
+        agentHasMemory={currentAgentInfo?.hasMemory!}
         chatSessions={chatSessions}
         currentSessionId={currentSessionId ?? ""}
         handleCreateNewChat={handleCreateNewChat}
@@ -327,6 +336,7 @@ export function Component() {
         setIsSidebarOpen={setIsSidebarOpen}
         agentList={agentList}
         currentAgentId={currentAgentId}
+        currentAgentInfo={currentAgentInfo!}
         setCurrentAgentId={setCurrentAgentId}
         chatSessions={chatSessions}
         currentSessionId={currentSessionId ?? ""}

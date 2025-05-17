@@ -19,6 +19,7 @@ type ChatAreaProps = {
   setIsSidebarOpen: Dispatch<SetStateAction<boolean>>;
   agentList: Agent[];
   currentAgentId: string;
+  currentAgentInfo: Agent;
   setCurrentAgentId: Dispatch<SetStateAction<string>>;
   chatSessions: ChatSessionDetail[];
   currentSessionId: string;
@@ -39,6 +40,7 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
     setIsSidebarOpen,
     agentList,
     currentAgentId,
+    currentAgentInfo,
     setCurrentAgentId,
     chatSessions,
     currentSessionId,
@@ -184,13 +186,6 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
     //   return new Response(readableStream);
     // };
 
-    const currentAgentInfo = agentList.find(
-      (agent) => agent.id === currentAgentId
-    ) || {
-      name: "Select An Agent",
-      avatar: "https://api.dicebear.com/7.x/bottts/svg?seed=41",
-    };
-
     return (
       <div className="flex-1 flex flex-col relative min-w-[400px]">
         <div className="absolute top-0 left-0 right-0 bg-background z-20 border-b">
@@ -204,9 +199,12 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
                   <HideRightArea />
                 </button>
               )}
-              {/* 显示当前选中的 agent 的图标 */}
+              {/* 显示当前选中的 Session/Agent 的头像, Session 的头像优先 */}
               <img
-                src={currentAgentInfo.avatar}
+                src={
+                  chatSessions.find((s) => s.id === currentSessionId)?.avatar ||
+                  currentAgentInfo.avatar
+                }
                 alt=""
                 className="w-9 h-9 rounded-full mx-2"
               />
@@ -239,7 +237,13 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
                         <div className="flex justify-between items-center w-full">
                           <div className="flex items-center gap-2 flex-1 mr-4">
                             <img
-                              src={agent.avatar}
+                              src={
+                                agent.id === currentAgentId
+                                  ? chatSessions.find(
+                                      (s) => s.id === currentSessionId
+                                    )?.avatar || currentAgentInfo.avatar
+                                  : agent.avatar
+                              }
                               alt=""
                               className="w-6 h-6 rounded-full"
                             />
@@ -344,6 +348,8 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
             </div>
           ) : (
             <ChatBot
+              currentAgentId={currentAgentId}
+              currentAgentInfo={currentAgentInfo}
               currentSessionId={currentSessionId}
               initialMessages={currentSessionMessages}
               setHasNewSession={setHasNewSession}

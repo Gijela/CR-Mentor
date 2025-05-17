@@ -13,10 +13,13 @@ import ToolInvocationDisplay from "../../artifacts/Normal";
 import MessageStatus from "./MessageStutas";
 import SuggestionList from "./SuggestionList";
 import FormInput from "./FormInput";
-const agentId = "dbChatAgent";
+import type { Agent } from "../../types";
+
 const resourceId = "dbChatAgent";
 
 interface ChatBotProps {
+  currentAgentId: string;
+  currentAgentInfo: Agent;
   currentSessionId: string;
   initialMessages: any[];
   setHasNewSession: Dispatch<SetStateAction<boolean>>;
@@ -24,6 +27,8 @@ interface ChatBotProps {
 }
 
 const ChatBot: React.FC<ChatBotProps> = ({
+  currentAgentId,
+  currentAgentInfo,
   currentSessionId,
   initialMessages,
   setHasNewSession,
@@ -48,7 +53,9 @@ const ChatBot: React.FC<ChatBotProps> = ({
     stop,
     setMessages,
   } = useChat({
-    api: `${import.meta.env.VITE_AGENT_HOST}/api/agents/${agentId}/stream`,
+    api: `${
+      import.meta.env.VITE_AGENT_HOST
+    }/api/agents/${currentAgentId}/stream`,
     initialMessages,
     experimental_prepareRequestBody({ messages }) {
       return {
@@ -70,6 +77,7 @@ const ChatBot: React.FC<ChatBotProps> = ({
     },
     onFinish: async (message) => {
       console.log("finish message ===> ", message);
+      console.log("messages length ===> ", messages.length);
       // 如果当前没有会话 id 则认为是新会话, 刷新一下 sessionList, 第二轮对话结束也刷新一次
       if (!currentSessionId) {
         setHasNewSession(true);
@@ -107,10 +115,6 @@ const ChatBot: React.FC<ChatBotProps> = ({
       [key]: !prev[key],
     }));
   };
-
-  useEffect(() => {
-    console.log("messages ===> ", messages);
-  }, [messages]);
 
   useEffect(() => {
     if (chatContainerRef.current && !isUserScrollingUpRef.current) {
@@ -184,7 +188,7 @@ const ChatBot: React.FC<ChatBotProps> = ({
       </div>
 
       {/* 快捷问题 */}
-      <SuggestionList messages={messages} append={append} />
+      <SuggestionList messages={messages} suggestions={currentAgentInfo.suggestions} append={append} />
 
       {/* 输入框 */}
       <FormInput
