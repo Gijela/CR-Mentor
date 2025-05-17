@@ -10,9 +10,6 @@ import { Greeting } from "./Greeting";
 import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
 import ToolInvocationDisplay from "../../artifacts/Normal";
-import type { ChatSessionDetail } from "../../types";
-import { getThreads } from "../../server";
-import LoadingIcon from "../../icons/LoadingIcon";
 import MessageStatus from "./MessageStutas";
 import SuggestionList from "./SuggestionList";
 import FormInput from "./FormInput";
@@ -22,13 +19,15 @@ const resourceId = "dbChatAgent";
 interface ChatBotProps {
   currentSessionId: string;
   initialMessages: any[];
-  setChatSessions: Dispatch<SetStateAction<ChatSessionDetail[]>>;
+  setHasNewSession: Dispatch<SetStateAction<boolean>>;
+  isLoadingMessagesFinished: boolean;
 }
 
 const ChatBot: React.FC<ChatBotProps> = ({
   currentSessionId,
   initialMessages,
-  setChatSessions,
+  setHasNewSession,
+  isLoadingMessagesFinished,
 }) => {
   const [manualStop, setManualStop] = useState(false);
   const manualStopRef = useRef(manualStop);
@@ -71,6 +70,11 @@ const ChatBot: React.FC<ChatBotProps> = ({
     },
     onFinish: async (message) => {
       console.log("finish message ===> ", message);
+      // 如果当前没有会话 id 则认为是新会话, 刷新一下 sessionList, 第二轮对话结束也刷新一次
+      if (!currentSessionId) {
+        setHasNewSession(true);
+        return;
+      }
       if (manualStopRef.current) {
         setMessages((prevMessages) =>
           prevMessages.map((m, index) =>
@@ -80,10 +84,6 @@ const ChatBot: React.FC<ChatBotProps> = ({
           )
         );
         setManualStop(false);
-      }
-      if (message.id !== currentSessionId) {
-        const newSessionList = await getThreads(agentId, resourceId);
-        setChatSessions(newSessionList);
       }
     },
   });
@@ -140,7 +140,7 @@ const ChatBot: React.FC<ChatBotProps> = ({
         className="flex h-0 grow flex-col overflow-y-scroll px-4"
       >
         {/* 问候语 hi there */}
-        {messages.length === 0 && <Greeting />}
+        {isLoadingMessagesFinished && messages.length === 0 && <Greeting />}
         {/* 聊天消息 */}
         <div className="space-y-4 py-8">
           {messages.map((message: any, i: number) => (

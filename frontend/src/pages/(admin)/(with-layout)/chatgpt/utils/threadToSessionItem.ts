@@ -11,7 +11,7 @@ export const threadToSessionItem = (thread: ThreadItem): ChatSessionDetail => {
   return {
     id: thread.id,
     title: thread.title,
-    timestamp: new Date(thread.updatedAt),
+    timestamp: new Date(thread?.updatedAt || thread?.createdAt),
     selectedKbs: [],
     messages: [],
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${thread.id}`,

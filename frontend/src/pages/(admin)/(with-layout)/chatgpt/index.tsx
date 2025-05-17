@@ -31,6 +31,8 @@ export function Component() {
   const { user, isLoaded, isSignedIn } = useUser();
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isLoadingMessagesFinished, setIsLoadingMessagesFinished] =
+    useState(false);
 
   // 添加会话列表状态
   const [chatSessions, setChatSessions] = useState<ChatSessionDetail[]>([]);
@@ -38,11 +40,15 @@ export function Component() {
 
   // 添加当前选中会话状态
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  // 是否刚刚新建会话, 新建完对话需要重新查询最新的 chatSessions, 并将 currentSessionId 设置为第一条会话的 id
+  const [hasNewSession, setHasNewSession] = useState(false);
 
   // 获取当前 thread 的 messages
   const [currentSessionMessages, setCurrentSessionMessages] = useState<any[]>(
     [] // 类型其实是 UIMessage[], 但是 sdk 没有将这个类型导出
   );
+  // 用于触发每次新建会话后 ChatArea 的重新渲染
+  const [chatAreaVersion, setChatAreaVersion] = useState(0);
 
   // 获取当前会话的选中知识库
   const currentSelectedKbs = useMemo(() => {
@@ -50,6 +56,17 @@ export function Component() {
       chatSessions.find((s) => s.id === currentSessionId)?.selectedKbs || []
     );
   }, [chatSessions, currentSessionId]);
+
+  useEffect(() => {
+    if (hasNewSession) {
+      const loadNewSessionList = async () => {
+        const newSessionList = await getThreads(agentId, resourceId);
+        setChatSessions(newSessionList);
+        setCurrentSessionId(newSessionList[0]!.id);
+      };
+      loadNewSessionList();
+    }
+  }, [hasNewSession]);
 
   // 修改知识库选择处理函数
   const handleKbSelection = (kbTitle: string) => {
@@ -97,9 +114,10 @@ export function Component() {
     // setChatSessions((prev) => [newSession, ...prev]);
     // setCurrentSessionId(newSession.id);
 
-    // 所以新建会话就相当于：取消选中的当前会话，并且将聊天消息清空
+    // 所以新建会话就相当于：取消选中的当前会话，并且将聊天消息清空。 将 hasNewSession 设置为 false, 它会由 useChat 的 onFinish 修改为 true
     setCurrentSessionId(null);
     setCurrentSessionMessages([]);
+    setChatAreaVersion((prev) => prev + 1);
   };
 
   // 修改搜索和会话相关的处理函数
@@ -212,17 +230,26 @@ export function Component() {
   }, [knowledgeBases, isLoaded, isSignedIn]); // Runs when KBs are loaded and user is signed in
 
   useEffect(() => {
+    console.log("currentSessionId ===>", currentSessionId);
+    if (currentSessionId && hasNewSession) {
+      setHasNewSession(false);
+      return;
+    }
+
     if (currentSessionId) {
       const loadMessages = async () => {
         setIsLoadingMessages(true);
+        setIsLoadingMessagesFinished(false);
         const messages = await getThreadMessages(agentId, currentSessionId);
         setCurrentSessionMessages(messages);
         setIsLoadingMessages(false);
+        setIsLoadingMessagesFinished(true);
       };
       loadMessages();
     } else {
       setCurrentSessionMessages([]);
       setIsLoadingMessages(false);
+      setIsLoadingMessagesFinished(true);
     }
   }, [currentSessionId]);
 
@@ -245,13 +272,16 @@ export function Component() {
 
       {/* 中间聊天区域 */}
       <ChatArea
+        key={chatAreaVersion}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
         chatSessions={chatSessions}
-        setChatSessions={setChatSessions}
         currentSessionId={currentSessionId ?? ""}
+        hasNewSession={hasNewSession}
+        setHasNewSession={setHasNewSession}
         currentSessionMessages={currentSessionMessages}
         isLoadingMessages={isLoadingMessages}
+        isLoadingMessagesFinished={isLoadingMessagesFinished}
         currentSelectedKbDetails={currentSelectedKbDetails}
         isRightSidebarOpen={isRightSidebarOpen}
         setIsRightSidebarOpen={setIsRightSidebarOpen}

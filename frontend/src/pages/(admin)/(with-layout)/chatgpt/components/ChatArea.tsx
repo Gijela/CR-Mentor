@@ -10,10 +10,12 @@ type ChatAreaProps = {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (value: boolean) => void;
   chatSessions: ChatSessionDetail[];
-  setChatSessions: Dispatch<SetStateAction<ChatSessionDetail[]>>;
   currentSessionId: string;
+  hasNewSession: boolean;
+  setHasNewSession: Dispatch<SetStateAction<boolean>>;
   currentSessionMessages: any[];
   isLoadingMessages: boolean;
+  isLoadingMessagesFinished: boolean;
   currentSelectedKbDetails: string[];
   isRightSidebarOpen: boolean;
   setIsRightSidebarOpen: (value: boolean) => void;
@@ -25,10 +27,12 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
     isSidebarOpen,
     setIsSidebarOpen,
     chatSessions,
-    setChatSessions,
     currentSessionId,
+    hasNewSession,
+    setHasNewSession,
     currentSessionMessages,
     isLoadingMessages,
+    isLoadingMessagesFinished,
     currentSelectedKbDetails,
     isRightSidebarOpen,
     setIsRightSidebarOpen,
@@ -201,12 +205,12 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
                     className="font-medium cursor-pointer hover:text-primary"
                     onClick={handleStartEditing}
                   >
-                    {chatSessions.find((s) => s.id === currentSessionId)
-                      ?.title || "随便聊聊"}
+                    agent name, {hasNewSession.toString()}/{currentSessionId}
                   </span>
                 )}
-                <span className="text-xs text-muted-foreground">
-                  @gpt-4o-mini
+                <span className="text-xs text-muted-foreground max-w-[200px] truncate">
+                  {chatSessions.find((s) => s.id === currentSessionId)?.title ||
+                    "New Session"}
                 </span>
               </div>
             </div>
@@ -263,12 +267,15 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
 
         <div className="flex-grow pt-16 flex flex-col overflow-y-hidden">
           {isLoadingMessages ? (
-            <ChatMessagesSkeleton />
+            <div className="flex justify-center">
+              <ChatMessagesSkeleton />
+            </div>
           ) : (
             <ChatBot
               currentSessionId={currentSessionId}
               initialMessages={currentSessionMessages}
-              setChatSessions={setChatSessions}
+              setHasNewSession={setHasNewSession}
+              isLoadingMessagesFinished={isLoadingMessagesFinished}
             />
           )}
         </div>
