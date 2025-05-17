@@ -61,7 +61,7 @@ export function Component() {
     setPage,
     totalCount,
   } = useRepositories({
-    githubName: user?.publicMetadata?.githubName as string,
+    githubName: user?.username as string,
     search,
     sort,
     pageSize: 20,
@@ -109,9 +109,7 @@ export function Component() {
           )}
         </div>
 
-        <CreatePRDialog
-          githubName={user?.publicMetadata?.githubName as string}
-        />
+        <CreatePRDialog githubName={user?.username as string} />
       </div>
 
       <Separator />

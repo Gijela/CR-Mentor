@@ -104,7 +104,7 @@ export function Component() {
     data: pullResponse = { items: [], totalCount: 0 },
     isLoading: isLoadingPRs,
   } = usePullRequests({
-    owner: user?.publicMetadata?.githubName as string,
+    owner: user?.username!,
     repo: selectedRepo === "all" ? "" : selectedRepo,
     state: statusFilter === "all" ? "all" : statusFilter,
     sort: "created",
@@ -187,7 +187,7 @@ export function Component() {
         <div className="flex justify-between gap-4 w-full p-1">
           <div className="flex gap-4">
             <RepositorySearch
-              owner={user?.publicMetadata?.githubName as string}
+              owner={user?.username as string}
               value={searchRepo}
               onChange={(value) => {
                 setSearchRepo(value);

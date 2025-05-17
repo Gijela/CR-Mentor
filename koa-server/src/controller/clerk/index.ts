@@ -119,3 +119,24 @@ export const saveGithubName = async (ctx: Koa.Context) => {
     ctx.body = { success: false, msg: "保存 GitHub 信息失败", error }
   }
 }
+
+/**
+ * 保存 installationId
+ */
+export const saveInstallationId = async (ctx: Koa.Context) => {
+  try {
+    const { installation_id } = ctx.request.body as { installation_id: string }
+    const { id: userId, publicMetadata } = ctx.state.user as any
+
+    const user = await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: { ...publicMetadata, installationId: installation_id },
+    })
+
+    ctx.status = 200
+    ctx.body = { success: true, msg: "save installationId success", data: { publicMetadata: user.publicMetadata } }
+  } catch (error) {
+    console.error("🚀 ~ saveInstallationId ~ error:", error)
+    ctx.status = 500
+    ctx.body = { success: false, msg: "save installationId failed", error }
+  }
+}

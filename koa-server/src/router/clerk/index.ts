@@ -1,6 +1,6 @@
 import Router from "@koa/router"
 
-import { getCurrentUser, getUsers, saveGithubName, setUserMetadata } from "@/controller/clerk"
+import { getCurrentUser, getUsers, saveGithubName, setUserMetadata, saveInstallationId } from "@/controller/clerk"
 import { clerkAuth } from "@/middleware/clerk"
 
 const router = new Router({ prefix: "/clerk" })
@@ -16,5 +16,8 @@ router.post("/setMetadata", clerkAuth, setUserMetadata)
 
 // 保存 githubName
 router.post("/saveGithubName", clerkAuth, saveGithubName)
+
+// 保存 installationId
+router.post("/saveInstallationId", clerkAuth, saveInstallationId)
 
 export default router

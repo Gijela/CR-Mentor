@@ -7,6 +7,7 @@ import { EDIT_TYPE } from "@/lib/groupDiff/types"
 import { FileObject } from "./types"
 import { buildPatchSummaryPrompt } from "@/app/prompt/github/patch-summary"
 import { fetchAndAnalyzeCommits } from "@/service/github/analysisService"
+import { clerk } from "../clerk"
 
 // 根据 githubName 创建 token
 export const createToken = async (ctx: Koa.Context) => {
@@ -60,6 +61,61 @@ export const createToken = async (ctx: Koa.Context) => {
     logger.error("🚀 ~ createToken ~ error:", error)
     ctx.status = 500
     ctx.body = { success: false, msg: "create token failed", error }
+  }
+}
+
+// 检查 github App 中是否存在该用户
+export const checkUserExist = async (ctx: Koa.Context) => {
+  const { githubName } = ctx.request.body as { githubName: string }
+  const appId = process.env.GITHUB_APP_ID
+  const privateKey = `-----BEGIN RSA PRIVATE KEY-----\n${process.env.GITHUB_PRIVATE_KEY}\n-----END RSA PRIVATE KEY-----`
+
+  const payload = {
+    iat: Math.floor(Date.now() / 1000), // 签发时间
+    exp: Math.floor(Date.now() / 1000) + 10 * 60, // 过期时间（10 分钟）
+    iss: appId,
+  }
+
+  if (!githubName) {
+    ctx.status = 400
+    ctx.body = { success: false, msg: "githubName is required" }
+    return
+  }
+
+  try {
+    // 1. 通过私钥文件生成 JWT
+    const jwtToken = jwt.sign(payload, privateKey, { algorithm: "RS256" })
+
+    // 2. 获取 githubName 对应用户的 installationId
+    const installationsResponse = await fetch(
+      `https://api.github.com/users/${githubName}/installation`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      },
+    )
+    const { id: installationId } = await installationsResponse.json()
+    if (!installationId) {
+      ctx.status = 200
+      ctx.body = { success: true, data: { isExist: false }, message: "get user id failed, user not exist" }
+      return
+    }
+
+    // 3. 将 installationId 保存到用户信息中
+    const { id: userId, publicMetadata } = ctx.state.user as any
+    await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: { ...publicMetadata, installationId },
+    })
+
+    ctx.status = 200
+    ctx.body = { success: true, data: { isExist: true }, message: "user exist" }
+  } catch (error) {
+    logger.error("🚀 ~ checkUserExist ~ error:", error)
+    ctx.status = 500
+    ctx.body = { success: false, data: { isExist: false }, message: "get user id failed, user not exist" }
   }
 }
 

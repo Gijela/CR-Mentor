@@ -78,47 +78,37 @@ export function Component() {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [showOptional, setShowOptional] = useState(false);
-  const [isSavingGithubName, setIsSavingGithubName] = useState(false);
+  const [isSavingInstallationId, setIsSavingInstallationId] = useState(false);
   const { isSignedIn, user } = useUser();
   const { getToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isSignedIn && !user?.publicMetadata?.githubName) {
-      setCurrentStep(1);
-      setProgress(50);
+    if (isSignedIn) {
+      if (user?.publicMetadata?.installationId) {
+        setCurrentStep(2);
+        setProgress(100);
+        setShowOptional(true);
+      } else {
+        setCurrentStep(1);
+        setProgress(50);
+      }
     }
-    // const initialProgress = isSignedIn ? 50 : 0
-    // const initialStep = isSignedIn ? 1 : 0
-
-    // const timer = setTimeout(() => {
-    //   setProgress(progress === 100 ? 100 : initialProgress)
-    //   setCurrentStep(currentStep === 2 ? 2 : initialStep)
-    // }, 500)
-    // return () => clearTimeout(timer)
   }, [isSignedIn]);
 
-  useEffect(() => {
-    if (user?.publicMetadata && user?.publicMetadata?.githubName) {
-      setCurrentStep(2);
-      setProgress(100);
-      setShowOptional(true);
-    }
-  }, [user?.publicMetadata?.githubName]);
-
-  const handleSaveGithubName = async (code: string) => {
+  const handleSaveInstallationId = async (installation_id: string) => {
     try {
       const token = await getToken();
       if (!token) {
         return;
       }
 
-      setIsSavingGithubName(true);
+      setIsSavingInstallationId(true);
       const result = await fetch(
-        `${import.meta.env.VITE_SERVER_HOST}/clerk/saveGithubName`,
+        `${import.meta.env.VITE_SERVER_HOST}/clerk/saveInstallationId`,
         {
           method: "POST",
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ installation_id }),
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -134,19 +124,22 @@ export function Component() {
       setCurrentStep(2);
       setProgress(100);
       setShowOptional(true);
-      setIsSavingGithubName(false);
+      setIsSavingInstallationId(false);
     } catch (error) {
-      setIsSavingGithubName(false);
-      console.error("Failed to save GitHub name:", error);
+      setIsSavingInstallationId(false);
+      console.error("Failed to save installation ID:", error);
     }
   };
 
   useEffect(() => {
-    const code = new URLSearchParams(location.search).get("code");
-    if (!code || !user?.id) {
+    const installation_id = new URLSearchParams(location.search).get(
+      "installation_id"
+    );
+    if (!installation_id || !user?.id) {
       return;
     }
-    handleSaveGithubName(code);
+    // handleSaveGithubName(code);
+    handleSaveInstallationId(installation_id);
   }, [location, user?.id]);
 
   return (
@@ -218,7 +211,7 @@ export function Component() {
                   )}
                   {step.key === "auth-github" && (
                     <>
-                      {isSavingGithubName ? (
+                      {isSavingInstallationId ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : (
                         <Github className="mr-2 h-4 w-4" />

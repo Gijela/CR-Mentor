@@ -1,7 +1,9 @@
 import Router from "@koa/router"
+import { clerkAuth } from "@/middleware/clerk"
 
 import {
   createPrWebhook,
+  checkUserExist,
   createPullRequest,
   createToken,
   fetchRepoBranches,
@@ -13,6 +15,9 @@ const router = new Router({ prefix: "/github" })
 
 // 根据 githubName 创建 token
 router.post("/createToken", createToken)
+
+// 检查 github App 中是否存在该用户
+router.post("/checkUserExist", clerkAuth, checkUserExist)
 
 // 获取仓库分支
 router.post("/fetchRepoBranches", fetchRepoBranches)
