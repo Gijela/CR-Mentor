@@ -1,4 +1,4 @@
-import type { ChatSessionDetail, ThreadItem } from "../Type";
+import type { ChatSessionDetail, ThreadItem } from "../types";
 
 /**
  * 将 thread 数据格式转换为 sessionItem 数据格式

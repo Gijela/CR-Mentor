@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import type { ChatSessionDetail, ThreadItem } from "../Type";
+import type { ChatSessionDetail, ThreadItem } from "../types";
 import { threadToSessionItem } from "../utils/threadToSessionItem";
 
 // 获取指定 agent 的所有会话

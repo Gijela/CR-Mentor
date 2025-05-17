@@ -10,7 +10,7 @@ import { Greeting } from "./Greeting";
 import { useChat } from "@ai-sdk/react";
 import { toast } from "sonner";
 import ToolInvocationDisplay from "../../artifacts/Normal";
-import type { ChatSessionDetail } from "../../Type";
+import type { ChatSessionDetail } from "../../types";
 import { getThreads } from "../../server";
 import LoadingIcon from "../../icons/LoadingIcon";
 import MessageStatus from "./MessageStutas";

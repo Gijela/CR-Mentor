@@ -10,7 +10,7 @@ import {
   getThreads,
   updateThreadTitle,
 } from "./server";
-import type { ChatSessionDetail } from "./Type";
+import type { ChatSessionDetail } from "./types";
 import { toast } from "sonner";
 
 export interface KnowledgeBase {

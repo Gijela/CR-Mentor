@@ -2,7 +2,7 @@ import React, { useState, type Dispatch, type SetStateAction } from "react";
 
 import HideLeftArea from "../icons/HideLeftArea";
 import HideRightArea from "../icons/HideRightArea";
-import type { ChatSessionDetail } from "../Type";
+import type { ChatSessionDetail } from "../types";
 import ChatBot from "./ChatBot";
 import ChatMessagesSkeleton from "./ChatMessagesSkeleton";
 

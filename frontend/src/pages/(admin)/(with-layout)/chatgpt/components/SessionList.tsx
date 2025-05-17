@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import type { ChatSessionDetail } from "../Type";
+import type { ChatSessionDetail } from "../types";
 import SessionListSkeletonItems from "./SessionListSkeleton";
 
 const SessionList: React.FC<{
