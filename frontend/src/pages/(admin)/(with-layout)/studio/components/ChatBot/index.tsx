@@ -172,7 +172,14 @@ const ChatBot: React.FC<ChatBotProps> = ({
             <div key={i} className="mx-auto flex max-w-3xl">
               {message.role === "user" ? (
                 <div className="ml-auto rounded-xl bg-gray-800 px-4 py-2 text-white">
-                  <Markdown variant={"chat"}>{message.content}</Markdown>
+                  <Markdown variant={"chat"}>
+                    {message.content.replace(
+                      `<extra_content>
+          <developer_id>${user?.username || currentAgentId}</developer_id>
+        </extra_content>`,
+                      ""
+                    )}
+                  </Markdown>
                 </div>
               ) : (
                 <div className="prose dark:prose-invert max-w-none">
