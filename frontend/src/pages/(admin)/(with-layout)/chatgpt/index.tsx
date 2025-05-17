@@ -30,6 +30,7 @@ export function Component() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { user, isLoaded, isSignedIn } = useUser();
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   // 添加会话列表状态
   const [chatSessions, setChatSessions] = useState<ChatSessionDetail[]>([]);
@@ -213,15 +214,22 @@ export function Component() {
   useEffect(() => {
     if (currentSessionId) {
       const loadMessages = async () => {
+        setIsLoadingMessages(true);
         const messages = await getThreadMessages(agentId, currentSessionId);
         setCurrentSessionMessages(messages);
+        setIsLoadingMessages(false);
       };
       loadMessages();
+    } else {
+      setCurrentSessionMessages([]);
+      setIsLoadingMessages(false);
     }
   }, [currentSessionId]);
 
+  const initialDataLoading = !isLoaded || isLoadingSessions;
+
   return (
-    <div className="flex w-full h-full">
+    <div className="flex w-full h-full overflow-hidden">
       {/* 左侧会话列表 */}
       <SessionList
         isSidebarOpen={isSidebarOpen}
@@ -232,6 +240,7 @@ export function Component() {
         handleSessionClick={handleSessionClick}
         handleDeleteSession={handleDeleteSession}
         handleUpdateSessionTitle={handleUpdateSessionTitle}
+        isLoading={initialDataLoading}
       />
 
       {/* 中间聊天区域 */}
@@ -242,6 +251,7 @@ export function Component() {
         setChatSessions={setChatSessions}
         currentSessionId={currentSessionId ?? ""}
         currentSessionMessages={currentSessionMessages}
+        isLoadingMessages={isLoadingMessages}
         currentSelectedKbDetails={currentSelectedKbDetails}
         isRightSidebarOpen={isRightSidebarOpen}
         setIsRightSidebarOpen={setIsRightSidebarOpen}
@@ -250,11 +260,12 @@ export function Component() {
 
       {/* 右侧知识库列表 */}
       <KnowledgeBaseList
-        isRightSidebarOpen={isRightSidebarOpen}
-        setIsRightSidebarOpen={setIsRightSidebarOpen}
+        knowledgeBases={knowledgeBases}
         currentSelectedKbs={currentSelectedKbs}
         handleKbSelection={handleKbSelection}
-        knowledgeBases={knowledgeBases}
+        isRightSidebarOpen={isRightSidebarOpen}
+        setIsRightSidebarOpen={setIsRightSidebarOpen}
+        isLoading={initialDataLoading}
       />
     </div>
   );

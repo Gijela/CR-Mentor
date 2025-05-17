@@ -4,6 +4,7 @@ import HideLeftArea from "../icons/HideLeftArea";
 import HideRightArea from "../icons/HideRightArea";
 import type { ChatSessionDetail } from "../Type";
 import ChatBot from "./ChatBot";
+import ChatMessagesSkeleton from "./ChatMessagesSkeleton";
 
 type ChatAreaProps = {
   isSidebarOpen: boolean;
@@ -12,6 +13,7 @@ type ChatAreaProps = {
   setChatSessions: Dispatch<SetStateAction<ChatSessionDetail[]>>;
   currentSessionId: string;
   currentSessionMessages: any[];
+  isLoadingMessages: boolean;
   currentSelectedKbDetails: string[];
   isRightSidebarOpen: boolean;
   setIsRightSidebarOpen: (value: boolean) => void;
@@ -26,6 +28,7 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
     setChatSessions,
     currentSessionId,
     currentSessionMessages,
+    isLoadingMessages,
     currentSelectedKbDetails,
     isRightSidebarOpen,
     setIsRightSidebarOpen,
@@ -258,13 +261,16 @@ const ChatArea: React.FC<ChatAreaProps> = React.memo(
           </div>
         </div>
 
-        <div className="flex-1 h-full flex grow flex-col mt-16 min-w-0 overflow-hidden">
-          <ChatBot
-            key={currentSessionId}
-            currentSessionId={currentSessionId}
-            initialMessages={currentSessionMessages}
-            setChatSessions={setChatSessions}
-          />
+        <div className="flex-grow pt-16 flex flex-col overflow-y-hidden">
+          {isLoadingMessages ? (
+            <ChatMessagesSkeleton />
+          ) : (
+            <ChatBot
+              currentSessionId={currentSessionId}
+              initialMessages={currentSessionMessages}
+              setChatSessions={setChatSessions}
+            />
+          )}
         </div>
       </div>
     );

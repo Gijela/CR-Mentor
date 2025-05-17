@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import type { ChatSessionDetail } from "../Type";
+import SessionListSkeletonItems from "./SessionListSkeleton";
 
 const SessionList: React.FC<{
   isSidebarOpen: boolean;
@@ -11,6 +12,7 @@ const SessionList: React.FC<{
   handleSessionClick: (sessionId: string) => void;
   handleDeleteSession: (sessionId: string, e: React.MouseEvent) => void;
   handleUpdateSessionTitle: (sessionId: string, newTitle: string) => void;
+  isLoading?: boolean;
 }> = ({
   isSidebarOpen,
   setIsSidebarOpen,
@@ -20,6 +22,7 @@ const SessionList: React.FC<{
   handleSessionClick,
   handleDeleteSession,
   handleUpdateSessionTitle,
+  isLoading,
 }) => {
   // 添加会话搜索状态
   const [chatSearchQuery, setChatSearchQuery] = useState("");
@@ -126,81 +129,85 @@ const SessionList: React.FC<{
         {/* 会话列表 */}
         <div className="flex-1 overflow-y-auto scrollbar-hide">
           <div className="px-4 py-2 space-y-2">
-            {filteredChatSessions.map((session) => (
-              <div
-                key={session.id}
-                onClick={() => handleSessionClick(session.id)}
-                className={`flex flex-col p-3 rounded-xl cursor-pointer group/session
+            {isLoading ? (
+              <SessionListSkeletonItems />
+            ) : (
+              filteredChatSessions.map((session) => (
+                <div
+                  key={session.id}
+                  onClick={() => handleSessionClick(session.id)}
+                  className={`flex flex-col p-3 rounded-xl cursor-pointer group/session
                     ${
                       currentSessionId === session.id
                         ? "bg-accent"
                         : "hover:bg-accent/50"
                     }
                     transition-colors duration-200`}
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden">
-                      <img
-                        src={session.avatar}
-                        alt={session.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden">
+                        <img
+                          src={session.avatar}
+                          alt={session.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
 
-                    {/* 可编辑的标题 */}
-                    {editingSessionId === session.id ? (
-                      <input
-                        type="text"
-                        value={editingTitle}
-                        onChange={handleTitleChange}
-                        onBlur={handleTitleBlur}
-                        onKeyDown={handleTitleKeyDown}
-                        className={`flex-1 bg-transparent border-b border-primary outline-none
-                          font-medium ${
+                      {/* 可编辑的标题 */}
+                      {editingSessionId === session.id ? (
+                        <input
+                          type="text"
+                          value={editingTitle}
+                          onChange={handleTitleChange}
+                          onBlur={handleTitleBlur}
+                          onKeyDown={handleTitleKeyDown}
+                          className={`flex-1 bg-transparent border-b border-primary outline-none
+                            font-medium ${
+                              currentSessionId === session.id
+                                ? "text-primary"
+                                : "text-foreground"
+                            }`}
+                          autoFocus
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <h3
+                          onDoubleClick={() => handleTitleDoubleClick(session)}
+                          className={`font-medium truncate flex-1 ${
                             currentSessionId === session.id
                               ? "text-primary"
                               : "text-foreground"
                           }`}
-                        autoFocus
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      <h3
-                        onDoubleClick={() => handleTitleDoubleClick(session)}
-                        className={`font-medium truncate flex-1 ${
-                          currentSessionId === session.id
-                            ? "text-primary"
-                            : "text-foreground"
-                        }`}
-                      >
-                        {session.title}
-                      </h3>
-                    )}
-                  </div>
+                        >
+                          {session.title}
+                        </h3>
+                      )}
+                    </div>
 
-                  {/* 删除按钮 */}
-                  <button
-                    onClick={(e) => handleDeleteSession(session.id, e)}
-                    className="opacity-0 group-hover/session:opacity-100 p-1 hover:bg-accent rounded transition-opacity duration-200"
-                  >
-                    <svg
-                      className="w-4 h-4 text-gray-500"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
+                    {/* 删除按钮 */}
+                    <button
+                      onClick={(e) => handleDeleteSession(session.id, e)}
+                      className="opacity-0 group-hover/session:opacity-100 p-1 hover:bg-accent rounded transition-opacity duration-200"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
+                      <svg
+                        className="w-4 h-4 text-gray-500"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
