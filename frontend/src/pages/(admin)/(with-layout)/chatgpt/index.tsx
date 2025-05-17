@@ -23,8 +23,6 @@ export interface KnowledgeBase {
   updated_at: string;
 }
 
-const resourceId = "dbChatAgent";
-
 export function Component() {
   const [knowledgeBases, setKnowledgeBases] = useState<string[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -63,7 +61,10 @@ export function Component() {
 
   // 加载新的会话列表
   const loadNewSessionList = async (curAgentId: string) => {
-    const newSessionList = await getThreads(curAgentId, resourceId);
+    const newSessionList = await getThreads(
+      curAgentId,
+      user?.username || curAgentId
+    );
     setChatSessions(newSessionList);
     setCurrentSessionId(newSessionList[0]!.id);
     setIsLoadingSessions(false);
@@ -92,6 +93,9 @@ export function Component() {
         setIsLoadingSessions(true);
         setIsLoadingMessages(true);
         loadNewSessionList(currentAgentId);
+        setIsLoadingSessions(false);
+        setIsLoadingMessages(false);
+        setIsLoadingMessagesFinished(true);
       } else {
         setChatSessions([]);
         setCurrentSessionId(null);
@@ -230,13 +234,15 @@ export function Component() {
         // 获取第一个开启了记忆的 agent 的会话列表, 并将其第一个会话设置为默认会话
         const newSessionList = await getThreads(
           memoryAgentList[0]!.id,
-          resourceId
+          user?.username || memoryAgentList[0]!.id
         );
         if (newSessionList.length > 0) {
           setChatSessions(newSessionList);
           setCurrentSessionId(newSessionList[0]!.id);
         } else {
           handleCreateNewChat();
+          setIsLoadingMessages(false);
+          setIsLoadingMessagesFinished(true);
         }
         setIsLoadingSessions(false);
       }

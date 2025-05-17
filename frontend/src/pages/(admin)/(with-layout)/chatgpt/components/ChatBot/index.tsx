@@ -14,8 +14,7 @@ import MessageStatus from "./MessageStutas";
 import SuggestionList from "./SuggestionList";
 import FormInput from "./FormInput";
 import type { Agent } from "../../types";
-
-const resourceId = "dbChatAgent";
+import { useUser } from "@clerk/clerk-react";
 
 interface ChatBotProps {
   currentAgentId: string;
@@ -36,6 +35,8 @@ const ChatBot: React.FC<ChatBotProps> = ({
 }) => {
   const [manualStop, setManualStop] = useState(false);
   const manualStopRef = useRef(manualStop);
+  const { user } = useUser();
+
   useEffect(() => {
     manualStopRef.current = manualStop;
   }, [manualStop]);
@@ -58,10 +59,30 @@ const ChatBot: React.FC<ChatBotProps> = ({
     }/api/agents/${currentAgentId}/stream`,
     initialMessages,
     experimental_prepareRequestBody({ messages }) {
+      // 携带上开发者id
+      const addExtraContent =
+        messages.at(-1)?.content +
+        `
+        <extra_content>
+          <developer_id>${user?.username || currentAgentId}</developer_id>
+        </extra_content>
+      `;
+
       return {
-        messages: [messages.at(-1)],
+        messages: [
+          {
+            ...messages.at(-1),
+            content: addExtraContent,
+            parts: [
+              {
+                type: "text",
+                text: addExtraContent,
+              },
+            ],
+          },
+        ],
         threadId: currentSessionId,
-        resourceId,
+        resourceId: user?.username || currentAgentId,
       };
     },
     onError: (error) => {
@@ -188,7 +209,11 @@ const ChatBot: React.FC<ChatBotProps> = ({
       </div>
 
       {/* 快捷问题 */}
-      <SuggestionList messages={messages} suggestions={currentAgentInfo.suggestions} append={append} />
+      <SuggestionList
+        messages={messages}
+        suggestions={currentAgentInfo.suggestions}
+        append={append}
+      />
 
       {/* 输入框 */}
       <FormInput
