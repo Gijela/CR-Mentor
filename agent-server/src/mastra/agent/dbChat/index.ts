@@ -2,7 +2,6 @@ import { Agent } from "@mastra/core/agent";
 
 import { instructions } from "./instruction";
 import { deepSeekModel } from "../../model-provider/deepseek";
-import { globalTools } from "../../global-tools";
 import { memory } from "./memory";
 import { mcpClient } from "../../mcp/clinet";
 
@@ -13,5 +12,5 @@ export const dbChatAgent = new Agent({
   instructions,
   memory,
   model: deepSeekModel,
-  tools: { ...globalTools, ...mcpTools },
+  tools: { ...mcpTools },
 });
