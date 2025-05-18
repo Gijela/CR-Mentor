@@ -1,6 +1,6 @@
 import { MCPClient } from "@mastra/mcp";
 
-const isDev = process.env.NODE_ENV === 'production';
+const isDev = process.env.NODE_ENV !== 'production';
 
 const testEnvMcp = {
   command: "pnpx", // need to install pnpm first, or you can use 'npx'
@@ -29,6 +29,7 @@ export const mcpClient = new MCPClient({
      * [DEV]: Stdio; 
      * [PROD]: Streamable HTTP 或 SSE
      * */
-    mentorMcp: isDev ? testEnvMcp : prodEnvMcp,
+    // mentorMcp: isDev ? testEnvMcp : prodEnvMcp,
+    // mentorMcp: prodEnvMcp,
   },
 });
