@@ -30,6 +30,6 @@ export const mcpClient = new MCPClient({
      * [PROD]: Streamable HTTP 或 SSE
      * */
     // mentorMcp: isDev ? testEnvMcp : prodEnvMcp,
-    // mentorMcp: prodEnvMcp,
+    mentorMcp: prodEnvMcp,
   },
 });
