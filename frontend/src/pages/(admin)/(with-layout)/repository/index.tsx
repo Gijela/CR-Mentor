@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 
 import EmptyCard from "../pullRequest/components/emptyCard";
 import { CreatePRDialog } from "./components/create-pr-dialog";
+import { AnalyzeRepoDialog } from "./components/analyze-repo-dialog";
 import type { Repository } from "./interface";
 import { usePlatform } from "@/hooks/use-platform";
 
@@ -109,7 +110,10 @@ export function Component() {
           )}
         </div>
 
-        <CreatePRDialog githubName={user?.username as string} />
+        <div className="flex gap-2">
+          <AnalyzeRepoDialog githubName={user?.username as string} />
+          <CreatePRDialog githubName={user?.username as string} />
+        </div>
       </div>
 
       <Separator />

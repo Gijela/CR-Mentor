@@ -9,16 +9,31 @@ import { addDays, format } from "date-fns";
 import { Calendar } from "lucide-react";
 import * as React from "react";
 import type { DateRange } from "react-day-picker";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 import { cn } from "@/lib/utils";
 
+interface CalendarDateRangePickerProps
+  extends React.HTMLAttributes<HTMLDivElement> {
+  date?: DateRange;
+  setDate?: (date: DateRange | undefined) => void;
+}
+
 export function CalendarDateRangePicker({
   className,
-}: React.HTMLAttributes<HTMLDivElement>) {
-  const [date, setDate] = React.useState<DateRange | undefined>(() => ({
-    from: new Date(2023, 0, 20),
-    to: addDays(new Date(2023, 0, 20), 20),
-  }));
+  date,
+  setDate,
+}: CalendarDateRangePickerProps) {
+  const [localDate, setLocalDate] = React.useState<DateRange | undefined>(
+    date || {
+      from: new Date(2023, 0, 20),
+      to: addDays(new Date(2023, 0, 20), 20),
+    }
+  );
+
+  // 使用传入的日期和设置函数，如果没有则使用本地状态
+  const currentDate = date || localDate;
+  const handleDateChange = setDate || setLocalDate;
 
   return (
     <div className={cn("grid gap-2", className)}>
@@ -28,32 +43,32 @@ export function CalendarDateRangePicker({
             id="date"
             variant="outline"
             className={cn(
-              "w-[260px] justify-start text-left font-normal",
-              !date && "text-muted-foreground"
+              "w-full justify-start text-left font-normal",
+              !currentDate && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 size-4" />
-            {date?.from ? (
-              date.to ? (
+            {currentDate?.from ? (
+              currentDate.to ? (
                 <>
-                  {format(date.from, "LLL dd, y")} -{" "}
-                  {format(date.to, "LLL dd, y")}
+                  {format(currentDate.from, "yyyy-MM-dd")} -{" "}
+                  {format(currentDate.to, "yyyy-MM-dd")}
                 </>
               ) : (
-                format(date.from, "LLL dd, y")
+                format(currentDate.from, "yyyy-MM-dd")
               )
             ) : (
-              <span>Pick a date</span>
+              <span>选择日期范围</span>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
-          <Calendar
+          <CalendarComponent
             initialFocus
             mode="range"
-            defaultMonth={date?.from}
-            selected={date}
-            onSelect={setDate}
+            defaultMonth={currentDate?.from}
+            selected={currentDate}
+            onSelect={handleDateChange}
             numberOfMonths={2}
           />
         </PopoverContent>
