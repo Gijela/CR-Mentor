@@ -18,7 +18,7 @@ COPY . .
 RUN pnpm build
 
 # 暴露端口
-EXPOSE 4111
+EXPOSE 4000
 
 # 启动应用
 CMD ["pnpm", "start"]

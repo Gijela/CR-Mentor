@@ -1,13 +1,28 @@
-
 import { Mastra } from '@mastra/core/mastra';
 import { createLogger } from '@mastra/core/logger';
 
-import { agents } from './agents';
+import { prAnalyzeAgent } from './agent/prAnalyze';
+import { commitsAnalyzeAgent } from './agent/commitsAnalyze';
+import { dbChatAgent } from './agent/dbChat';
 
 export const mastra = new Mastra({
-  agents,
+  agents: {
+    prAnalyzeAgent,
+    commitsAnalyzeAgent,
+    dbChatAgent,
+  },
+  server: {
+    host: process.env.NODE_ENV !== 'development' ? '0.0.0.0' : '127.0.0.1',
+    port: 4111,
+    cors: {
+      origin: process.env.NODE_ENV !== 'development' ? ["https://cr-mentor.com"] : "*",
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+      allowHeaders: ["Content-Type", "Authorization"],
+      credentials: false,
+    },
+  },
   logger: createLogger({
-    name: 'Mastra',
-    level: 'debug',
+    name: 'CR-Mentor',
+    level: process.env.NODE_ENV !== 'development' ? 'info' : 'debug',
   }),
 });

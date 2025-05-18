@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 /**
@@ -15,4 +14,4 @@ export const deepSeekProvider = createOpenAICompatible({
 /**
  * deepseek model
  */
-export const deepSeekModel = deepSeekProvider.chatModel('deepseek-chat') as any;
+export const deepSeekModel = deepSeekProvider.chatModel('deepseek-chat');
