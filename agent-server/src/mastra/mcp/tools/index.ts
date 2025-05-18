@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 // 查询开发者结构化问题模式和优势
 import { queryStructuredDataTool } from "./queryStructuredDataTool";
 

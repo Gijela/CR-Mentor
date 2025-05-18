@@ -39,11 +39,11 @@ import { mock } from './mock'
 import { FileObject } from "@/controller/github/types";
 import { buildPatchSummaryPrompt, patchSystemPromptHelloWorld } from "@/app/prompt/github/patch-summary";
 import { buildCommitsSummaryPrompt, commitsSystemPromptHelloWorld } from "@/app/prompt/github/commits-summary";
-import { UserActivityAnalysisResult } from "@/service/github/analysisService";
+import { RepositoryAnalysis, UserActivityAnalysisResult } from "@/service/github/analysisService";
 
 router.post("/test", async (ctx) => {
   const testPrompt = `Please follow process A for the following pr report message \n\n ${JSON.stringify(mock)}`
-  const result = await fetch(`${process.env.AGENT_HOST}/api/agents/prAnalyzeAgent/generate`, {
+  fetch(`${process.env.AGENT_HOST}/api/agents/prAnalyzeAgent/generate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -52,13 +52,13 @@ router.post("/test", async (ctx) => {
       messages: [{ role: "user", content: testPrompt }]
     })
   })
-  const agentResult = await result.json()
-  console.log("🚀 ~ agentResult:", agentResult)
+  // const agentResult = await result.json()
+  // console.log("🚀 ~ agentResult:", agentResult)
 
   ctx.status = 200
   ctx.body = {
     success: true,
-    data: agentResult
+    message: "call Pr Analyze Agent success"
   }
 })
 
@@ -93,7 +93,7 @@ router.post("/getPrResult", async (ctx) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prTitle, prDesc, githubName: owner, compareUrl, baseLabel, headLabel, modelMaxToken }),
     })
-    const { success: diffSuccess, files, commits, github_node_id } = (await response.json()) as { success: boolean, files: FileObject[], commits: any[], github_node_id: string }
+    const { success: diffSuccess, username, files, commits } = (await response.json()) as { success: boolean, username: string, files: FileObject[], commits: any[] }
     if (!diffSuccess) {
       console.error("[diff]🚨 ~ 获取 diff 详情失败 (获取 diff 详情或格式化出错).");
       ctx.status = 500
@@ -126,20 +126,19 @@ router.post("/getPrResult", async (ctx) => {
 
     // 5. 调用开发者个性化助手
     const prPrompt = JSON.stringify({
-      developer_id: github_node_id.toLowerCase(),
+      developer_id: username,
       owner,
       repo,
       pull_number,
       prReportText: summaryContent
     })
-    const result = await fetch(`${process.env.AGENT_HOST}/api/agents/prAnalyzeAgent/generate`, {
+    fetch(`${process.env.AGENT_HOST}/api/agents/prAnalyzeAgent/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ messages: [{ role: "user", content: `Please follow process A for the following pr report message \n\n ${prPrompt}` }] })
     })
-    const agentResult = await result.json()
 
     ctx.status = 200
     ctx.body = {
@@ -150,7 +149,6 @@ router.post("/getPrResult", async (ctx) => {
         chatQueryIds: queryIdsUsed,    // 包含所有尝试过的 queryId
         summaryQueryId,
         summaryContent,
-        agentResult
       }
     }
   } catch (error: any) {
@@ -223,22 +221,14 @@ type CommitChatResult = {
   chatResults: string[]
 }
 
-// 获取 commit patches 结果
-router.post("/getCommitResult", async (ctx) => {
-  const { repositories, timeRange, targetUsername } = ctx.request.body as GetCommitResultPayload
-
-  // 1. 获取所有仓库的 commit 文件对象
-  const commitResponse = await fetch(`${process.env.SERVER_HOST}/github/analyzeUserActivity`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      // 如果您需要 API 密钥或其他请求头，请在此处添加
-    },
-    body: JSON.stringify({ repositories, timeRange, targetUsername }),
-  });
-  const { githubNodeId, repositoryAnalyses } = (await commitResponse.json()) as UserActivityAnalysisResult
-
-  // 2. 将 commit 文件对象格式化为 repo_name 分组。
+/**
+ * 分析 commit 结果。先用 deepwiki 分析 commit 结果得到报告，再用 agent 分析 deepwiki 总结的报告。
+ * @param repositoryAnalyses 仓库分析结果
+ * @param timeRange 时间范围
+ * @param targetUsername 目标用户名
+ */
+const analyzeCommit = async (repositoryAnalyses: RepositoryAnalysis[], timeRange: TimeRange, targetUsername: string) => {
+  // 1. 将 commit 文件对象格式化为 repo_name 分组。
   const totalPatchObject: any = {} // repo_name -> patches as FileObject[]
   const totalRepoCommitMsg: any = {} // repo_name -> commits message total
   repositoryAnalyses.forEach(repo => {
@@ -250,7 +240,7 @@ router.post("/getCommitResult", async (ctx) => {
     })
   })
 
-  // 3. 并发调用 deepwiki 分析 commit 结果
+  // 2. 并发调用 deepwiki 分析 commit 结果
   const totalRepoReportList = await Promise.all(
     Object.entries(totalPatchObject).map(async ([repo_name, rawPatches]: any) => {
       if (rawPatches.length === 0) return []
@@ -262,31 +252,59 @@ router.post("/getCommitResult", async (ctx) => {
     })
   )
 
-  // 4. 并发调用 agent 分析 deepwiki 总结的报告
-  const result = await Promise.all(totalRepoReportList.map(async (repoReport: any) => {
+  // 3. 并发调用 agent 分析 deepwiki 总结的报告
+  await Promise.all(totalRepoReportList.map(async (repoReport: any) => {
     const { repo_name = '', chatResults } = repoReport as CommitChatResult
 
     const userPrompt = JSON.stringify({
-      developer_id: githubNodeId.toLowerCase(),
+      developer_id: targetUsername,
       owner: repo_name.split('/')[0],
       repo: repo_name.split('/')[1],
       commitsAnalysisReportText: (chatResults || []).join('\n\n'),
       timeRange
     })
 
-    const result = await fetch(`${process.env.AGENT_HOST}/api/agents/commitsAnalyzeAgent/generate`, {
+    fetch(`${process.env.AGENT_HOST}/api/agents/commitsAnalyzeAgent/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ messages: [{ role: "user", content: userPrompt }] })
     })
-    const agentResult = await result.json()
-    return { userPrompt: JSON.parse(userPrompt), agentResult }
+    return { userPrompt: JSON.parse(userPrompt) }
   }))
+}
 
-  ctx.status = 200
-  ctx.body = result
+// 获取 commit patches 结果
+router.post("/getCommitResult", async (ctx) => {
+  const { repositories, timeRange, targetUsername } = ctx.request.body as GetCommitResultPayload
+
+  try {
+    // 1. 获取所有仓库的 commit 文件对象
+    const commitResponse = await fetch(`${process.env.SERVER_HOST}/github/analyzeUserActivity`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ repositories, timeRange, targetUsername }),
+    });
+    const { repositoryAnalyses } = (await commitResponse.json()) as UserActivityAnalysisResult
+    if (!commitResponse.ok) {
+      ctx.status = 500
+      ctx.body = { success: false, message: "failed to get commit result", error: commitResponse.statusText }
+      return
+    }
+
+    // 异步分析 commit 结果
+    analyzeCommit(repositoryAnalyses, timeRange, targetUsername)
+
+    ctx.status = 200
+    ctx.body = { success: true, message: "call commitsAnalyzeAgent success" }
+  } catch (error: any) {
+    console.error("❌ ~ getCommitResult 顶层错误:", error)
+    ctx.status = 500
+    ctx.body = { success: false, message: "failed to get commit result", error: error.message }
+  }
 })
 
 export default router

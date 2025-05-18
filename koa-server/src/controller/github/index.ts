@@ -328,7 +328,7 @@ export const getDiffsDetails = async (ctx: Koa.Context) => {
     // const result = formatAndGroupDiff(modelMaxToken, diffFiles, systemPrompt);
 
     ctx.status = 200
-    ctx.body = { success: true, files, commits, github_node_id: account?.node_id }
+    ctx.body = { success: true, username: account?.login, files, commits }
   } catch (error) {
     logger.error("🚀 ~ getDiffsDetails ~ error:", error)
     ctx.status = 500

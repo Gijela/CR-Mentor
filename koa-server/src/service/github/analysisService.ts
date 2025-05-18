@@ -31,7 +31,7 @@ interface CommitDetail {
   files: FileChange[];
 }
 
-interface RepositoryAnalysis {
+export interface RepositoryAnalysis {
   owner: string;
   repoName: string;
   branchName: string;
