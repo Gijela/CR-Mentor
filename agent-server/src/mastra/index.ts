@@ -4,6 +4,7 @@ import { createLogger } from '@mastra/core/logger';
 import { prAnalyzeAgent } from './agent/prAnalyze';
 import { commitsAnalyzeAgent } from './agent/commitsAnalyze';
 import { dbChatAgent } from './agent/dbChat';
+import { myMcpServer } from './mcp/server';
 
 export const mastra = new Mastra({
   agents: {
@@ -20,6 +21,9 @@ export const mastra = new Mastra({
       allowHeaders: ["Content-Type", "Authorization"],
       credentials: false,
     },
+  },
+  mcpServers: {
+    myMcpServer,
   },
   logger: createLogger({
     name: 'CR-Mentor',

@@ -19,8 +19,9 @@
   "dependencies": {
     "@ai-sdk/openai": "^1.3.22",
     "@ai-sdk/openai-compatible": "^0.2.14",
-    "@mastra/core": "0.9.4-alpha.4",
-    "@mastra/memory": "0.3.4-alpha.4",
+    "@mastra/core": "^0.9.4",
+    "@mastra/mcp": "^0.5.0",
+    "@mastra/memory": "^0.3.4",
     "@mastra/pg": "^0.3.4",
     "dotenv": "^16.5.0",
     "octokit": "^4.1.3",
@@ -29,7 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.18",
-    "mastra": "0.6.3-alpha.6",
+    "mastra": "^0.6.3",
     "typescript": "^5.8.3"
   }
 }
