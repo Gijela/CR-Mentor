@@ -123,6 +123,9 @@ export function Component() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!user?.username) {
+        return;
+      }
       setLoading(true);
       setError(null);
       try {
@@ -145,7 +148,7 @@ export function Component() {
               `Failed to fetch KPI summary (HTTP ${kpiRes.status})`
           );
         }
-        setKpiData(kpiResult.data);
+        setKpiData(kpiResult?.data || {});
 
         // Fetch Insight Trends
         const trendsPayload = {
@@ -172,7 +175,7 @@ export function Component() {
           );
         }
         const { labels, datasets } = trendsResult.data;
-        setInsightTrends(transformInsightTrends({ labels, datasets }));
+        setInsightTrends(transformInsightTrends({ labels, datasets }) || {});
 
         // Fetch Issues Data
         const issuesPayload = {
@@ -204,8 +207,8 @@ export function Component() {
               `Failed to fetch issues (HTTP ${issuesRes.status})`
           );
         }
-        setIssuesData(issuesResult.data);
-        setIssuesPagination(issuesResult.pagination);
+        setIssuesData(issuesResult?.data || []);
+        setIssuesPagination(issuesResult?.pagination || {});
       } catch (e) {
         const errorMessage =
           e instanceof Error ? e.message : "An unknown error occurred";
@@ -227,10 +230,7 @@ export function Component() {
   if (error) {
     return (
       <div className="p-6 text-red-600">
-        <p>
-          Error loading data: {error} (Make sure Koa server is running on port
-          4000 and check console)
-        </p>
+        <p>Error loading data: {error}</p>
       </div>
     );
   }
