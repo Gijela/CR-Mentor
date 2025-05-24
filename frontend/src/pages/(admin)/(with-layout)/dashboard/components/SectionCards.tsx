@@ -164,7 +164,7 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
   };
 
   return (
-    <div className="*:data-[slot=card]:shadow-xs grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card">
+    <div className="px-[2px] box-border *:data-[slot=card]:shadow-xs grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card">
       <Card
         className={`${cardCommonClasses} ${
           activeCard === "strengths" ? "ring-2 ring-primary" : ""
