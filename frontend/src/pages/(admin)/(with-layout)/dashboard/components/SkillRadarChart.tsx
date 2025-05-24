@@ -220,10 +220,11 @@ export function SkillRadarChart({
               <PolarGrid
                 strokeDasharray="0"
                 gridType="polygon"
-                strokeOpacity={0.8}
+                strokeOpacity={0.5}
                 strokeWidth={1}
                 radialLines={true}
                 polarRadius={[0, 20, 40, 60, 80, 100]}
+                stroke="rgba(99, 102, 241, 0.3)"
               />
               <PolarAngleAxis
                 dataKey="area"
@@ -245,11 +246,9 @@ export function SkillRadarChart({
               <Radar
                 name="技能水平"
                 dataKey="value"
-                stroke={
-                  selectedArea ? "rgba(var(--primary), 0.5)" : "var(--primary)"
-                }
-                fill="var(--primary)"
-                fillOpacity={0.3}
+                stroke="#6366f1"
+                fill="#8b5cf6"
+                fillOpacity={0.5}
                 activeDot={{
                   r: 6,
                   strokeWidth: 1,
@@ -267,9 +266,9 @@ export function SkillRadarChart({
                   dataKey={(entry) =>
                     entry.area === selectedArea ? entry.value : 0
                   }
-                  stroke="var(--primary)"
-                  fill="var(--primary)"
-                  fillOpacity={0.6}
+                  stroke="#6366f1"
+                  fill="#4f46e5"
+                  fillOpacity={0.7}
                   isAnimationActive={true}
                   animationDuration={800}
                   animationEasing="ease-out"
