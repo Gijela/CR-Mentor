@@ -486,8 +486,8 @@ export function Component() {
               >
                 <div className="flex items-center justify-between">
                   <TabsList className="grid grid-cols-3">
-                    <TabsTrigger value="insights">开发者洞察</TabsTrigger>
-                    <TabsTrigger value="knowledge">知识库搜索</TabsTrigger>
+                    <TabsTrigger value="insights">开发者画像</TabsTrigger>
+                    <TabsTrigger value="knowledge">知识库沉淀</TabsTrigger>
                     <TabsTrigger value="visualization">技能可视化</TabsTrigger>
                   </TabsList>
 

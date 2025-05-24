@@ -801,7 +801,7 @@ function IssuesTable({ data: initialData }: { data: IssueItem[] }) {
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border [&>:first-child]:h-[520px]">
         <DndContext
           collisionDetection={closestCenter}
           modifiers={[restrictToVerticalAxis]}
@@ -809,7 +809,7 @@ function IssuesTable({ data: initialData }: { data: IssueItem[] }) {
           sensors={sensors}
           id={sortableId}
         >
-          <Table>
+          <Table className="absolute">
             <TableHeader className="sticky top-0 z-10 bg-muted">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
@@ -989,7 +989,7 @@ function StrengthsTable({ data: initialData }: { data: StrengthItem[] }) {
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border [&>:first-child]:h-[520px]">
         <DndContext
           collisionDetection={closestCenter}
           modifiers={[restrictToVerticalAxis]}
@@ -997,7 +997,7 @@ function StrengthsTable({ data: initialData }: { data: StrengthItem[] }) {
           sensors={sensors}
           id={sortableId}
         >
-          <Table>
+          <Table className="absolute">
             <TableHeader className="sticky top-0 z-10 bg-muted">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>

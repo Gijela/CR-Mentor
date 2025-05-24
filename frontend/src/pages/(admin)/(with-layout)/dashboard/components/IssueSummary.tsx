@@ -116,7 +116,7 @@ export function IssueSummary<T extends IssueItem | StrengthItem>({
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
         <div className="flex flex-col h-full">
-          <div className="mb-3">
+          {/* <div className="mb-3">
             <h4 className="text-sm font-medium mb-1.5">
               主要{isIssues ? "问题" : "优势"}类别
             </h4>
@@ -143,16 +143,16 @@ export function IssueSummary<T extends IssueItem | StrengthItem>({
                 </Badge>
               ))}
             </div>
-          </div>
+          </div> */}
 
-          <div className="flex-1 min-h-[240px]">
+          <div className="flex-1 min-h-[240px] pt-2">
             {chartData.length > 0 && (
               <ChartContainer config={chartConfig} className="w-full h-full">
                 <BarChart
                   data={chartData}
-                  margin={{ top: 5, right: 10, bottom: 20, left: 80 }}
+                  margin={{ top: 10, right: 0, bottom: 0, left: 0 }}
                   width={undefined}
-                  height={240}
+                  // height={240}
                   layout="vertical"
                 >
                   <CartesianGrid
