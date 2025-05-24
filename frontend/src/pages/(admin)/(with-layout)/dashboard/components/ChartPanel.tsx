@@ -43,10 +43,35 @@ interface ChartPanelProps {
   config: ChartConfig;
 }
 
-/**
- * 增强版图表面板组件
- * 避免类型错误问题
- */
+// 动态生成颜色的函数
+function generateChartColor(key: string, index: number): string {
+  // 预设颜色
+  const baseColors = [
+    "#4f46e5", // 靛蓝色
+    "#f97316", // 橙色
+    "#10b981", // 绿色
+    "#8b5cf6", // 紫色
+    "#ec4899", // 粉色
+    "#06b6d4", // 青色
+    "#eab308", // 黄色
+    "#ef4444", // 红色
+    "#64748b", // 蓝灰色
+    "#84cc16", // 酸橙色
+  ];
+
+  // 使用预设颜色或生成颜色
+  if (index < baseColors.length) {
+    return baseColors[index];
+  }
+
+  // 如果索引超出范围，基于键和索引生成颜色
+  const hue = (index * 137.5) % 360;
+  const saturation = 70 + (index % 3) * 10;
+  const lightness = 45 + (index % 5) * 5;
+  
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
 export function ChartPanel({
   title,
   description,
@@ -54,9 +79,24 @@ export function ChartPanel({
   config,
 }: ChartPanelProps) {
   const [chartType, setChartType] = useState<ChartType>("area");
-
-  // 获取图表数据的所有系列键
   const seriesKeys = Object.keys(config);
+
+  // 获取安全的颜色和标签
+  const getColor = (key: string, index: number): string => {
+    const conf = config[key];
+    if (conf && conf.color) {
+      return conf.color;
+    }
+    return generateChartColor(key, index);
+  };
+
+  const getLabel = (key: string): string => {
+    const conf = config[key];
+    if (conf && conf.label) {
+      return conf.label;
+    }
+    return key;
+  };
 
   // 自定义提示框
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -91,7 +131,7 @@ export function ChartPanel({
     switch (chartType) {
       case "bar":
         return (
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={250}>
             <BarChart
               data={data}
               margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
@@ -114,12 +154,12 @@ export function ChartPanel({
               />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
-              {seriesKeys.map((key) => (
+              {seriesKeys.map((key, index) => (
                 <Bar
                   key={key}
                   dataKey={key}
-                  name={String(config[key]?.label || key)}
-                  fill={config[key]?.color || "#8884d8"}
+                  name={getLabel(key)}
+                  fill={getColor(key, index)}
                   radius={[4, 4, 0, 0]}
                 />
               ))}
@@ -129,7 +169,7 @@ export function ChartPanel({
 
       case "line":
         return (
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={250}>
             <LineChart
               data={data}
               margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
@@ -152,12 +192,12 @@ export function ChartPanel({
               />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
-              {seriesKeys.map((key) => (
+              {seriesKeys.map((key, index) => (
                 <Line
                   key={key}
                   dataKey={key}
-                  name={String(config[key]?.label || key)}
-                  stroke={config[key]?.color || "#8884d8"}
+                  name={getLabel(key)}
+                  stroke={getColor(key, index)}
                   strokeWidth={2}
                   dot={{ r: 3 }}
                   type="monotone"
@@ -170,33 +210,36 @@ export function ChartPanel({
       case "area":
       default:
         return (
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height="100%" minHeight={250}>
             <AreaChart
               data={data}
               margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
             >
               <defs>
-                {seriesKeys.map((key) => (
-                  <linearGradient
-                    key={`gradient-${key}`}
-                    id={`gradient-${key}`}
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
-                    <stop
-                      offset="5%"
-                      stopColor={config[key]?.color || "#8884d8"}
-                      stopOpacity={0.8}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor={config[key]?.color || "#8884d8"}
-                      stopOpacity={0.1}
-                    />
-                  </linearGradient>
-                ))}
+                {seriesKeys.map((key, index) => {
+                  const color = getColor(key, index);
+                  return (
+                    <linearGradient
+                      key={`gradient-${key}`}
+                      id={`gradient-${key}`}
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="5%"
+                        stopColor={color}
+                        stopOpacity={0.8}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor={color}
+                        stopOpacity={0.1}
+                      />
+                    </linearGradient>
+                  );
+                })}
               </defs>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
@@ -216,13 +259,13 @@ export function ChartPanel({
               />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip content={<CustomTooltip />} />
-              {seriesKeys.map((key) => (
+              {seriesKeys.map((key, index) => (
                 <Area
                   key={key}
                   dataKey={key}
-                  name={String(config[key]?.label || key)}
+                  name={getLabel(key)}
                   type="monotone"
-                  stroke={config[key]?.color || "#8884d8"}
+                  stroke={getColor(key, index)}
                   fill={`url(#gradient-${key})`}
                   fillOpacity={0.6}
                 />
@@ -234,7 +277,7 @@ export function ChartPanel({
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>{title}</CardTitle>
@@ -245,7 +288,7 @@ export function ChartPanel({
           onChange={(value) => setChartType(value)}
         />
       </CardHeader>
-      <CardContent>{renderChart()}</CardContent>
+      <CardContent className="flex-1">{renderChart()}</CardContent>
     </Card>
   );
-}
+} 

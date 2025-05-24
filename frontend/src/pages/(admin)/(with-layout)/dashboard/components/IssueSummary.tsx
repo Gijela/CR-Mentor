@@ -1,5 +1,13 @@
 import React from "react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Cell,
+} from "recharts";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -16,11 +24,42 @@ import type { IssueItem, StrengthItem } from "./DataTable";
 interface IssueSummaryProps<T extends IssueItem | StrengthItem> {
   data: T[];
   type: "issues" | "strengths";
+  onCategoryClick?: (category: string, count: number) => void;
 }
+
+// 定义一个生成颜色的函数
+const generateColor = (index: number) => {
+  // 预设颜色
+  const baseColors = [
+    "#4f46e5", // 靛蓝色
+    "#f97316", // 橙色
+    "#10b981", // 绿色
+    "#8b5cf6", // 紫色
+    "#ec4899", // 粉色
+    "#06b6d4", // 青色
+    "#eab308", // 黄色
+    "#ef4444", // 红色
+    "#64748b", // 蓝灰色
+    "#84cc16", // 酸橙色
+  ];
+
+  if (index < baseColors.length) {
+    return baseColors[index];
+  }
+
+  // 如果索引超出预设颜色范围，则动态生成新颜色
+  // 使用HSL色彩空间，以确保颜色足够丰富
+  const hue = (index * 137.5) % 360; // 使用黄金角分布
+  const saturation = 70 + (index % 3) * 10; // 在70%-90%之间变化
+  const lightness = 45 + (index % 5) * 5; // 在45%-65%之间变化
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
 
 export function IssueSummary<T extends IssueItem | StrengthItem>({
   data,
   type,
+  onCategoryClick,
 }: IssueSummaryProps<T>) {
   const isIssues = type === "issues";
 
@@ -58,8 +97,15 @@ export function IssueSummary<T extends IssueItem | StrengthItem>({
     },
   };
 
+  // 处理类别点击
+  const handleCategoryClick = (category: string, count: number) => {
+    if (onCategoryClick) {
+      onCategoryClick(category, count);
+    }
+  };
+
   return (
-    <Card className="mb-4">
+    <Card className="mb-0 h-full flex flex-col">
       <CardHeader className="pb-2">
         <CardTitle>{isIssues ? "问题模式摘要" : "技术优势摘要"}</CardTitle>
         <CardDescription>
@@ -68,10 +114,10 @@ export function IssueSummary<T extends IssueItem | StrengthItem>({
             : `共有 ${totalCount} 个技术优势记录，按领域分布如下`}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium">
+      <CardContent className="flex-1 flex flex-col">
+        <div className="flex flex-col h-full">
+          <div className="mb-3">
+            <h4 className="text-sm font-medium mb-1.5">
               主要{isIssues ? "问题" : "优势"}类别
             </h4>
             <div className="flex flex-wrap gap-2">
@@ -79,7 +125,16 @@ export function IssueSummary<T extends IssueItem | StrengthItem>({
                 <Badge
                   key={cat.name}
                   variant={i === 0 ? "default" : "outline"}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => handleCategoryClick(cat.name, cat.count)}
+                  style={
+                    i !== 0
+                      ? {
+                          borderColor: generateColor(i),
+                          color: generateColor(i),
+                        }
+                      : {}
+                  }
                 >
                   {cat.name}
                   <span className="ml-1 rounded-full bg-background px-1.5 text-xs font-normal text-foreground">
@@ -90,25 +145,51 @@ export function IssueSummary<T extends IssueItem | StrengthItem>({
             </div>
           </div>
 
-          <div className="h-auto min-h-[120px] flex items-center">
+          <div className="flex-1 min-h-[240px]">
             {chartData.length > 0 && (
               <ChartContainer config={chartConfig} className="w-full h-full">
-                <AreaChart
+                <BarChart
                   data={chartData}
-                  margin={{ top: 5, right: 5, bottom: 5, left: 5 }}
+                  margin={{ top: 5, right: 10, bottom: 20, left: 80 }}
                   width={undefined}
-                  height={100}
+                  height={240}
+                  layout="vertical"
                 >
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="category" hide />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    fill="hsl(var(--chart-1))"
-                    stroke="hsl(var(--chart-1))"
-                    fillOpacity={0.2}
+                  <CartesianGrid
+                    horizontal={true}
+                    vertical={true}
+                    strokeDasharray="3 3"
                   />
-                </AreaChart>
+                  <XAxis
+                    type="number"
+                    tickFormatter={(value) =>
+                      Math.floor(value) === value ? value : ""
+                    }
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="category"
+                    tick={{ fontSize: 11 }}
+                    width={75}
+                  />
+                  <Tooltip />
+                  <Bar
+                    dataKey="value"
+                    barSize={24}
+                    onClick={(data) =>
+                      handleCategoryClick(data.category, data.value)
+                    }
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={generateColor(index)}
+                        fillOpacity={0.9}
+                        style={{ cursor: "pointer" }}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
               </ChartContainer>
             )}
           </div>

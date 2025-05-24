@@ -1124,19 +1124,15 @@ export function DataTable({
   data: initialData,
   activeTab = "outline",
   onTabChange,
+  id,
 }: {
   data: IssueItem[] | StrengthItem[];
   activeTab?: string;
   onTabChange?: (tab: string) => void;
+  id?: string;
 }) {
   const [activeTabState, setActiveTabState] = React.useState(activeTab);
 
-  // 更新当选项卡变更时
-  React.useEffect(() => {
-    setActiveTabState(activeTab);
-  }, [activeTab]);
-
-  // 处理标签页变更，同时通知父组件
   const handleTabChange = (value: string) => {
     setActiveTabState(value);
     if (onTabChange) {
@@ -1144,7 +1140,6 @@ export function DataTable({
     }
   };
 
-  // 判断数据类型，用于类型安全处理
   const isIssueData = (data: any[]): data is IssueItem[] => {
     return data.length > 0 && "status" in data[0];
   };
@@ -1153,100 +1148,49 @@ export function DataTable({
     return data.length > 0 && "confidence" in data[0];
   };
 
-  // 确保初始数据适合当前标签页
-  const issuesData = isIssueData(initialData) ? initialData : [];
-  const strengthsData = isStrengthData(initialData) ? initialData : [];
-
   return (
-    <Tabs
-      defaultValue={activeTab}
-      value={activeTabState}
-      onValueChange={handleTabChange}
-      className="flex w-full flex-col justify-start gap-6"
-    >
-      <div className="flex items-center justify-between">
-        <Label htmlFor="view-selector" className="sr-only">
-          View
-        </Label>
-        <Select value={activeTabState} onValueChange={handleTabChange}>
-          <SelectTrigger
-            className="@4xl/main:hidden flex w-fit"
-            id="view-selector"
-          >
-            <SelectValue placeholder="Select a view" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="outline">Outline</SelectItem>
-            <SelectItem value="past-performance">Past Performance</SelectItem>
-            <SelectItem value="key-personnel">Key Personnel</SelectItem>
-            <SelectItem value="focus-documents">Focus Documents</SelectItem>
-          </SelectContent>
-        </Select>
-        <TabsList className="@4xl/main:flex hidden">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="past-performance" className="gap-1">
-            Past Performance{" "}
-            <Badge
-              variant="secondary"
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"
-            >
-              3
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="key-personnel" className="gap-1">
-            Key Personnel{" "}
-            <Badge
-              variant="secondary"
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"
-            >
-              2
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
-        </TabsList>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <ColumnsIcon />
-                <span className="hidden lg:inline">Customize Columns</span>
-                <span className="lg:hidden">Columns</span>
-                <ChevronDownIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {/* 由于表格实例现在是条件渲染的，我们需要移除此处的列选择UI或做更复杂处理 */}
-              <DropdownMenuItem className="cursor-pointer">
-                Customize columns in settings
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <div id={id}>
+      <Tabs
+        defaultValue={activeTab}
+        value={activeTabState}
+        onValueChange={handleTabChange}
+        className="flex w-full flex-col justify-start gap-6"
+      >
+        <div className="flex items-center justify-between">
+          <Label htmlFor="view-selector" className="sr-only">
+            View mode
+          </Label>
+          <TabsList className="grid grid-cols-2">
+            <TabsTrigger value="outline">问题</TabsTrigger>
+            <TabsTrigger value="tech-radar">技术优势</TabsTrigger>
+          </TabsList>
         </div>
-      </div>
 
-      {/* Issues Data Table */}
-      <TabsContent
-        value="outline"
-        className="relative flex flex-col gap-4 overflow-auto"
-      >
-        <IssuesTable data={issuesData} />
-      </TabsContent>
+        <TabsContent value="outline" className="mt-0">
+          {isIssueData(initialData) ? (
+            <IssuesTable data={initialData} />
+          ) : (
+            <div className="flex h-64 items-center justify-center rounded-lg border border-dashed">
+              <div className="flex flex-col items-center gap-1 text-center">
+                <AlertTriangleIcon className="h-6 w-6 text-muted-foreground" />
+                <h3 className="text-base font-medium">未找到问题数据</h3>
+                <p className="text-sm text-muted-foreground">
+                  请检查API返回的数据格式或网络连接。
+                </p>
+              </div>
+            </div>
+          )}
+        </TabsContent>
 
-      {/* Strengths Data Table */}
-      <TabsContent
-        value="past-performance"
-        className="relative flex flex-col gap-4 overflow-auto"
-      >
-        <StrengthsTable data={strengthsData} />
-      </TabsContent>
-
-      <TabsContent value="key-personnel" className="flex flex-col">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-      <TabsContent value="focus-documents" className="flex flex-col">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="tech-radar" className="mt-0">
+          {isStrengthData(initialData) ? (
+            <StrengthsTable data={initialData} />
+          ) : (
+            <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
 

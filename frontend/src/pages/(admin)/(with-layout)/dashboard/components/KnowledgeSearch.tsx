@@ -697,12 +697,12 @@ export const KnowledgeSearch = forwardRef<
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
-        <TabsList className="grid w-full grid-cols-2">
+        {/* <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="results">搜索结果</TabsTrigger>
           <TabsTrigger value="details" disabled={!selectedSnippet}>
             知识详情
           </TabsTrigger>
-        </TabsList>
+        </TabsList> */}
 
         <TabsContent value="results" className="mt-4 flex-1">
           {isSearching ? (
@@ -712,16 +712,25 @@ export const KnowledgeSearch = forwardRef<
           ) : searchResults.length > 0 ? (
             <div className="space-y-4">
               {searchResults.some((s) => s.similarity_score !== undefined) && (
-                <div className="flex justify-end">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1"
-                    onClick={() => setShowVisualization(!showVisualization)}
-                  >
-                    <BarChart2Icon className="h-4 w-4" />
-                    {showVisualization ? "隐藏" : "显示"}相关性分析
-                  </Button>
+                <div className="flex justify-start gap-2 items-center">
+                  {/* 相关性分析 */}
+                  {searchResults.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => setShowVisualization(!showVisualization)}
+                    >
+                      <BarChart2Icon className="h-4 w-4" />
+                      {showVisualization ? "隐藏" : "显示"}相关性分析
+                    </Button>
+                  )}
+                  {/* 搜索结果计数提示 */}
+                  <div className="text-sm text-muted-foreground">
+                    {searchQuery.trim()
+                      ? `找到 ${searchResults.length} 条与"${searchQuery}"相关的知识片段`
+                      : `显示全部 ${searchResults.length} 条知识片段`}
+                  </div>
                 </div>
               )}
 
@@ -732,13 +741,6 @@ export const KnowledgeSearch = forwardRef<
                   onViewDetails={viewSnippetDetails}
                 />
               )}
-
-              {/* 添加搜索结果计数提示 */}
-              <div className="text-sm text-muted-foreground">
-                {searchQuery.trim()
-                  ? `找到 ${searchResults.length} 条与"${searchQuery}"相关的知识片段`
-                  : `显示全部 ${searchResults.length} 条知识片段`}
-              </div>
 
               {searchResults.map((snippet) => (
                 <Card key={snippet.id} className="overflow-hidden">

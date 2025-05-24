@@ -103,7 +103,7 @@ interface PaginatedStrengthsResponse {
   message?: string;
 }
 
-// Helper function to transform InsightTrendsData for the chart component
+// Helper function to transform InsightTrends data for the chart component
 const transformInsightTrends = (
   apiData: InsightTrendsData
 ): { chartData: TransformedChartDataItem[]; chartConfig: ChartConfig } => {
@@ -123,12 +123,30 @@ const transformInsightTrends = (
     }
   );
 
+  // 预设颜色
+  const colorPalette = [
+    "#4f46e5", // 靛蓝色
+    "#f97316", // 橙色
+    "#10b981", // 绿色
+    "#8b5cf6", // 紫色
+    "#ec4899", // 粉色
+    "#06b6d4", // 青色
+    "#eab308", // 黄色
+    "#ef4444", // 红色
+    "#64748b", // 蓝灰色
+    "#84cc16", // 酸橙色
+  ];
+
+  // 确保配置中的color属性始终有值
   const config: ChartConfig = {};
   apiData.datasets.forEach((dataset, index) => {
     const seriesKey = dataset.label.toLowerCase().replace(/\s+/g, "_");
+    // 直接使用颜色数组，确保始终有值
+    const color = colorPalette[index % colorPalette.length];
+
     config[seriesKey] = {
       label: dataset.label,
-      color: `hsl(var(--chart-${index + 1}))`, // Cycle through chart colors
+      color: color,
     };
   });
 
@@ -418,6 +436,23 @@ export function Component() {
     }
   };
 
+  // 处理问题类别点击
+  const handleCategoryClick = (category: string, count: number) => {
+    // 将表格切换到问题标签
+    if (activeTab !== "outline") {
+      setActiveTab("outline");
+    }
+
+    // 这里可以添加按类别筛选的逻辑
+    // 例如：通过API获取特定类别的问题，或在前端筛选已有数据
+    console.log(`类别 "${category}" 被点击，包含 ${count} 个问题`);
+
+    // 滚动到表格位置
+    document
+      .getElementById("issues-table")
+      ?.scrollIntoView({ behavior: "smooth" });
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -449,26 +484,11 @@ export function Component() {
                 onValueChange={setDashboardTab}
                 className="w-full"
               >
-                <div className="flex items-center justify-between border-b">
-                  <TabsList className="w-fit justify-start rounded-none border-b bg-transparent p-0">
-                    <TabsTrigger
-                      value="insights"
-                      className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary"
-                    >
-                      开发者洞察
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="knowledge"
-                      className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary"
-                    >
-                      知识库搜索
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="visualization"
-                      className="rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-primary"
-                    >
-                      技能可视化
-                    </TabsTrigger>
+                <div className="flex items-center justify-between">
+                  <TabsList className="grid grid-cols-3">
+                    <TabsTrigger value="insights">开发者洞察</TabsTrigger>
+                    <TabsTrigger value="knowledge">知识库搜索</TabsTrigger>
+                    <TabsTrigger value="visualization">技能可视化</TabsTrigger>
                   </TabsList>
 
                   <div className="pr-4">
@@ -493,39 +513,49 @@ export function Component() {
                 <TabsContent value="insights" className="mt-0 pt-4">
                   <div className="flex flex-col gap-4 md:gap-6">
                     <SectionCards kpiData={kpiData} />
-                    <ChartPanel
-                      title="开发者洞察趋势"
-                      description="追踪开发者的优势和问题变化趋势"
-                      data={insightTrends.chartData.map((item) => ({
-                        ...item,
-                        date: item.date,
-                      }))}
-                      config={Object.entries(insightTrends.chartConfig).reduce(
-                        (acc, [key, value]) => {
-                          if (
-                            value &&
-                            typeof value === "object" &&
-                            "label" in value &&
-                            "color" in value
-                          ) {
-                            acc[key] = {
-                              label: String(value.label || key),
-                              color: String(
-                                value.color || `hsl(var(--chart-1))`
-                              ),
-                            };
-                          }
-                          return acc;
-                        },
-                        {} as Record<string, { label: string; color: string }>
-                      )}
-                    />
+                    <div className="grid grid-cols-12 gap-4 md:gap-6">
+                      <div className="col-span-12 md:col-span-7 h-full">
+                        <ChartPanel
+                          title="开发者洞察趋势"
+                          description="追踪开发者的优势和问题变化趋势"
+                          data={insightTrends.chartData.map((item) => ({
+                            ...item,
+                            date: item.date,
+                          }))}
+                          config={Object.entries(
+                            insightTrends.chartConfig
+                          ).reduce((acc, [key, value]) => {
+                            if (
+                              value &&
+                              typeof value === "object" &&
+                              "label" in value &&
+                              "color" in value
+                            ) {
+                              acc[key] = {
+                                label: String(value.label || key),
+                                color: String(
+                                  value.color || `hsl(var(--chart-1))`
+                                ),
+                              };
+                            }
+                            return acc;
+                          }, {} as Record<string, { label: string; color: string }>)}
+                        />
+                      </div>
 
-                    {/* 问题模式摘要 */}
-                    <IssueSummary data={issuesData} type="issues" />
+                      {/* 问题模式摘要 */}
+                      <div className="col-span-12 md:col-span-5 h-full">
+                        <IssueSummary
+                          data={issuesData}
+                          type="issues"
+                          onCategoryClick={handleCategoryClick}
+                        />
+                      </div>
+                    </div>
 
                     {/* 数据表格 */}
                     <DataTable
+                      id="issues-table"
                       data={tableData}
                       activeTab={activeTab}
                       onTabChange={handleTabChange}
@@ -566,14 +596,14 @@ export function Component() {
                 <TabsContent value="visualization" className="mt-0 pt-4">
                   <div className="flex flex-col gap-4 md:gap-6">
                     <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-                      <div className="col-span-1 lg:col-span-2">
+                      {/* <div className="col-span-1 lg:col-span-2">
                         <h2 className="mb-4 text-2xl font-bold">
                           技能可视化分析
                         </h2>
                         <p className="mb-6 text-muted-foreground">
                           以可视化方式分析开发者的技能分布和专长领域。
                         </p>
-                      </div>
+                      </div> */}
 
                       <div className="col-span-1">
                         <SkillRadarChart

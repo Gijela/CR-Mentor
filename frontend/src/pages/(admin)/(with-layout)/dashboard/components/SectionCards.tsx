@@ -25,6 +25,25 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+// 定义卡片主题颜色
+const cardThemes = {
+  strengths: {
+    main: "#4f46e5", // 靛蓝色
+    positive: "#10b981", // 绿色
+    negative: "#ef4444", // 红色
+  },
+  issues: {
+    main: "#f97316", // 橙色
+    positive: "#10b981", // 绿色
+    negative: "#ef4444", // 红色
+  },
+  knowledge: {
+    main: "#8b5cf6", // 紫色
+    positive: "#10b981", // 绿色
+    negative: "#ef4444", // 红色
+  },
+};
+
 // Define the KpiSummary interface based on the backend service
 interface KpiSummary {
   strengthsOverview: {
@@ -129,6 +148,21 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
     setActiveCard(activeCard === cardId ? null : cardId);
   };
 
+  // 安全获取百分比趋势颜色
+  const getTrendColor = (
+    cardType: "strengths" | "issues" | "knowledge",
+    trend: number,
+    isIssue = false
+  ) => {
+    const themes = cardThemes[cardType];
+    // 对于问题卡片，趋势下降是好的；对于其他卡片，趋势上升是好的
+    const isPositive = isIssue ? trend <= 0 : trend >= 0;
+    return {
+      color: isPositive ? themes.positive : themes.negative,
+      borderColor: isPositive ? themes.positive : themes.negative,
+    };
+  };
+
   return (
     <div className="*:data-[slot=card]:shadow-xs grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card">
       <Card
@@ -145,9 +179,8 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
           <div className="absolute right-4 top-4">
             <Badge
               variant="outline"
-              className={`flex gap-1 rounded-lg text-xs ${
-                strengthsTrend >= 0 ? "text-green-500" : "text-red-500"
-              }`}
+              className="flex gap-1 rounded-lg text-xs"
+              style={getTrendColor("strengths", strengthsTrend)}
             >
               {strengthsTrend >= 0 ? (
                 <TrendingUpIcon className="size-3" />
@@ -176,12 +209,12 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
                   >
                     <stop
                       offset="5%"
-                      stopColor="hsl(var(--primary))"
+                      stopColor={cardThemes.strengths.main}
                       stopOpacity={0.3}
                     />
                     <stop
                       offset="95%"
-                      stopColor="hsl(var(--primary))"
+                      stopColor={cardThemes.strengths.main}
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -189,7 +222,7 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(var(--primary))"
+                  stroke={cardThemes.strengths.main}
                   fill="url(#strengthsGradient)"
                   strokeWidth={1.5}
                 />
@@ -199,8 +232,11 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
         </CardContent>
         <CardFooter className={cardFooterCommonClasses}>
           <div className={cardFooterLine1Classes}>
-            <BriefcaseIcon className="size-4" /> 主要领域:{" "}
-            {strengths.topCategory?.name || "未知"}
+            <BriefcaseIcon
+              className="size-4"
+              style={{ color: cardThemes.strengths.main }}
+            />{" "}
+            主要领域: {strengths.topCategory?.name || "未知"}
           </div>
           <div className={cardFooterLine2Classes}>
             数量: {strengths.topCategory?.count || 0}
@@ -222,9 +258,8 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
           <div className="absolute right-4 top-4">
             <Badge
               variant="outline"
-              className={`flex gap-1 rounded-lg text-xs ${
-                issuesTrend <= 0 ? "text-green-500" : "text-red-500"
-              }`}
+              className="flex gap-1 rounded-lg text-xs"
+              style={getTrendColor("issues", issuesTrend, true)}
             >
               {issuesTrend <= 0 ? (
                 <TrendingDownIcon className="size-3" />
@@ -253,12 +288,12 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
                   >
                     <stop
                       offset="5%"
-                      stopColor="hsl(var(--destructive))"
+                      stopColor={cardThemes.issues.main}
                       stopOpacity={0.3}
                     />
                     <stop
                       offset="95%"
-                      stopColor="hsl(var(--destructive))"
+                      stopColor={cardThemes.issues.main}
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -266,7 +301,7 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(var(--destructive))"
+                  stroke={cardThemes.issues.main}
                   fill="url(#issuesGradient)"
                   strokeWidth={1.5}
                 />
@@ -276,8 +311,11 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
         </CardContent>
         <CardFooter className={cardFooterCommonClasses}>
           <div className={cardFooterLine1Classes}>
-            <AlertTriangleIcon className="size-4" /> 主要问题:{" "}
-            {issues.topCategory?.name || "未知"}
+            <AlertTriangleIcon
+              className="size-4"
+              style={{ color: cardThemes.issues.main }}
+            />{" "}
+            主要问题: {issues.topCategory?.name || "未知"}
           </div>
           <div className={cardFooterLine2Classes}>
             数量: {issues.topCategory?.count || 0}
@@ -299,9 +337,8 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
           <div className="absolute right-4 top-4">
             <Badge
               variant="outline"
-              className={`flex gap-1 rounded-lg text-xs ${
-                knowledgeTrend >= 0 ? "text-green-500" : "text-red-500"
-              }`}
+              className="flex gap-1 rounded-lg text-xs"
+              style={getTrendColor("knowledge", knowledgeTrend)}
             >
               {knowledgeTrend >= 0 ? (
                 <TrendingUpIcon className="size-3" />
@@ -330,12 +367,12 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
                   >
                     <stop
                       offset="5%"
-                      stopColor="hsl(var(--secondary))"
+                      stopColor={cardThemes.knowledge.main}
                       stopOpacity={0.3}
                     />
                     <stop
                       offset="95%"
-                      stopColor="hsl(var(--secondary))"
+                      stopColor={cardThemes.knowledge.main}
                       stopOpacity={0}
                     />
                   </linearGradient>
@@ -343,7 +380,7 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
                 <Area
                   type="monotone"
                   dataKey="value"
-                  stroke="hsl(var(--secondary))"
+                  stroke={cardThemes.knowledge.main}
                   fill="url(#knowledgeGradient)"
                   strokeWidth={1.5}
                 />
@@ -353,8 +390,11 @@ export function SectionCards({ kpiData }: SectionCardsProps) {
         </CardContent>
         <CardFooter className={cardFooterCommonClasses}>
           <div className={cardFooterLine1Classes}>
-            <BookOpenTextIcon className="size-4" /> 主要主题:{" "}
-            {knowledge.topTopic?.name || "未知"}
+            <BookOpenTextIcon
+              className="size-4"
+              style={{ color: cardThemes.knowledge.main }}
+            />{" "}
+            主要主题: {knowledge.topTopic?.name || "未知"}
           </div>
           <div className={cardFooterLine2Classes}>
             数量: {knowledge.topTopic?.count || 0}
