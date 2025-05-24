@@ -1,0 +1,52 @@
+[
+  {
+    "id": "issue1",
+    "description": "错误处理不一致，在某些地方使用try-catch，其他地方使用错误代码返回",
+    "category_or_area": "错误处理",
+    "status": "active",
+    "frequency": 12,
+    "related_prs": ["https://github.com/example/repo/pull/123"],
+    "last_seen_at": "2023-10-15T14:30:00Z",
+    "first_seen_at": "2023-08-03T09:15:00Z"
+  },
+  {
+    "id": "issue2",
+    "description": "组件代码重复，多个地方实现了相似的日期选择器",
+    "category_or_area": "代码重用",
+    "status": "active",
+    "frequency": 8,
+    "related_prs": ["https://github.com/example/repo/pull/156"],
+    "last_seen_at": "2023-11-02T10:45:00Z",
+    "first_seen_at": "2023-09-12T16:20:00Z"
+  },
+  {
+    "id": "issue3",
+    "description": "缺少单元测试，特别是对于关键业务逻辑的测试覆盖率低",
+    "category_or_area": "测试",
+    "status": "active",
+    "frequency": 15,
+    "related_prs": ["https://github.com/example/repo/pull/187"],
+    "last_seen_at": "2023-11-10T13:25:00Z",
+    "first_seen_at": "2023-07-28T11:10:00Z"
+  },
+  {
+    "id": "issue4",
+    "description": "性能问题：列表渲染没有使用虚拟化，导致大量数据时页面卡顿",
+    "category_or_area": "性能优化",
+    "status": "active",
+    "frequency": 5,
+    "related_prs": ["https://github.com/example/repo/pull/201"],
+    "last_seen_at": "2023-10-28T09:30:00Z",
+    "first_seen_at": "2023-09-05T14:45:00Z"
+  },
+  {
+    "id": "issue5",
+    "description": "没有正确处理API错误响应，用户体验不佳",
+    "category_or_area": "错误处理",
+    "status": "resolved",
+    "frequency": 10,
+    "related_prs": ["https://github.com/example/repo/pull/245"],
+    "last_seen_at": "2023-09-20T16:15:00Z",
+    "first_seen_at": "2023-08-15T10:30:00Z"
+  }
+]

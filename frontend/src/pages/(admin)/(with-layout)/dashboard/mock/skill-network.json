@@ -1,0 +1,29 @@
+{
+  "nodes": [
+    { "id": "n1", "name": "React", "category": "前端框架", "value": 0.9 },
+    { "id": "n2", "name": "TypeScript", "category": "编程语言", "value": 0.85 },
+    { "id": "n3", "name": "Redux", "category": "状态管理", "value": 0.8 },
+    { "id": "n4", "name": "GraphQL", "category": "API", "value": 0.7 },
+    { "id": "n5", "name": "Node.js", "category": "后端", "value": 0.75 },
+    { "id": "n6", "name": "Express", "category": "后端框架", "value": 0.7 },
+    { "id": "n7", "name": "Jest", "category": "测试", "value": 0.65 },
+    { "id": "n8", "name": "CSS/SCSS", "category": "样式", "value": 0.8 },
+    { "id": "n9", "name": "MongoDB", "category": "数据库", "value": 0.6 },
+    { "id": "n10", "name": "PostgreSQL", "category": "数据库", "value": 0.75 }
+  ],
+  "links": [
+    { "source": "n1", "target": "n2", "strength": 0.9 },
+    { "source": "n1", "target": "n3", "strength": 0.85 },
+    { "source": "n1", "target": "n8", "strength": 0.8 },
+    { "source": "n2", "target": "n3", "strength": 0.7 },
+    { "source": "n2", "target": "n5", "strength": 0.6 },
+    { "source": "n3", "target": "n4", "strength": 0.5 },
+    { "source": "n5", "target": "n6", "strength": 0.9 },
+    { "source": "n5", "target": "n9", "strength": 0.7 },
+    { "source": "n5", "target": "n10", "strength": 0.75 },
+    { "source": "n6", "target": "n9", "strength": 0.8 },
+    { "source": "n6", "target": "n10", "strength": 0.7 },
+    { "source": "n7", "target": "n1", "strength": 0.6 },
+    { "source": "n7", "target": "n5", "strength": 0.5 }
+  ]
+}

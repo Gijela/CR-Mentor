@@ -6,6 +6,7 @@ import {
   listIssues,
   listKnowledgeSnippets
 } from "../../controller/developer";
+import * as ragController from "../../controller/rag";
 
 const router = new Router({ prefix: "/developers" })
 
@@ -23,5 +24,14 @@ router.post("/profile/issues", listIssues)
 
 // 3.3 "知识库" 列表 API
 router.post("/knowledge-base/snippets", listKnowledgeSnippets)
+
+// 4.1 知识库语义搜索 API
+router.post("/knowledge-base/search", ragController.searchKnowledge)
+
+// 4.2 知识库元数据 API
+router.post("/knowledge-base/metadata", ragController.getMetadata)
+
+// 4.3 知识片段关联 API
+router.post("/knowledge-base/associate", ragController.associateKnowledge)
 
 export default router

@@ -1,0 +1,12 @@
+{
+  "categories": [
+    "React",
+    "TypeScript",
+    "Node.js",
+    "GraphQL",
+    "Testing",
+    "CSS/SCSS"
+  ],
+  "values": [85, 90, 75, 65, 70, 80],
+  "maxValue": 100
+}

@@ -185,9 +185,9 @@ export const menus: IExtendedMenu[] = [
     icon: ChartNoAxesCombined,
     to: "/knowledgeBase/edit",
   },
-  // {
-  //   title: "test",
-  //   icon: Bot,
-  //   to: "/test",
-  // },
+  {
+    title: "test",
+    icon: Bot,
+    to: "/test",
+  },
 ] as const

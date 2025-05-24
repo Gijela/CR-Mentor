@@ -1,0 +1,22 @@
+[
+  { "date": "2023-06", "value": 70, "category": "React" },
+  { "date": "2023-07", "value": 73, "category": "React" },
+  { "date": "2023-08", "value": 75, "category": "React" },
+  { "date": "2023-09", "value": 78, "category": "React" },
+  { "date": "2023-10", "value": 82, "category": "React" },
+  { "date": "2023-11", "value": 85, "category": "React" },
+
+  { "date": "2023-06", "value": 82, "category": "TypeScript" },
+  { "date": "2023-07", "value": 84, "category": "TypeScript" },
+  { "date": "2023-08", "value": 85, "category": "TypeScript" },
+  { "date": "2023-09", "value": 86, "category": "TypeScript" },
+  { "date": "2023-10", "value": 88, "category": "TypeScript" },
+  { "date": "2023-11", "value": 90, "category": "TypeScript" },
+
+  { "date": "2023-06", "value": 65, "category": "Node.js" },
+  { "date": "2023-07", "value": 68, "category": "Node.js" },
+  { "date": "2023-08", "value": 70, "category": "Node.js" },
+  { "date": "2023-09", "value": 72, "category": "Node.js" },
+  { "date": "2023-10", "value": 73, "category": "Node.js" },
+  { "date": "2023-11", "value": 75, "category": "Node.js" }
+]

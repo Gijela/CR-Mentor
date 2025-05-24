@@ -1,0 +1,53 @@
+[
+  {
+    "id": "str1",
+    "description": "React组件设计能力强，组件结构清晰，复用性高",
+    "category_or_area": "React",
+    "confidence": 0.85,
+    "related_prs": ["https://github.com/example/repo/pull/178"],
+    "last_seen_at": "2023-11-05T13:45:00Z",
+    "first_seen_at": "2023-06-12T09:30:00Z"
+  },
+  {
+    "id": "str2",
+    "description": "TypeScript类型系统运用熟练，特别是泛型和高级类型应用",
+    "category_or_area": "TypeScript",
+    "confidence": 0.92,
+    "related_prs": ["https://github.com/example/repo/pull/203"],
+    "last_seen_at": "2023-11-08T11:20:00Z",
+    "first_seen_at": "2023-07-05T14:15:00Z"
+  },
+  {
+    "id": "str3",
+    "description": "性能优化技巧应用娴熟，能解决复杂的性能瓶颈问题",
+    "category_or_area": "性能优化",
+    "confidence": 0.78,
+    "related_prs": [
+      "https://github.com/example/repo/pull/167",
+      "https://github.com/example/repo/pull/189"
+    ],
+    "last_seen_at": "2023-10-25T15:40:00Z",
+    "first_seen_at": "2023-08-10T10:50:00Z"
+  },
+  {
+    "id": "str4",
+    "description": "代码重构能力强，能够在保持功能的同时改善代码质量",
+    "category_or_area": "代码质量",
+    "confidence": 0.81,
+    "related_prs": ["https://github.com/example/repo/pull/234"],
+    "last_seen_at": "2023-11-01T09:25:00Z",
+    "first_seen_at": "2023-09-18T13:40:00Z"
+  },
+  {
+    "id": "str5",
+    "description": "数据流管理和状态设计能力强，使用Redux/Context API合理",
+    "category_or_area": "状态管理",
+    "confidence": 0.88,
+    "related_prs": [
+      "https://github.com/example/repo/pull/212",
+      "https://github.com/example/repo/pull/225"
+    ],
+    "last_seen_at": "2023-11-10T16:30:00Z",
+    "first_seen_at": "2023-07-22T11:15:00Z"
+  }
+]

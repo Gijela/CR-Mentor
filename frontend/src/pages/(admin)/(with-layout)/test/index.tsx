@@ -18,11 +18,9 @@ export function Component() {
 
   return (
     <div>
-      <StoryBook levaStore={store}>
-        <Markdown variant={"chat"} {...rest}>
-          {children}
-        </Markdown>
-      </StoryBook>
+      <Markdown variant={"chat"} {...rest}>
+        {children}
+      </Markdown>
     </div>
   );
 }
