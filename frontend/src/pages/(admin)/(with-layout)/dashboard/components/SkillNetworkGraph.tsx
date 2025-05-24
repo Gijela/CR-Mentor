@@ -405,12 +405,12 @@ export function SkillNetworkGraph({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-4">
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="p-4 border-b">
+        <div className="px-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex flex-wrap gap-2">
               {graphData.nodes.map((node) => (
@@ -431,7 +431,7 @@ export function SkillNetworkGraph({
                 </Badge>
               ))}
             </div>
-            <div className="flex items-center gap-1">
+            {/* <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="icon"
@@ -458,7 +458,7 @@ export function SkillNetworkGraph({
               >
                 <ZoomInIcon className="h-4 w-4" />
               </Button>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -481,7 +481,7 @@ export function SkillNetworkGraph({
           )}
         </div>
       </CardContent>
-      <CardFooter className="pt-0 text-xs text-muted-foreground border-t border-muted-foreground/10 flex justify-between items-center">
+      <CardFooter className="pt-0 text-xs text-muted-foreground flex justify-between items-center">
         <div className="flex items-center gap-1">
           <InfoIcon className="h-3 w-3" />
           <span>节点大小代表技能数量，线条粗细代表关联强度</span>

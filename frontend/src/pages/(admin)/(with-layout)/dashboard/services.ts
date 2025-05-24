@@ -63,6 +63,13 @@ export interface KnowledgeMetadata {
   tags: string[];
 }
 
+// 知识主题分布数据类型
+export interface TopicDistributionItem {
+  topic: string;
+  count: number;
+  percentage: number;
+}
+
 /**
  * 通用API请求函数
  */
@@ -333,5 +340,40 @@ export const dashboardService = {
         developer_id: developerId,
         category
       })
+    }),
+
+  /**
+   * 获取知识库主题分布
+   */
+  getKnowledgeTopicDistribution: (developerId: string) =>
+    apiRequest<TopicDistributionItem[]>('/developers/knowledge-base/snippets', {
+      method: 'POST',
+      body: JSON.stringify({ developer_id: developerId })
+    }).then(response => {
+      // 处理响应，计算主题分布
+      if (!response.data || !Array.isArray(response.data)) {
+        return [];
+      }
+
+      // 统计主题分布
+      const topicCounts: Record<string, number> = {};
+      let totalCount = 0;
+
+      // 计算每个主题的数量
+      response.data.forEach(snippet => {
+        const topic = snippet.topic || '未分类';
+        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+        totalCount++;
+      });
+
+      // 转换为所需格式并计算百分比
+      const topicDistribution: TopicDistributionItem[] = Object.keys(topicCounts).map(topic => ({
+        topic,
+        count: topicCounts[topic],
+        percentage: (topicCounts[topic] / totalCount) * 100
+      }));
+
+      // 按数量排序
+      return topicDistribution.sort((a, b) => b.count - a.count);
     })
 }; 

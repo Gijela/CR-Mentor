@@ -1,17 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 // import { redirect } from "react-router-dom"
 
 import { ChartAreaInteractive } from "./components/ChartAreaInteractive";
 import type { TransformedChartDataItem } from "./components/ChartAreaInteractive";
+import { ChartPanel } from "./components/ChartPanel";
 import { DataTable } from "./components/DataTable";
 import type { IssueItem, StrengthItem } from "./components/DataTable";
 import { KnowledgeSearch } from "./components/KnowledgeSearch";
-import type { KnowledgeSnippet } from "./components/KnowledgeSearch";
+import type { KnowledgeSnippet } from "./services";
 import { SkillRadarChart } from "./components/SkillRadarChart";
 import { SkillTrendChart } from "./components/SkillTrendChart";
 import { SkillNetworkGraph } from "./components/SkillNetworkGraph";
 import { SectionCards } from "./components/SectionCards";
 import { DashboardExport } from "./components/DashboardExport";
+import { KnowledgeHeatmap } from "./components/KnowledgeHeatmap";
+import { ChartTypeSelector } from "./components/ChartTypeSelector";
+import { IssueSummary } from "./components/IssueSummary";
+import type { ChartType } from "./components/ChartTypeSelector";
 import type { ChartConfig } from "@/components/ui/chart";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { useUser } from "@clerk/clerk-react";
@@ -23,6 +28,8 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import type { KnowledgeSearchHandle } from "./components/KnowledgeSearch";
+import type { KnowledgeHeatmapHandle } from "./components/KnowledgeHeatmap";
 
 // export const loader = () => redirect(`/repository`)
 
@@ -128,6 +135,44 @@ const transformInsightTrends = (
   return { chartData: transformedData, chartConfig: config };
 };
 
+// 转换趋势数据为新的ChartPanel组件可用的格式
+const transformForChartPanel = (
+  apiData: InsightTrendsData
+): { data: any[]; config: any } => {
+  if (!apiData || !apiData.labels || !apiData.datasets) {
+    return { data: [], config: {} };
+  }
+
+  // 转换数据点
+  const data = apiData.labels.map((label, index) => {
+    const dataPoint: any = { date: label };
+    apiData.datasets.forEach((dataset) => {
+      const seriesKey = dataset.label.toLowerCase().replace(/\s+/g, "_");
+      dataPoint[seriesKey] = dataset.data[index] || 0;
+    });
+    return dataPoint;
+  });
+
+  // 创建配置
+  const config: any = {};
+  apiData.datasets.forEach((dataset, index) => {
+    const seriesKey = dataset.label.toLowerCase().replace(/\s+/g, "_");
+    config[seriesKey] = {
+      label: dataset.label,
+      color: `hsl(var(--chart-${index + 1}))`,
+    };
+  });
+
+  return { data, config };
+};
+
+// 知识库过滤器类型
+interface KnowledgeFilters {
+  categories: string[];
+  tags: string[];
+  similarityThreshold: number;
+}
+
 export function Component() {
   const [kpiData, setKpiData] = useState<KpiSummary | undefined>(undefined);
   const [insightTrends, setInsightTrends] = useState<{
@@ -149,6 +194,14 @@ export function Component() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useUser();
   const [searchResults, setSearchResults] = useState<KnowledgeSnippet[]>([]);
+  const [chartType, setChartType] = useState<ChartType>("area");
+  const knowledgeSearchRef = useRef<KnowledgeSearchHandle>(null);
+  const knowledgeHeatmapRef = useRef<KnowledgeHeatmapHandle>(null);
+  const [knowledgeFilters, setKnowledgeFilters] = useState<KnowledgeFilters>({
+    categories: [],
+    tags: [],
+    similarityThreshold: 0.7,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -337,6 +390,34 @@ export function Component() {
     ];
   }
 
+  // 处理热图中主题的点击
+  const handleTopicClick = (topic: string) => {
+    // 切换到知识库搜索标签页
+    if (dashboardTab !== "knowledge") {
+      setDashboardTab("knowledge");
+    }
+
+    // 通过ref调用知识搜索组件的搜索方法
+    if (knowledgeSearchRef.current) {
+      knowledgeSearchRef.current.searchTopic(topic);
+    }
+  };
+
+  // 处理过滤器变更
+  const handleFilterChange = (filters: KnowledgeFilters) => {
+    setKnowledgeFilters(filters);
+
+    // 更新热图组件的过滤器
+    if (knowledgeHeatmapRef.current) {
+      knowledgeHeatmapRef.current.applyFilters(filters);
+    }
+
+    // 更新搜索组件的过滤器
+    if (knowledgeSearchRef.current) {
+      knowledgeSearchRef.current.applyFilters(filters);
+    }
+  };
+
   if (loading) {
     return <LoadingSpinner />;
   }
@@ -412,12 +493,38 @@ export function Component() {
                 <TabsContent value="insights" className="mt-0 pt-4">
                   <div className="flex flex-col gap-4 md:gap-6">
                     <SectionCards kpiData={kpiData} />
-                    <ChartAreaInteractive
-                      chartData={insightTrends.chartData}
-                      chartConfig={insightTrends.chartConfig}
+                    <ChartPanel
                       title="开发者洞察趋势"
-                      description="追踪开发者的优势和问题变化趋势。"
+                      description="追踪开发者的优势和问题变化趋势"
+                      data={insightTrends.chartData.map((item) => ({
+                        ...item,
+                        date: item.date,
+                      }))}
+                      config={Object.entries(insightTrends.chartConfig).reduce(
+                        (acc, [key, value]) => {
+                          if (
+                            value &&
+                            typeof value === "object" &&
+                            "label" in value &&
+                            "color" in value
+                          ) {
+                            acc[key] = {
+                              label: String(value.label || key),
+                              color: String(
+                                value.color || `hsl(var(--chart-1))`
+                              ),
+                            };
+                          }
+                          return acc;
+                        },
+                        {} as Record<string, { label: string; color: string }>
+                      )}
                     />
+
+                    {/* 问题模式摘要 */}
+                    <IssueSummary data={issuesData} type="issues" />
+
+                    {/* 数据表格 */}
                     <DataTable
                       data={tableData}
                       activeTab={activeTab}
@@ -427,18 +534,32 @@ export function Component() {
                 </TabsContent>
 
                 <TabsContent value="knowledge" className="mt-0 pt-4">
-                  <div className="flex flex-col gap-4 md:gap-6">
-                    <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
-                      <div className="col-span-1">
-                        <h2 className="mb-4 text-2xl font-bold">
-                          知识库语义搜索
-                        </h2>
-                        <p className="mb-6 text-muted-foreground">
-                          使用自然语言搜索开发者相关的知识片段，发现编程技巧和解决方案。
-                        </p>
-                        <KnowledgeSearch onSearchResults={setSearchResults} />
-                      </div>
+                  <div className="flex gap-6">
+                    {/* 知识热图卡片 - 固定宽度480px */}
+                    <div className="w-[480px] shrink-0">
+                      <KnowledgeHeatmap
+                        ref={knowledgeHeatmapRef}
+                        onTopicClick={handleTopicClick}
+                        onFilterChange={handleFilterChange}
+                      />
                     </div>
+
+                    {/* 知识搜索卡片 - 占据剩余空间 */}
+                    <Card className="flex-1">
+                      <CardHeader>
+                        <CardTitle>知识库语义搜索</CardTitle>
+                        <CardDescription>
+                          使用自然语言搜索开发者相关的知识片段，发现编程技巧和解决方案
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <KnowledgeSearch
+                          ref={knowledgeSearchRef}
+                          onSearchResults={setSearchResults}
+                          initialFilters={knowledgeFilters}
+                        />
+                      </CardContent>
+                    </Card>
                   </div>
                 </TabsContent>
 
@@ -463,18 +584,18 @@ export function Component() {
                       </div>
 
                       <div className="col-span-1">
-                        <SkillTrendChart
-                          strengths={strengthsData}
-                          title="技能发展趋势"
-                          description="显示开发者技能水平随时间的变化"
-                        />
-                      </div>
-
-                      <div className="col-span-1 lg:col-span-2">
                         <SkillNetworkGraph
                           strengths={strengthsData}
                           title="技能关联网络"
                           description="显示不同技能领域之间的关联关系"
+                        />
+                      </div>
+
+                      <div className="col-span-1 lg:col-span-2">
+                        <SkillTrendChart
+                          strengths={strengthsData}
+                          title="技能发展趋势"
+                          description="显示开发者技能水平随时间的变化"
                         />
                       </div>
                     </div>

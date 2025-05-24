@@ -176,12 +176,12 @@ export function SkillRadarChart({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-[18px]">
         <div className="flex items-center gap-2">
           <ActivityIcon className="h-5 w-5 text-primary" />
           <div>
             <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
+            <CardDescription className="pt-1">{description}</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -303,7 +303,7 @@ export function SkillRadarChart({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="pt-0 text-xs text-muted-foreground border-t border-muted-foreground/10 flex justify-between items-center">
+      <CardFooter className="pt-0 text-xs text-muted-foreground flex justify-between items-center">
         <div className="flex items-center gap-1">
           <InfoIcon className="h-3 w-3" />
           <span>从内到外：了解 → 入门 → 中级 → 熟练 → 专家</span>

@@ -1,4 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+} from "react";
+import type { MouseEvent } from "react";
 import {
   SearchIcon,
   FilterIcon,
@@ -95,18 +101,36 @@ interface SearchHistoryItem {
 // 搜索组件接口
 interface KnowledgeSearchProps {
   onSearchResults?: (results: KnowledgeSnippet[]) => void;
+  initialFilters?: {
+    categories: string[];
+    tags: string[];
+    similarityThreshold: number;
+  };
+}
+
+// 搜索组件句柄接口
+export interface KnowledgeSearchHandle {
+  searchTopic: (topic: string) => void;
+  applyFilters: (filters: {
+    categories: string[];
+    tags: string[];
+    similarityThreshold: number;
+  }) => void;
 }
 
 // 搜索组件
-export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
+export const KnowledgeSearch = forwardRef<
+  KnowledgeSearchHandle,
+  KnowledgeSearchProps
+>(({ onSearchResults, initialFilters }, ref) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<KnowledgeSnippet[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
-    categories: [],
-    tags: [],
+    categories: initialFilters?.categories || [],
+    tags: initialFilters?.tags || [],
     dateRange: { start: null, end: null },
-    similarityThreshold: 0.7,
+    similarityThreshold: initialFilters?.similarityThreshold || 0.7,
   });
   const [activeTab, setActiveTab] = useState("results");
   const [selectedSnippet, setSelectedSnippet] =
@@ -335,12 +359,44 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
     loadMetadata();
   }, [user?.username]);
 
-  // 处理搜索函数
-  const handleSearch = async () => {
-    if (!searchQuery.trim() || !user?.username) {
-      toast.error("请输入搜索内容");
-      return;
+  // 当初始过滤器更新时
+  useEffect(() => {
+    if (initialFilters) {
+      setFilters((prev) => ({
+        ...prev,
+        categories: initialFilters.categories,
+        tags: initialFilters.tags,
+        similarityThreshold: initialFilters.similarityThreshold,
+      }));
     }
+  }, [initialFilters]);
+
+  // 公开搜索主题和应用过滤器方法给父组件
+  useImperativeHandle(ref, () => ({
+    searchTopic: (topic: string) => {
+      setSearchQuery(topic);
+      handleSearch(topic);
+    },
+    applyFilters: (newFilters) => {
+      setFilters((prev) => ({
+        ...prev,
+        categories: newFilters.categories,
+        tags: newFilters.tags,
+        similarityThreshold: newFilters.similarityThreshold,
+      }));
+    },
+  }));
+
+  // 包装按钮点击事件处理函数
+  const handleSearchClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    handleSearch();
+  };
+
+  // 处理搜索
+  const handleSearch = async (manualQuery?: string) => {
+    const query = manualQuery || searchQuery;
+    if (!query.trim() || !user?.username) return;
 
     setIsSearching(true);
     setActiveTab("results");
@@ -368,7 +424,7 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
 
       // 发送搜索请求
       const result = await dashboardService.searchKnowledge(
-        searchQuery,
+        query,
         user.username,
         searchFilters
       );
@@ -403,7 +459,7 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
 
         console.log("搜索结果转换后的数据:", formattedData);
         setSearchResults(formattedData);
-        saveSearchHistory(searchQuery, formattedData.length);
+        saveSearchHistory(query, formattedData.length);
         if (onSearchResults) {
           onSearchResults(formattedData);
         }
@@ -416,8 +472,8 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
           onSearchResults(mockResults);
         }
       }
-    } catch (error) {
-      console.error("搜索失败:", error);
+    } catch (err) {
+      console.error("搜索失败:", err);
       toast.error("搜索失败，使用模拟数据");
       // 使用模拟数据作为备选
       const mockResults = getSampleResults();
@@ -519,7 +575,10 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
               variant="ghost"
               size="icon"
               className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2"
-              onClick={() => setSearchQuery("")}
+              onClick={(e) => {
+                e.preventDefault();
+                setSearchQuery("");
+              }}
             >
               <XIcon className="h-4 w-4" />
             </Button>
@@ -581,125 +640,61 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
           </PopoverContent>
         </Popover>
 
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon">
-              <FilterIcon className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="flex flex-col">
-            <SheetHeader>
-              <SheetTitle>搜索过滤器</SheetTitle>
-              <SheetDescription>设置过滤条件提高搜索精确度</SheetDescription>
-            </SheetHeader>
-            <div className="flex-1 overflow-y-auto py-4">
-              {isLoadingMetadata ? (
-                <div className="flex h-40 items-center justify-center">
-                  <LoadingSpinner />
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium">技术领域</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableCategories.map((category) => (
-                        <div
-                          key={category}
-                          className="flex items-center space-x-2"
-                        >
-                          <Checkbox
-                            id={`category-${category}`}
-                            checked={filters.categories.includes(category)}
-                            onCheckedChange={(checked) => {
-                              setFilters((prev) => ({
-                                ...prev,
-                                categories: checked
-                                  ? [...prev.categories, category]
-                                  : prev.categories.filter(
-                                      (c) => c !== category
-                                    ),
-                              }));
-                            }}
-                          />
-                          <Label htmlFor={`category-${category}`}>
-                            {category}
-                          </Label>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {availableTags.length > 0 && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2">
-                        <h3 className="text-sm font-medium">标签</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                          {availableTags.slice(0, 10).map((tag) => (
-                            <div
-                              key={tag}
-                              className="flex items-center space-x-2"
-                            >
-                              <Checkbox
-                                id={`tag-${tag}`}
-                                checked={filters.tags.includes(tag)}
-                                onCheckedChange={(checked) => {
-                                  setFilters((prev) => ({
-                                    ...prev,
-                                    tags: checked
-                                      ? [...prev.tags, tag]
-                                      : prev.tags.filter((t) => t !== tag),
-                                  }));
-                                }}
-                              />
-                              <Label htmlFor={`tag-${tag}`}>{tag}</Label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  <Separator />
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-medium">相似度阈值</h3>
-                    <div className="px-1">
-                      <Slider
-                        value={[filters.similarityThreshold * 100]}
-                        min={50}
-                        max={95}
-                        step={5}
-                        onValueChange={(value) => {
-                          if (value && value.length > 0) {
-                            const newValue = value[0] || 70;
-                            setFilters((prev) => ({
-                              ...prev,
-                              similarityThreshold: newValue / 100,
-                            }));
-                          }
-                        }}
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>50%</span>
-                        <span>{filters.similarityThreshold * 100}%</span>
-                        <span>95%</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            <SheetFooter className="mt-auto pt-4">
-              <SheetClose asChild>
-                <Button onClick={handleSearch} className="w-full">
-                  应用过滤器
-                </Button>
-              </SheetClose>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
-        <Button onClick={handleSearch}>搜索</Button>
+        <Button onClick={handleSearchClick}>搜索</Button>
       </div>
+
+      {/* 显示当前过滤条件 */}
+      {(filters.categories.length > 0 || filters.tags.length > 0) && (
+        <div className="mb-3 rounded-md border border-dashed border-muted-foreground/30 p-2">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium">应用的过滤条件</h4>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() =>
+                setFilters((prev) => ({
+                  ...prev,
+                  categories: [],
+                  tags: [],
+                }))
+              }
+            >
+              清除
+            </Button>
+          </div>
+
+          {filters.categories.length > 0 && (
+            <div className="mt-1">
+              <span className="text-xs text-muted-foreground">技术领域: </span>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {filters.categories.map((category) => (
+                  <Badge key={category} variant="secondary" className="text-xs">
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {filters.tags.length > 0 && (
+            <div className="mt-1">
+              <span className="text-xs text-muted-foreground">标签: </span>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {filters.tags.map((tag) => (
+                  <Badge key={tag} variant="outline" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-1 text-xs text-muted-foreground">
+            相似度阈值: {filters.similarityThreshold * 100}%
+          </div>
+        </div>
+      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
         <TabsList className="grid w-full grid-cols-2">
@@ -785,6 +780,7 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => viewSnippetDetails(snippet)}
+                      className="border"
                     >
                       查看详情
                     </Button>
@@ -802,7 +798,7 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
               <p>正在加载知识片段...</p>
               <p className="text-sm">或者输入关键词进行精确搜索</p>
               <Button
-                onClick={() => handleSearch()}
+                onClick={handleSearchClick}
                 variant="outline"
                 className="mt-2"
               >
@@ -846,6 +842,7 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => setActiveTab("results")}
+                    className="border"
                   >
                     返回结果
                   </Button>
@@ -994,4 +991,6 @@ export function KnowledgeSearch({ onSearchResults }: KnowledgeSearchProps) {
       </Tabs>
     </div>
   );
-}
+});
+
+KnowledgeSearch.displayName = "KnowledgeSearch";
