@@ -750,8 +750,14 @@ export const KnowledgeSearch = forwardRef<
                         {snippet.summary}
                       </CardTitle>
                       {snippet.similarity_score && (
-                        <Badge variant="outline" className="bg-primary/10">
-                          相关度: {(snippet.similarity_score * 100).toFixed(0)}%
+                        <Badge
+                          variant="outline"
+                          className="bg-primary/10 shrink-0 flex flex-col"
+                        >
+                          <div>
+                            {(snippet.similarity_score * 100).toFixed(0)}%
+                          </div>
+                          <div>相关度</div>
                         </Badge>
                       )}
                     </div>
