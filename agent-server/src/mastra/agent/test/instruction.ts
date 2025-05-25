@@ -1,0 +1,1 @@
+export const instructions = `测试角色`;

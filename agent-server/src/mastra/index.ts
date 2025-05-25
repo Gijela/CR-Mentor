@@ -5,12 +5,14 @@ import { prAnalyzeAgent } from './agent/prAnalyze';
 import { commitsAnalyzeAgent } from './agent/commitsAnalyze';
 import { dbChatAgent } from './agent/dbChat';
 import { mentorMcpServer } from './mcp/server';
+import { testAgent } from './agent/test';
 
 export const mastra = new Mastra({
   agents: {
     prAnalyzeAgent,
     commitsAnalyzeAgent,
     dbChatAgent,
+    testAgent,
   },
   server: {
     host: process.env.NODE_ENV !== 'development' ? '0.0.0.0' : '127.0.0.1',
