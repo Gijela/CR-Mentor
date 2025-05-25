@@ -281,7 +281,7 @@ export function Component() {
         const issuesPayload = {
           developer_id: user?.username,
           page: 1,
-          limit: 10,
+          limit: 10000,
           sortBy: "last_seen_at",
           sortOrder: "desc",
         };
@@ -315,7 +315,7 @@ export function Component() {
           const strengthsPayload = {
             developer_id: user?.username,
             page: 1,
-            limit: 10,
+            limit: 10000,
             sortBy: "confidence", // 或其他适合的排序
             sortOrder: "desc",
           };

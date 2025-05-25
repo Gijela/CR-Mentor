@@ -46,12 +46,12 @@ export const menus: IExtendedMenu[] = [
     to: "/quickStart",
   },
   {
-    title: "dashboard",
+    title: "Dashboard",
     icon: Gauge,
     to: "/dashboard",
   },
   {
-    title: "Studio",
+    title: "Agent Studio",
     icon: Bot,
     to: "/studio",
   },
@@ -71,20 +71,20 @@ export const menus: IExtendedMenu[] = [
     to: "/knowledgeBase/list",
   },
   {
-    title: "Code Review",
-    icon: Bot,
-    to: "/agents",
-  },
-  {
     title: "Knowledge Base Edit",
     label: "9",
     hide: true,
     icon: ChartNoAxesCombined,
     to: "/knowledgeBase/edit",
   },
-  {
-    title: "test",
-    icon: Bot,
-    to: "/test",
-  },
+  // {
+  //   title: "Code Review",
+  //   icon: Bot,
+  //   to: "/agents",
+  // },
+  // {
+  //   title: "test",
+  //   icon: Bot,
+  //   to: "/test",
+  // },
 ] as const

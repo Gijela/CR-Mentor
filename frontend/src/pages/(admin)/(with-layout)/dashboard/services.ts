@@ -292,7 +292,7 @@ export const dashboardService = {
       date_range?: { start: string; end?: string };
       similarity_threshold?: number;
     },
-    limit: number = 20
+    limit: number = 10000
   ) =>
     apiRequest<KnowledgeSnippet[]>('/developers/knowledge-base/search', {
       method: 'POST',

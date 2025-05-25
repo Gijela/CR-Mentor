@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
+  Bot,
   CheckCircle2,
   Circle,
   FileText,
+  Gauge,
   Github,
   Loader2,
   MessageSquare,
@@ -57,19 +59,18 @@ const requiredSteps: Step[] = [
 
 const optionalSteps: Step[] = [
   {
-    key: "create-pr",
-    title: "Create Knowledge Base PR",
-    description: "Experience how to create a Pull Request with knowledge base",
-    action: "Try Now",
-    icon: FileText,
+    key: "dashboard",
+    title: "Dashboard",
+    description: "View developer profile and knowledge base",
+    action: "Go to Dashboard",
+    icon: Gauge,
   },
   {
-    key: "doc-chat",
-    title: "Document Chat",
-    description:
-      "Create a knowledge base and upload documents to experience document chat functionality",
-    action: "Try Now",
-    icon: MessageSquare,
+    key: "studio",
+    title: "Studio",
+    description: "Enter Agent Studio and interact with AI assistants",
+    action: "Go to Studio",
+    icon: Bot,
   },
 ];
 
@@ -227,18 +228,18 @@ export function Component() {
 
         {showOptional && (
           <div className="space-y-4 pt-6">
-            <h2 className="text-xl font-semibold">Feature Experience</h2>
+            <h2 className="text-xl font-semibold">Additional Features</h2>
             <div className="grid md:grid-cols-2 gap-4">
               {optionalSteps.map((step, index) => (
                 <Card
                   key={index}
                   className="transition-all duration-300 hover:shadow-lg"
                   onClick={() => {
-                    if (step.key === "create-pr") {
-                      navigate("/repository");
+                    if (step.key === "dashboard") {
+                      navigate("/dashboard");
                     }
-                    if (step.key === "doc-chat") {
-                      navigate("/knowledgeBase");
+                    if (step.key === "studio") {
+                      navigate("/studio");
                     }
                   }}
                 >
