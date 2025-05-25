@@ -96,7 +96,7 @@ export function NavMain({ items }: { items: IMenu[] }) {
 
   return (
     <SidebarGroup>
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ToggleGroup
             type="single"
@@ -119,7 +119,7 @@ export function NavMain({ items }: { items: IMenu[] }) {
               <GitlabIcon className="size-4" />
             </ToggleGroupItem>
           </ToggleGroup>
-          {/* <SidebarGroupLabel>Platform</SidebarGroupLabel> */}
+          <SidebarGroupLabel>Platform</SidebarGroupLabel>
         </div>
         <Button
           type="button"
@@ -139,7 +139,7 @@ export function NavMain({ items }: { items: IMenu[] }) {
             <ChevronsUpDown className="size-4" />
           )}
         </Button>
-      </div>
+      </div> */}
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible

@@ -6,7 +6,6 @@ import {
   ChartNoAxesCombined,
   Gauge,
   GitPullRequest,
-  Orbit,
   TrendingUp,
 } from "lucide-react"
 
@@ -50,114 +49,12 @@ export const menus: IExtendedMenu[] = [
     title: "dashboard",
     icon: Gauge,
     to: "/dashboard",
-    // children: [
-    //   {
-    //     title: "overview",
-    //     label: "128",
-    //     icon: Gauge,
-    //     to: "/dashboard/overview",
-    //   },
-    //   {
-    //     title: "analysis",
-    //     label: "9",
-    //     icon: ChartNoAxesCombined,
-    //     to: "/dashboard/analysis",
-    //   },
-    //   {
-    //     title: "workplace",
-    //     icon: Orbit,
-    //     to: "/dashboard/workplace",
-    //   },
-    // ],
   },
   {
     title: "Studio",
     icon: Bot,
     to: "/studio",
   },
-  // {
-  //   title: "forms",
-  //   label: "12",
-  //   icon: MessagesSquare,
-  //   to: "/form",
-  //   children: [
-  //     {
-  //       title: "basic_form",
-  //       label: "23",
-  //       icon: ArchiveX,
-  //       to: "/form/basic-form",
-  //     },
-  //     {
-  //       title: "step_form",
-  //       icon: Trash2,
-  //       to: "/form/step-form",
-  //     },
-  //     {
-  //       title: "advanced_form",
-  //       icon: Archive,
-  //       to: "/form/advanced-form",
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "charts",
-  //   icon: ChartLine,
-  //   to: "/charts",
-  //   children: [
-  //     {
-  //       title: "area_chart",
-  //       icon: ChartArea,
-  //       to: "/charts/area-chart",
-  //     },
-  //     {
-  //       title: "bar_chart",
-  //       icon: ChartBar,
-  //       to: "/charts/bar-chart",
-  //     },
-  //     {
-  //       title: "line_chart",
-  //       icon: ChartLine,
-  //       to: "/charts/line-chart",
-  //     },
-  //     {
-  //       title: "pie_chart",
-  //       icon: ChartPie,
-  //       to: "/charts/pie-chart",
-  //     },
-  //     {
-  //       title: "radar_chart",
-  //       icon: Radar,
-  //       to: "/charts/radar-chart",
-  //     },
-  //     {
-  //       title: "radial_chart",
-  //       icon: Radical,
-  //       to: "/charts/radial-chart",
-  //     },
-  //     {
-  //       title: "tooltip_chart",
-  //       icon: CircleDot,
-  //       to: "/charts/tooltip",
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "settings",
-  //   icon: Settings,
-  //   to: "/settings",
-  // },
-  // {
-  //   title: "system",
-  //   icon: Info,
-  //   to: "/system",
-  //   children: [
-  //     {
-  //       title: "about",
-  //       icon: Info,
-  //       to: "/system/about",
-  //     },
-  //   ],
-  // },
   {
     title: "Repository",
     icon: BookMinus,
@@ -173,11 +70,11 @@ export const menus: IExtendedMenu[] = [
     icon: BookOpen,
     to: "/knowledgeBase/list",
   },
-  // {
-  //   title: "Code Review",
-  //   icon: Bot,
-  //   to: "/agents",
-  // },
+  {
+    title: "Code Review",
+    icon: Bot,
+    to: "/agents",
+  },
   {
     title: "Knowledge Base Edit",
     label: "9",
