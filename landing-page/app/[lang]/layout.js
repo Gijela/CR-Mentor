@@ -40,7 +40,7 @@ export default function LangLayout({ children, params }) {
     <>
       <Navbar lang={lang} />
       <div className="px-5">{children}</div>
-      {/* <Footer lang={lang} /> */}
+      <Footer lang={lang} />
     </>
   );
 }

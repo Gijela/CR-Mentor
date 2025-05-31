@@ -53,6 +53,9 @@ export default function Footer() {
                 </a>
               );
             })}
+            <a href="https://heictopdf.tech" target="_blank">
+              Heic to PDF
+            </a>
           </div>
         </div>
       </div>
