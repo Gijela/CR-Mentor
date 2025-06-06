@@ -97,6 +97,10 @@ CR-Mentor 不只是一个智能代码审查工具，更是一个开发者成长�
 
 ![Star History Chart](https://api.star-history.com/svg?repos=Gijela/CR-Mentor&type=Date)
 
+## 赞助
+
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+
 ## 许可证
 
 本项目遵循 CR-Mentor Open Source License。允许作为后台服务直接商用，但不允许提供 SaaS 服务。  

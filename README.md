@@ -97,6 +97,9 @@ If you share this vision, feel free to Star, try, open issues, or even join us i
 
 ![Star History Chart](https://api.star-history.com/svg?repos=Gijela/CR-Mentor&type=Date)
 
+## Support
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+
 ## License
 
 This project follows the CR-Mentor Open Source License. Commercial use as a backend service is allowed, but SaaS services are not permitted.
